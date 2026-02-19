@@ -8,23 +8,6 @@ const downloadBtn = document.getElementById("downloadBtn");
 const fitBtn = document.getElementById("fitBtn");
 const resetBtn = document.getElementById("resetBtn");
 
-const OVERLAY = {
-  baseY: 1040,          // wo das Overlay startet (anpassen nach Geschmack)
-  navyHeight: 64,       // Höhe des Navy Balkens
-  navyPadX: 26,         // links/rechts Padding im Balken
-  navyRadius: 14,       // abgerundete Ecken
-
-  titleFontPx: 20,      // <— wie du willst
-  titleWeight: 700,
-
-  subBarYGap: 12,       // Abstand zwischen Navy und weissem Balken (optisch)
-  subBarHeight: 130,    // Höhe weisser/heller Balken
-
-  accentHeight: 16,     // Höhe des orangen Balkens
-  accentCut: 18         // wie stark er in den weissen Balken reinragt
-};
-
-
 const NAVY = "#1a355b";
 const ORANGE = "#e67e22";
 
@@ -34,6 +17,23 @@ const UNDER = {
   jugi: "#76869D",
   leistung: "#ffffff",
   gesellschaft: "#CDCCCC"
+};
+
+// Overlay Einstellungen
+const OVERLAY = {
+  baseY: 1040,        // Start Y des Navy-Balkens
+  navyHeight: 64,
+  navyPadX: 26,
+  navyRadius: 14,
+
+  titleFontPx: 20,
+  titleWeight: 700,
+
+  subBarYGap: 12,
+  subBarHeight: 130,
+
+  accentHeight: 16,
+  accentCut: 18
 };
 
 let img = new Image();
@@ -48,9 +48,12 @@ let ty = 0;
 let isInteracting = false;
 let hideGridTimer = null;
 
-// Touch tracking (stabil auf Mobile)
+// Touch tracking
 let lastTouch = null;
 let lastDist = null;
+
+// Wrapper für Wheel-Zoom
+const canvasWrap = document.querySelector(".canvas-wrap");
 
 // Verhindert Browser-Scroll/Pinch-Zoom auf dem Canvas (WICHTIG)
 canvas.addEventListener("touchstart", (e) => e.preventDefault(), { passive: false });
@@ -67,7 +70,6 @@ imageUpload.addEventListener("change", (e) => {
   reader.readAsDataURL(f);
 });
 
-// Wenn Bild geladen: Auto-Fit (GANZES BILD SICHTBAR)
 img.onload = () => {
   hasImage = true;
   autoFit();
@@ -80,24 +82,10 @@ categorySelect.addEventListener("change", draw);
 fitBtn.addEventListener("click", () => { autoFit(); draw(); });
 resetBtn.addEventListener("click", () => { autoFit(); draw(); });
 
-const canvasWrap = document.querySelector(".canvas-wrap");
-
-function roundRect(ctx, x, y, w, h, r){
-  const radius = Math.min(r, w/2, h/2);
-  ctx.beginPath();
-  ctx.moveTo(x + radius, y);
-  ctx.arcTo(x + w, y, x + w, y + h, radius);
-  ctx.arcTo(x + w, y + h, x, y + h, radius);
-  ctx.arcTo(x, y + h, x, y, radius);
-  ctx.arcTo(x, y, x + w, y, radius);
-  ctx.closePath();
-}
-
-
+// ---------- Wheel / Trackpad Zoom (Canvas + Wrapper, capture) ----------
 function onWheelZoom(e){
   if (!hasImage) return;
 
-  // Nur wenn Event abgebrochen werden darf
   if (e.cancelable) e.preventDefault();
   e.stopPropagation();
 
@@ -125,12 +113,10 @@ function onWheelZoom(e){
   stopInteractingSoon();
 }
 
-// Capture = true ist entscheidend
 canvas.addEventListener("wheel", onWheelZoom, { passive: false, capture: true });
-canvasWrap.addEventListener("wheel", onWheelZoom, { passive: false, capture: true });
+if (canvasWrap) canvasWrap.addEventListener("wheel", onWheelZoom, { passive: false, capture: true });
 
-
-// Touch: Start
+// ---------- Touch: Drag + Pinch ----------
 canvas.addEventListener("touchstart", (e) => {
   e.preventDefault();
   if (!hasImage) return;
@@ -147,7 +133,6 @@ canvas.addEventListener("touchstart", (e) => {
   draw();
 }, { passive: false });
 
-// Touch: Move (Drag + Pinch)
 canvas.addEventListener("touchmove", (e) => {
   e.preventDefault();
   if (!hasImage) return;
@@ -174,17 +159,13 @@ canvas.addEventListener("touchmove", (e) => {
       const factor = d / lastDist;
       const newScale = clamp(scale * factor, 0.15, 8);
 
-      // Mittelpunkt der Finger
       const mx = ((e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left) * sx;
       const my = ((e.touches[0].clientY + e.touches[1].clientY) / 2 - rect.top) * sy;
 
-      // Weltpunkt vor Zoom
       const wx = (mx - tx) / scale;
       const wy = (my - ty) / scale;
 
       scale = newScale;
-
-      // Weltpunkt nach Zoom wieder unter Cursor
       tx = mx - wx * scale;
       ty = my - wy * scale;
     }
@@ -194,7 +175,6 @@ canvas.addEventListener("touchmove", (e) => {
   draw();
 }, { passive: false });
 
-// Touch: End
 canvas.addEventListener("touchend", (e) => {
   e.preventDefault();
 
@@ -213,7 +193,7 @@ canvas.addEventListener("touchend", (e) => {
   draw();
 }, { passive: false });
 
-// Desktop: Maus-Drag als Bonus
+// ---------- Desktop: Mouse Drag ----------
 let mouseDown = false;
 let lastMouse = null;
 
@@ -246,50 +226,7 @@ window.addEventListener("mouseup", () => {
   draw();
 });
 
-// Zoom mit Mausrad / Trackpad – nur wenn Cursor über dem Canvas ist
-canvas.addEventListener("wheel", (e) => {
-  if (!hasImage) return;
-
-  // WICHTIG: verhindert Seiten-Scroll oder Browser-Zoom
-  e.preventDefault();
-
-  startInteracting();
-
-  const rect = canvas.getBoundingClientRect();
-
-  // Mausposition relativ zum Canvas
-  const mouseX = (e.clientX - rect.left);
-  const mouseY = (e.clientY - rect.top);
-
-  // In Canvas-Koordinaten umrechnen
-  const sx = canvas.width / rect.width;
-  const sy = canvas.height / rect.height;
-
-  const mx = mouseX * sx;
-  const my = mouseY * sy;
-
-  // Zoom-Geschwindigkeit
-  const zoomIntensity = 0.0015;
-  const factor = Math.exp(-e.deltaY * zoomIntensity);
-
-  const newScale = clamp(scale * factor, 0.15, 8);
-
-  // Zoom um Mauspunkt
-  const wx = (mx - tx) / scale;
-  const wy = (my - ty) / scale;
-
-  scale = newScale;
-  tx = mx - wx * scale;
-  ty = my - wy * scale;
-
-  draw();
-  stopInteractingSoon();
-
-}, { passive: false });
-
-
-
-// Download
+// ---------- Download ----------
 downloadBtn.addEventListener("click", () => {
   const link = document.createElement("a");
   link.download = "tvbr_post.png";
@@ -298,12 +235,10 @@ downloadBtn.addEventListener("click", () => {
 });
 
 // ---------- Rendering ----------
-
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   if (!hasImage) {
-    // Placeholder
     ctx.fillStyle = "#000";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = "rgba(255,255,255,0.55)";
@@ -315,98 +250,77 @@ function draw() {
     return;
   }
 
-  // 1) Hintergrundbild (transformiert)
+  // 1) Hintergrundbild
   ctx.save();
   ctx.translate(tx, ty);
   ctx.scale(scale, scale);
   ctx.drawImage(img, 0, 0);
   ctx.restore();
 
-  // 2) Drittel-Linien nur beim Interagieren
+  // 2) Drittel-Linien
   if (isInteracting) drawThirds();
 
   // 3) Gradient unten (Lesbarkeit)
-  const g = ctx.createLinearGradient(0, 950, 0, 1350);
-  g.addColorStop(0, "rgba(0,0,0,0)");
-  g.addColorStop(1, "rgba(0,0,0,0.60)");
-  ctx.fillStyle = g;
+  const gradient = ctx.createLinearGradient(0, OVERLAY.baseY - 140, 0, canvas.height);
+  gradient.addColorStop(0, "rgba(0,0,0,0)");
+  gradient.addColorStop(1, "rgba(0,0,0,0.60)");
+  ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   // -------- Overlay (dynamische Balkenbreite, 1 Zeile) --------
+  const titleText = (titleInput.value || "").trim();
+  const titleFont = `${OVERLAY.titleWeight} ${OVERLAY.titleFontPx}px Calibri, Arial, sans-serif`;
 
-// Gradient unten (Lesbarkeit)
-const gradient = ctx.createLinearGradient(0, OVERLAY.baseY - 120, 0, canvas.height);
-gradient.addColorStop(0, "rgba(0,0,0,0)");
-gradient.addColorStop(1, "rgba(0,0,0,0.60)");
-ctx.fillStyle = g;
-ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.save();
+  ctx.font = titleFont;
 
-// Text-Setup
-const titleText = (titleInput.value || "").trim();
-const titleFont = `${OVERLAY.titleWeight} ${OVERLAY.titleFontPx}px Calibri, Arial, sans-serif`;
+  // Textbreite messen -> Navy-Balkenbreite
+  const textW = ctx.measureText(titleText || " ").width;
+  const navyW = Math.min(canvas.width - 120, textW + 2 * OVERLAY.navyPadX);
+  const navyH = OVERLAY.navyHeight;
 
-ctx.save();
-ctx.font = titleFont;
+  // Navy-Balken zentriert
+  const navyX = (canvas.width - navyW) / 2;
+  const navyY = OVERLAY.baseY;
 
-// Textbreite messen -> Navy-Balkenbreite
-const textW = ctx.measureText(titleText || " ").width;
-const navyW = Math.min(canvas.width - 120, textW + 2 * OVERLAY.navyPadX); // max Breite begrenzen
-const navyH = OVERLAY.navyHeight;
+  // Navy Balken
+  ctx.fillStyle = NAVY;
+  roundRect(ctx, navyX, navyY, navyW, navyH, OVERLAY.navyRadius);
+  ctx.fill();
 
-// Navy-Balken zentriert
-const navyX = (canvas.width - navyW) / 2;
-const navyY = OVERLAY.baseY;
+  // Text zentriert im Navy-Balken
+  ctx.fillStyle = "#fff";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(titleText || " ", navyX + navyW / 2, navyY + navyH / 2);
 
-// Navy-Balken zeichnen (mit optionaler Transparenz)
-ctx.fillStyle = NAVY; // oder z.B. "rgba(26,53,91,0.92)"
-roundRect(ctx, navyX, navyY, navyW, navyH, OVERLAY.navyRadius);
-ctx.fill();
+  ctx.restore();
 
-// Text zentriert im Navy-Balken
-ctx.fillStyle = "#fff";
-ctx.textAlign = "center";
-ctx.textBaseline = "middle";
-ctx.fillText(titleText || " ", navyX + 20, navyY + navyH / 2);
+  // Unterbalken (Riege)
+  const subBarY = navyY + navyH + OVERLAY.subBarYGap;
+  ctx.fillStyle = UNDER[categorySelect.value] || "#fff";
+  ctx.fillRect(0, subBarY, canvas.width, OVERLAY.subBarHeight);
 
-ctx.restore();
+  // Orange Balken (Leistung) – schneidet in Subbar
+  if (categorySelect.value === "leistung") {
+    ctx.fillStyle = ORANGE;
+    ctx.fillRect(
+      0,
+      subBarY - OVERLAY.accentCut,
+      canvas.width,
+      OVERLAY.accentHeight + OVERLAY.accentCut
+    );
+  }
 
-// Unterbalken (Riege) – volle Breite
-const subBarY = navyY + navyH + OVERLAY.subBarYGap;
-ctx.fillStyle = UNDER[categorySelect.value] || "#fff";
-ctx.fillRect(0, subBarY, canvas.width, OVERLAY.subBarHeight);
-
-// Orange Balken (Leistung) – unterhalb Navy, schneidet in den weissen Balken
-if (categorySelect.value === "leistung") {
-  ctx.fillStyle = ORANGE;
-  // liegt zwischen Navy & Subbar und ragt in Subbar hinein
-  ctx.fillRect(
-    0,
-    subBarY - OVERLAY.accentCut,                 // rein in den weissen Balken
-    canvas.width,
-    OVERLAY.accentHeight + OVERLAY.accentCut     // überlappt und ist sichtbar
-  );
+  // Subline im Unterbalken
+  ctx.fillStyle = "#111";
+  ctx.font = "900 40px Calibri, Arial, sans-serif";
+  ctx.textAlign = "left";
+  ctx.textBaseline = "alphabetic";
+  ctx.fillText(subLabel(categorySelect.value), 60, subBarY + 85);
 }
 
-// // Subline im Unterbalken (Position dynamisch)
-// ctx.fillStyle = "#111";
-// ctx.font = "900 40px Calibri, Arial, sans-serif";
-// ctx.textAlign = "left";
-// ctx.textBaseline = "alphabetic";
-// ctx.fillText(subLabel(categorySelect.value), 60, subBarY + 85);
-
-
-//   // 5) Titeltext (wrap)
-//   const title = (titleInput.value || "").trim();
-//   ctx.fillStyle = "#fff";
-//   ctx.font = "900 68px system-ui";
-//   wrapText(title || " ", 60, 1090, 960, 78);
-
-//   // 6) Subline (verein/riege)
-//   ctx.fillStyle = "#111";
-//   ctx.font = "900 46px system-ui";
-//   ctx.fillText(subLabel(categorySelect.value), 60, 1290);
-// }
-
+// ---------- Labels ----------
 function subLabel(cat){
   if (cat === "jugi") return "JUGI BAD RAGAZ";
   if (cat === "leistung") return "TV BAD RAGAZ LA LEISTUNGSTEAM";
@@ -414,22 +328,16 @@ function subLabel(cat){
   return "TV BAD RAGAZ";
 }
 
-function wrapText(text, x, y, maxWidth, lineHeight) {
-  const words = text.split(/\s+/).filter(Boolean);
-  if (words.length === 0) return;
-
-  let line = "";
-  for (let i = 0; i < words.length; i++) {
-    const test = line ? (line + " " + words[i]) : words[i];
-    if (ctx.measureText(test).width > maxWidth && line) {
-      ctx.fillText(line, x, y);
-      line = words[i];
-      y += lineHeight;
-    } else {
-      line = test;
-    }
-  }
-  if (line) ctx.fillText(line, x, y);
+// ---------- Drawing Helpers ----------
+function roundRect(ctx, x, y, w, h, r){
+  const radius = Math.min(r, w/2, h/2);
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.arcTo(x + w, y, x + w, y + h, radius);
+  ctx.arcTo(x + w, y + h, x, y + h, radius);
+  ctx.arcTo(x, y + h, x, y, radius);
+  ctx.arcTo(x, y, x + w, y, radius);
+  ctx.closePath();
 }
 
 function drawThirds(){
@@ -437,7 +345,6 @@ function drawThirds(){
   ctx.save();
   ctx.strokeStyle = "rgba(255,255,255,0.55)";
   ctx.lineWidth = 2;
-
   ctx.beginPath();
   ctx.moveTo(w/3, 0);     ctx.lineTo(w/3, h);
   ctx.moveTo(2*w/3, 0);   ctx.lineTo(2*w/3, h);
@@ -445,7 +352,6 @@ function drawThirds(){
   ctx.moveTo(0, 2*h/3);   ctx.lineTo(w, 2*h/3);
   ctx.stroke();
 
-  // kleine Punkte
   ctx.fillStyle = "rgba(255,255,255,0.75)";
   const pts = [[w/3,h/3],[2*w/3,h/3],[w/3,2*h/3],[2*w/3,2*h/3]];
   for (const [x,y] of pts){
@@ -454,17 +360,12 @@ function drawThirds(){
   ctx.restore();
 }
 
-// ---------- Helpers ----------
-
 function autoFit() {
   if (!hasImage) return;
   const cw = canvas.width, ch = canvas.height;
   const iw = img.width, ih = img.height;
 
-  // FIT: min => ganzes Bild sichtbar
   scale = Math.min(cw / iw, ch / ih);
-
-  // zentrieren
   tx = (cw - iw * scale) / 2;
   ty = (ch - ih * scale) / 2;
 }
@@ -479,7 +380,7 @@ function stopInteractingSoon(){
   hideGridTimer = setTimeout(() => {
     isInteracting = false;
     draw();
-  }, 650); // nach kurzer Zeit ausblenden
+  }, 650);
 }
 
 function touchDist(t1, t2){
