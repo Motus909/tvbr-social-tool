@@ -1,46 +1,36 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-  <meta charset="UTF-8">
-  <title>TV Bad Ragaz Social Tool</title>
-  <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-
 <div class="app">
+  <header class="topbar">
+    <div class="brand">TV Bad Ragaz – Social Tool</div>
+  </header>
 
-  <div class="controls">
-    <h2>TV Bad Ragaz – Titelbild Generator</h2>
+  <main class="main">
+    <section class="preview">
+      <div class="canvas-wrap">
+        <canvas id="canvas" width="1080" height="1350"></canvas>
+      </div>
+    </section>
 
-    <input type="file" id="imageUpload" accept="image/*">
+    <section class="controls">
+      <input type="file" id="imageUpload" accept="image/*">
 
-    <input type="text" id="titleInput" placeholder="Titel eingeben">
+      <input type="text" id="titleInput" placeholder="Titel eingeben">
 
-    <select id="categorySelect">
-      <option value="aktiv">Aktiv</option>
-      <option value="jugi">Jugi</option>
-      <option value="leistung">Leistung</option>
-      <option value="gesellschaft">Gesellschaft</option>
-    </select>
+      <select id="categorySelect">
+        <option value="aktiv">Aktiv</option>
+        <option value="jugi">Jugi</option>
+        <option value="leistung">Leistung</option>
+        <option value="gesellschaft">Gesellschaft</option>
+      </select>
 
-    <label>Zoom</label>
-    <input type="range" id="zoomSlider" min="1" max="2" step="0.01" value="1">
+      <div class="btnrow">
+        <button id="fitBtn">Auto-Fit</button>
+        <button id="resetBtn">Reset</button>
+      </div>
 
-    <label>Horizontal</label>
-    <input type="range" id="xSlider" min="-500" max="500" value="0">
-
-    <label>Vertikal</label>
-    <input type="range" id="ySlider" min="-500" max="500" value="0">
-
-    <button id="downloadBtn">PNG herunterladen</button>
-  </div>
-
-  <div class="preview-container">
-    <canvas id="canvas" width="1080" height="1350"></canvas>
-  </div>
-
+      <button id="downloadBtn">PNG herunterladen</button>
+      <div class="hint">📱 Tipp: Ziehen = verschieben, Pinch = zoomen</div>
+    </section>
+  </main>
 </div>
 
 <script src="app.js"></script>
-</body>
-</html>
