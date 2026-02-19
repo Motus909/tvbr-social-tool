@@ -63,6 +63,44 @@ categorySelect.addEventListener("change", draw);
 fitBtn.addEventListener("click", () => { autoFit(); draw(); });
 resetBtn.addEventListener("click", () => { autoFit(); draw(); });
 
+const canvasWrap = document.querySelector(".canvas-wrap");
+
+function onWheelZoom(e){
+  if (!hasImage) return;
+
+  // Nur wenn Event abgebrochen werden darf
+  if (e.cancelable) e.preventDefault();
+  e.stopPropagation();
+
+  startInteracting();
+
+  const rect = canvas.getBoundingClientRect();
+  const sx = canvas.width / rect.width;
+  const sy = canvas.height / rect.height;
+
+  const mx = (e.clientX - rect.left) * sx;
+  const my = (e.clientY - rect.top) * sy;
+
+  const zoomIntensity = 0.0015;
+  const factor = Math.exp(-e.deltaY * zoomIntensity);
+  const newScale = clamp(scale * factor, 0.15, 8);
+
+  const wx = (mx - tx) / scale;
+  const wy = (my - ty) / scale;
+
+  scale = newScale;
+  tx = mx - wx * scale;
+  ty = my - wy * scale;
+
+  draw();
+  stopInteractingSoon();
+}
+
+// Capture = true ist entscheidend
+canvas.addEventListener("wheel", onWheelZoom, { passive: false, capture: true });
+canvasWrap.addEventListener("wheel", onWheelZoom, { passive: false, capture: true });
+
+
 // Touch: Start
 canvas.addEventListener("touchstart", (e) => {
   e.preventDefault();
