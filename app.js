@@ -8,6 +8,23 @@ const downloadBtn = document.getElementById("downloadBtn");
 const fitBtn = document.getElementById("fitBtn");
 const resetBtn = document.getElementById("resetBtn");
 
+const OVERLAY = {
+  baseY: 1040,          // wo das Overlay startet (anpassen nach Geschmack)
+  navyHeight: 64,       // Höhe des Navy Balkens
+  navyPadX: 26,         // links/rechts Padding im Balken
+  navyRadius: 14,       // abgerundete Ecken
+
+  titleFontPx: 20,      // <— wie du willst
+  titleWeight: 700,
+
+  subBarYGap: 12,       // Abstand zwischen Navy und weissem Balken (optisch)
+  subBarHeight: 130,    // Höhe weisser/heller Balken
+
+  accentHeight: 16,     // Höhe des orangen Balkens
+  accentCut: 18         // wie stark er in den weissen Balken reinragt
+};
+
+
 const NAVY = "#1a355b";
 const ORANGE = "#e67e22";
 
@@ -64,6 +81,18 @@ fitBtn.addEventListener("click", () => { autoFit(); draw(); });
 resetBtn.addEventListener("click", () => { autoFit(); draw(); });
 
 const canvasWrap = document.querySelector(".canvas-wrap");
+
+function roundRect(ctx, x, y, w, h, r){
+  const radius = Math.min(r, w/2, h/2);
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.arcTo(x + w, y, x + w, y + h, radius);
+  ctx.arcTo(x + w, y + h, x, y + h, radius);
+  ctx.arcTo(x, y + h, x, y, radius);
+  ctx.arcTo(x, y, x + w, y, radius);
+  ctx.closePath();
+}
+
 
 function onWheelZoom(e){
   if (!hasImage) return;
@@ -303,20 +332,68 @@ function draw() {
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // 4) Bauchbinde / TV-Lower-Third
-  // Hauptblock Navy (Anlassbereich)
-  ctx.fillStyle = NAVY;
-  ctx.fillRect(0, 1000, canvas.width, 200);
+  // -------- Overlay (dynamische Balkenbreite, 1 Zeile) --------
 
-  // Unterblock (Riege/Typ)
-  ctx.fillStyle = UNDER[categorySelect.value] || "#fff";
-  ctx.fillRect(0, 1200, canvas.width, 150);
+// Gradient unten (Lesbarkeit)
+const gradient = ctx.createLinearGradient(0, OVERLAY.baseY - 120, 0, canvas.height);
+g.addColorStop(0, "rgba(0,0,0,0)");
+g.addColorStop(1, "rgba(0,0,0,0.60)");
+ctx.fillStyle = g;
+ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Leistung: Orange Linie
-  if (categorySelect.value === "leistung") {
-    ctx.fillStyle = ORANGE;
-    ctx.fillRect(0, 995, canvas.width, 10);
-  }
+// Text-Setup
+const titleText = (titleInput.value || "").trim();
+const titleFont = `${OVERLAY.titleWeight} ${OVERLAY.titleFontPx}px Calibri, Arial, sans-serif`;
+
+ctx.save();
+ctx.font = titleFont;
+
+// Textbreite messen -> Navy-Balkenbreite
+const textW = ctx.measureText(title || " ").width;
+const navyW = Math.min(canvas.width - 120, textW + 2 * OVERLAY.navyPadX); // max Breite begrenzen
+const navyH = OVERLAY.navyHeight;
+
+// Navy-Balken zentriert
+const navyX = (canvas.width - navyW) / 2;
+const navyY = OVERLAY.baseY;
+
+// Navy-Balken zeichnen (mit optionaler Transparenz)
+ctx.fillStyle = NAVY; // oder z.B. "rgba(26,53,91,0.92)"
+roundRect(ctx, navyX, navyY, navyW, navyH, OVERLAY.navyRadius);
+ctx.fill();
+
+// Text zentriert im Navy-Balken
+ctx.fillStyle = "#fff";
+ctx.textAlign = "center";
+ctx.textBaseline = "middle";
+ctx.fillText(title || " ", navyX + 20, navyY + navyH / 2);
+
+ctx.restore();
+
+// Unterbalken (Riege) – volle Breite
+const subBarY = navyY + navyH + OVERLAY.subBarYGap;
+ctx.fillStyle = UNDER[categorySelect.value] || "#fff";
+ctx.fillRect(0, subBarY, canvas.width, OVERLAY.subBarHeight);
+
+// Orange Balken (Leistung) – unterhalb Navy, schneidet in den weissen Balken
+if (categorySelect.value === "leistung") {
+  ctx.fillStyle = ORANGE;
+  // liegt zwischen Navy & Subbar und ragt in Subbar hinein
+  ctx.fillRect(
+    0,
+    subBarY - OVERLAY.accentCut,                 // rein in den weissen Balken
+    canvas.width,
+    OVERLAY.accentHeight + OVERLAY.accentCut     // überlappt und ist sichtbar
+  );
+}
+
+// Subline im Unterbalken (Position dynamisch)
+ctx.fillStyle = "#111";
+ctx.font = "900 40px Calibri, Arial, sans-serif";
+ctx.textAlign = "left";
+ctx.textBaseline = "alphabetic";
+ctx.fillText(subLabel(categorySelect.value), 60, subBarY + 85);
+
 
   // 5) Titeltext (wrap)
   const title = (titleInput.value || "").trim();
