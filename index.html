@@ -1,6 +1,19 @@
-<div class="app">
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="dark">
+  <title>TV Bad Ragaz – Social Tool</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
   <header class="topbar">
-    <div class="brand">TV Bad Ragaz – Social Tool</div>
+    <div class="brand">
+      <div class="brand-title">TV Bad Ragaz</div>
+      <div class="brand-sub">Social Tool – Titelbild (4:5)</div>
+    </div>
   </header>
 
   <main class="main">
@@ -8,29 +21,39 @@
       <div class="canvas-wrap">
         <canvas id="canvas" width="1080" height="1350"></canvas>
       </div>
+      <div class="preview-footer">
+        <span class="pill">Drag = Verschieben</span>
+        <span class="pill">Pinch = Zoomen</span>
+        <span class="pill">Auto-Fit = Ganzes Bild sichtbar</span>
+      </div>
     </section>
 
     <section class="controls">
-      <input type="file" id="imageUpload" accept="image/*">
+      <label class="label">Bild</label>
+      <input class="control" type="file" id="imageUpload" accept="image/*" />
 
-      <input type="text" id="titleInput" placeholder="Titel eingeben">
+      <label class="label">Titel</label>
+      <input class="control" type="text" id="titleInput" placeholder="z.B. Dr schnellscht Ragazer" maxlength="60"/>
 
-      <select id="categorySelect">
+      <label class="label">Kategorie</label>
+      <select class="control" id="categorySelect">
         <option value="aktiv">Aktiv</option>
         <option value="jugi">Jugi</option>
         <option value="leistung">Leistung</option>
         <option value="gesellschaft">Gesellschaft</option>
       </select>
 
-      <div class="btnrow">
-        <button id="fitBtn">Auto-Fit</button>
-        <button id="resetBtn">Reset</button>
+      <div class="row">
+        <button class="btn" id="fitBtn" type="button">Auto-Fit</button>
+        <button class="btn secondary" id="resetBtn" type="button">Reset</button>
       </div>
 
-      <button id="downloadBtn">PNG herunterladen</button>
-      <div class="hint">📱 Tipp: Ziehen = verschieben, Pinch = zoomen</div>
+      <button class="btn primary" id="downloadBtn" type="button">PNG herunterladen</button>
+
+      
     </section>
   </main>
-</div>
 
-<script src="app.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
