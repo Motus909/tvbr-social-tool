@@ -22,7 +22,7 @@ const UNDER = {
 // Overlay Einstellungen
 const OVERLAY = {
   // Position: oben links wie Screenshot 2
-  topY: 102,           // Abstand von oben
+  topY: 1000,           // Abstand von oben
   leftX: 0,            // links bündig
   maxWidth: 860,       // maximale Breite der Navy-Bauchbinde (ähnlich Screenshot)
 
@@ -280,6 +280,29 @@ function draw() {
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   // -------- Overlay im Stil der Screenshots (links, eckig, orange darunter) --------
+
+  // --- Unterer Farbverlauf (Transparent -> Blau 25%) ---
+
+  const gradientHeight = 420; // Höhe des Verlaufsbereichs (anpassen)
+  const gradientTop = canvas.height - gradientHeight;
+
+  const grad = ctx.createLinearGradient(
+   0,
+   gradientTop,
+   0,
+   canvas.height
+  );
+
+// oben komplett transparent
+grad.addColorStop(0, "rgba(26,53,91,0)");
+
+// unten #1A355B mit 25% Transparenz
+grad.addColorStop(1, "rgba(26,53,91,0.25)");
+
+ctx.fillStyle = grad;
+ctx.fillRect(0, gradientTop, canvas.width, gradientHeight);
+
+
   const titleText = (titleInput.value || "").trim();
   const titleFont = `${OVERLAY.titleWeight} ${OVERLAY.titleFontPx}px Calibri, Arial, sans-serif`;
 
