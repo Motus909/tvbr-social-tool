@@ -336,8 +336,8 @@ function draw() {
 
 // Gradient unten (Lesbarkeit)
 const gradient = ctx.createLinearGradient(0, OVERLAY.baseY - 120, 0, canvas.height);
-g.addColorStop(0, "rgba(0,0,0,0)");
-g.addColorStop(1, "rgba(0,0,0,0.60)");
+gradient.addColorStop(0, "rgba(0,0,0,0)");
+gradient.addColorStop(1, "rgba(0,0,0,0.60)");
 ctx.fillStyle = g;
 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -349,7 +349,7 @@ ctx.save();
 ctx.font = titleFont;
 
 // Textbreite messen -> Navy-Balkenbreite
-const textW = ctx.measureText(title || " ").width;
+const textW = ctx.measureText(titleText || " ").width;
 const navyW = Math.min(canvas.width - 120, textW + 2 * OVERLAY.navyPadX); // max Breite begrenzen
 const navyH = OVERLAY.navyHeight;
 
@@ -366,7 +366,7 @@ ctx.fill();
 ctx.fillStyle = "#fff";
 ctx.textAlign = "center";
 ctx.textBaseline = "middle";
-ctx.fillText(title || " ", navyX + 20, navyY + navyH / 2);
+ctx.fillText(titleText || " ", navyX + 20, navyY + navyH / 2);
 
 ctx.restore();
 
@@ -387,25 +387,25 @@ if (categorySelect.value === "leistung") {
   );
 }
 
-// Subline im Unterbalken (Position dynamisch)
-ctx.fillStyle = "#111";
-ctx.font = "900 40px Calibri, Arial, sans-serif";
-ctx.textAlign = "left";
-ctx.textBaseline = "alphabetic";
-ctx.fillText(subLabel(categorySelect.value), 60, subBarY + 85);
+// // Subline im Unterbalken (Position dynamisch)
+// ctx.fillStyle = "#111";
+// ctx.font = "900 40px Calibri, Arial, sans-serif";
+// ctx.textAlign = "left";
+// ctx.textBaseline = "alphabetic";
+// ctx.fillText(subLabel(categorySelect.value), 60, subBarY + 85);
 
 
-  // 5) Titeltext (wrap)
-  const title = (titleInput.value || "").trim();
-  ctx.fillStyle = "#fff";
-  ctx.font = "900 68px system-ui";
-  wrapText(title || " ", 60, 1090, 960, 78);
+//   // 5) Titeltext (wrap)
+//   const title = (titleInput.value || "").trim();
+//   ctx.fillStyle = "#fff";
+//   ctx.font = "900 68px system-ui";
+//   wrapText(title || " ", 60, 1090, 960, 78);
 
-  // 6) Subline (verein/riege)
-  ctx.fillStyle = "#111";
-  ctx.font = "900 46px system-ui";
-  ctx.fillText(subLabel(categorySelect.value), 60, 1290);
-}
+//   // 6) Subline (verein/riege)
+//   ctx.fillStyle = "#111";
+//   ctx.font = "900 46px system-ui";
+//   ctx.fillText(subLabel(categorySelect.value), 60, 1290);
+// }
 
 function subLabel(cat){
   if (cat === "jugi") return "JUGI BAD RAGAZ";
