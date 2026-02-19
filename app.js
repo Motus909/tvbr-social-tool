@@ -21,20 +21,32 @@ const UNDER = {
 
 // Overlay Einstellungen
 const OVERLAY = {
-  baseY: 1040,        // Start Y des Navy-Balkens
-  navyHeight: 64,
-  navyPadX: 26,
-  navyRadius: 14,
+  // Position: oben links wie Screenshot 2
+  topY: 120,           // Abstand von oben
+  leftX: 0,            // links bündig
+  maxWidth: 860,       // maximale Breite der Navy-Bauchbinde (ähnlich Screenshot)
 
-  titleFontPx: 20,
-  titleWeight: 700,
+  // Navy Balken
+  navyHeight: 170,
+  navyPadX: 52,
 
-  subBarYGap: 12,
-  subBarHeight: 130,
+  // Titel Typo (ähnlich Screenshot)
+  titleFontPx: 54,
+  titleWeight: 800,
 
-  accentHeight: 16,
-  accentCut: 18
+  // Orange Linie (unter Navy)
+  accentHeight: 10,
+
+  // Weisser Balken darunter
+  subBarHeight: 70,
+  subBarPadX: 22,
+  subFontPx: 32,
+  subWeight: 900,
+
+  // Abstand zwischen Navy und Subbar (wird durch Orange Linie ersetzt -> 0)
+  gapAfterAccent: 0
 };
+
 
 let img = new Image();
 let hasImage = false;
@@ -260,64 +272,60 @@ function draw() {
   // 2) Drittel-Linien
   if (isInteracting) drawThirds();
 
-  // 3) Gradient unten (Lesbarkeit)
-  const gradient = ctx.createLinearGradient(0, OVERLAY.baseY - 140, 0, canvas.height);
+    // (Optional) leichter Verlauf unten für Lesbarkeit – kannst du auch entfernen
+  const gradient = ctx.createLinearGradient(0, canvas.height - 450, 0, canvas.height);
   gradient.addColorStop(0, "rgba(0,0,0,0)");
-  gradient.addColorStop(1, "rgba(0,0,0,0.60)");
+  gradient.addColorStop(1, "rgba(0,0,0,0.35)");
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // -------- Overlay (dynamische Balkenbreite, 1 Zeile) --------
+  // -------- Overlay im Stil der Screenshots (links, eckig, orange darunter) --------
   const titleText = (titleInput.value || "").trim();
   const titleFont = `${OVERLAY.titleWeight} ${OVERLAY.titleFontPx}px Calibri, Arial, sans-serif`;
 
+  // Titelbreite messen -> Navy-Balkenbreite adaptiv, aber begrenzt
   ctx.save();
   ctx.font = titleFont;
-
-  // Textbreite messen -> Navy-Balkenbreite
   const textW = ctx.measureText(titleText || " ").width;
-  const navyW = Math.min(canvas.width - 120, textW + 2 * OVERLAY.navyPadX);
-  const navyH = OVERLAY.navyHeight;
 
-  // Navy-Balken zentriert
-  const navyX = (canvas.width - navyW) / 2;
-  const navyY = OVERLAY.baseY;
+  // Navy-Breite wie Screenshot: passt sich an, hat aber ein Maximum
+  const navyW = Math.min(OVERLAY.maxWidth, textW + 2 * OVERLAY.navyPadX);
 
-  // Navy Balken
+  const navyX = OVERLAY.leftX;
+  const navyY = OVERLAY.topY;
+
+  // Navy Balken (eckig, links bündig)
   ctx.fillStyle = NAVY;
-  roundRect(ctx, navyX, navyY, navyW, navyH, OVERLAY.navyRadius);
-  ctx.fill();
+  ctx.fillRect(navyX, navyY, navyW, OVERLAY.navyHeight);
 
-  // Text zentriert im Navy-Balken
+  // Titel im Navy Balken (vertikal zentriert, links mit Padding)
   ctx.fillStyle = "#fff";
-  ctx.textAlign = "center";
+  ctx.textAlign = "left";
   ctx.textBaseline = "middle";
-  ctx.fillText(titleText || " ", navyX + navyW / 2, navyY + navyH / 2);
+  ctx.fillText(titleText || " ", navyX + OVERLAY.navyPadX, navyY + OVERLAY.navyHeight / 2);
 
   ctx.restore();
 
-  // Unterbalken (Riege)
-  const subBarY = navyY + navyH + OVERLAY.subBarYGap;
-  ctx.fillStyle = UNDER[categorySelect.value] || "#fff";
-  ctx.fillRect(0, subBarY, canvas.width, OVERLAY.subBarHeight);
-
-  // Orange Balken (Leistung) – schneidet in Subbar
+  // Orange Linie direkt unter Navy (nur Leistungsteam)
+  const accentY = navyY + OVERLAY.navyHeight;
   if (categorySelect.value === "leistung") {
     ctx.fillStyle = ORANGE;
-    ctx.fillRect(
-      0,
-      subBarY - OVERLAY.accentCut,
-      canvas.width,
-      OVERLAY.accentHeight + OVERLAY.accentCut
-    );
+    ctx.fillRect(navyX, accentY, navyW, OVERLAY.accentHeight);
   }
 
-  // Subline im Unterbalken
+  // Weisser Balken darunter (links bündig, gleiche Breite wie Navy)
+  const subBarY = accentY + (categorySelect.value === "leistung" ? OVERLAY.accentHeight : 0) + OVERLAY.gapAfterAccent;
+
+  ctx.fillStyle = (UNDER[categorySelect.value] || "#fff");
+  ctx.fillRect(navyX, subBarY, navyW, OVERLAY.subBarHeight);
+
+  // Subline links im weissen Balken
   ctx.fillStyle = "#111";
-  ctx.font = "900 40px Calibri, Arial, sans-serif";
+  ctx.font = `${OVERLAY.subWeight} ${OVERLAY.subFontPx}px Calibri, Arial, sans-serif`;
   ctx.textAlign = "left";
-  ctx.textBaseline = "alphabetic";
-  ctx.fillText(subLabel(categorySelect.value), 60, subBarY + 85);
+  ctx.textBaseline = "middle";
+  ctx.fillText(subLabel(categorySelect.value), navyX + OVERLAY.subBarPadX, subBarY + OVERLAY.subBarHeight / 2);
+
 }
 
 // ---------- Labels ----------
