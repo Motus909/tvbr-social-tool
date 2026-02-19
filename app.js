@@ -179,33 +179,35 @@ window.addEventListener("mouseup", () => {
   draw();
 });
 
-// Desktop/Trackpad: Zoom mit Mausrad oder Trackpad (inkl. Pinch-to-zoom, kommt oft als wheel+ctrlKey)
+// Zoom mit Mausrad / Trackpad – nur wenn Cursor über dem Canvas ist
 canvas.addEventListener("wheel", (e) => {
-  e.preventDefault();
-
   if (!hasImage) return;
+
+  // WICHTIG: verhindert Seiten-Scroll oder Browser-Zoom
+  e.preventDefault();
 
   startInteracting();
 
   const rect = canvas.getBoundingClientRect();
+
+  // Mausposition relativ zum Canvas
+  const mouseX = (e.clientX - rect.left);
+  const mouseY = (e.clientY - rect.top);
+
+  // In Canvas-Koordinaten umrechnen
   const sx = canvas.width / rect.width;
   const sy = canvas.height / rect.height;
 
-  // Zoom-Zentrum = Mausposition auf dem Canvas
-  const mx = (e.clientX - rect.left) * sx;
-  const my = (e.clientY - rect.top) * sy;
+  const mx = mouseX * sx;
+  const my = mouseY * sy;
 
-  // Wheel-Delta normalisieren (Trackpads liefern oft kleine deltas, Mäuse grössere)
-  const delta = e.deltaY;
-
-  // Zoom-Faktor: negative delta => reinzoomen
-  // (klein halten, damit es sich gut anfühlt)
+  // Zoom-Geschwindigkeit
   const zoomIntensity = 0.0015;
-  const factor = Math.exp(-delta * zoomIntensity);
+  const factor = Math.exp(-e.deltaY * zoomIntensity);
 
   const newScale = clamp(scale * factor, 0.15, 8);
 
-  // Zoom um den Punkt (mx,my)
+  // Zoom um Mauspunkt
   const wx = (mx - tx) / scale;
   const wy = (my - ty) / scale;
 
@@ -215,7 +217,9 @@ canvas.addEventListener("wheel", (e) => {
 
   draw();
   stopInteractingSoon();
+
 }, { passive: false });
+
 
 
 // Download
