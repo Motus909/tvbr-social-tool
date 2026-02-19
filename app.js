@@ -11,6 +11,10 @@ const resetBtn = document.getElementById("resetBtn");
 const NAVY = "#1a355b";
 const ORANGE = "#e67e22";
 
+const clubLogo = new Image();
+clubLogo.src = "assets/Logo.svg";
+
+
 // Unterbalken-Farben (Riegen/Segment)
 const UNDER = {
   aktiv: "#ffffff",
@@ -343,11 +347,35 @@ ctx.fillRect(0, gradientTop, canvas.width, gradientHeight);
   ctx.fillRect(navyX, subBarY, navyW, OVERLAY.subBarHeight);
 
   // Subline links im weissen Balken
-  ctx.fillStyle = "#111";
-  ctx.font = `${OVERLAY.subWeight} ${OVERLAY.subFontPx}px Calibri, Arial, sans-serif`;
-  ctx.textAlign = "left";
-  ctx.textBaseline = "middle";
-  ctx.fillText(subLabel(categorySelect.value), navyX + OVERLAY.subBarPadX, subBarY + OVERLAY.subBarHeight / 2);
+  // --- Logo + Vereinsname im Unterbalken ---
+
+  const logoSize = 38;       // Höhe des Logos
+  const logoPadding = 22;    // Abstand vom linken Rand
+  const textGap = 16;        // Abstand Logo -> Text
+
+  // Logo zeichnen (falls geladen)
+  if (clubLogo.complete) {
+   ctx.drawImage(
+      clubLogo,
+      leftX + logoPadding,
+      subY + (subH - logoSize) / 2,
+      logoSize,
+      logoSize
+    );
+  }
+
+// Vereinsname in ANTON
+ctx.fillStyle = "#111";
+ctx.font = "400 34px Anton, sans-serif";
+ctx.textAlign = "left";
+ctx.textBaseline = "middle";
+
+ctx.fillText(
+  subLabel(categorySelect.value),
+  leftX + logoPadding + logoSize + textGap,
+  subY + subH / 2
+);
+
 
 }
 
