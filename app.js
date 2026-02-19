@@ -22,7 +22,7 @@ const UNDER = {
 // Overlay Einstellungen
 const OVERLAY = {
   // Position: oben links wie Screenshot 2
-  topY: 820,           // Abstand von oben
+  topY: 1220,           // Abstand von oben
   leftX: 0,            // links bündig
   maxWidth: 860,       // maximale Breite der Navy-Bauchbinde (ähnlich Screenshot)
 
