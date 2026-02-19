@@ -22,12 +22,12 @@ const UNDER = {
 // Overlay Einstellungen
 const OVERLAY = {
   // Position: oben links wie Screenshot 2
-  topY: 1220,           // Abstand von oben
+  topY: 102,           // Abstand von oben
   leftX: 0,            // links bündig
   maxWidth: 860,       // maximale Breite der Navy-Bauchbinde (ähnlich Screenshot)
 
   // Navy Balken
-  navyHeight: 170,
+  navyHeight: 130,
   navyPadX: 52,
 
   // Titel Typo (ähnlich Screenshot)
@@ -38,7 +38,7 @@ const OVERLAY = {
   accentHeight: 10,
 
   // Weisser Balken darunter
-  subBarHeight: 70,
+  subBarHeight: 50,
   subBarPadX: 22,
   subFontPx: 32,
   subWeight: 900,
