@@ -126,6 +126,8 @@ resetBtn.addEventListener("click", () => {
   isInteracting = false;
   if(hideGridTimer) clearTimeout(hideGridTimer);
 
+  draw();
+
 });
 
 // ---------- Wheel / Trackpad Zoom (Canvas + Wrapper, capture) ----------
