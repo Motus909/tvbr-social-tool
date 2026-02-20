@@ -355,7 +355,7 @@ function draw() {
 
   ctx.save();
   ctx.font = clubFont;
-  subW += ctx.measureText(clubText).width;
+  subW += ctx.measureText(labelText).width;
   ctx.restore();
 
   subW += between;
@@ -400,19 +400,19 @@ function draw() {
   ctx.font = clubFont;
   ctx.textAlign = "left";
   ctx.textBaseline = "middle";
-  ctx.fillText(clubText, cursorX, subY + subH / 2);
+  ctx.fillText(labelText, cursorX, subY + subH / 2 + 6);
 
   // Cursor weiter
   ctx.save();
   ctx.font = clubFont;
-  cursorX += ctx.measureText(clubText).width;
+  cursorX += ctx.measureText(labelText).width;
   ctx.restore();
   cursorX += between;
 
-  // Label (Calibri)
-  ctx.fillStyle = "rgba(17,17,17,0.7)";
-  ctx.font = labelFont;
-  ctx.fillText(labelText, cursorX, subY + subH / 2);
+  // // Label (Calibri)
+  // ctx.fillStyle = "rgba(17,17,17,0.7)";
+  // ctx.font = labelFont;
+  // ctx.fillText(labelText, cursorX, subY + subH / 2);
 }
 
 
