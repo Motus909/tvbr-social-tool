@@ -110,7 +110,23 @@ img.onload = () => {
 titleInput.addEventListener("input", draw);
 categorySelect.addEventListener("change", draw);
 fitBtn.addEventListener("click", () => { autoFit(); draw(); });
-resetBtn.addEventListener("click", () => { autoFit(); draw(); });
+resetBtn.addEventListener("click", () => { 
+  // UI reset
+  titleInput.value = "";
+  categorySelect.value = "aktiv";
+  imageUpload.value = "" // delete current image
+
+  hasImage = false;
+  img.src = "";
+  scale = 1;
+  tx = 0;
+  ty = 0;
+
+  //disable grid
+  isInteracting = false;
+  if(hideGridTimer) clearTimeout(hideGridTimer);
+
+});
 
 // ---------- Wheel / Trackpad Zoom (Canvas + Wrapper, capture) ----------
 function onWheelZoom(e){
@@ -453,10 +469,11 @@ function drawThirds(){
 
 function autoFit() {
   if (!hasImage) return;
+
   const cw = canvas.width, ch = canvas.height;
   const iw = img.width, ih = img.height;
 
-  scale = Math.min(cw / iw, ch / ih);
+  scale = Math.max(cw / iw, ch / ih);
   tx = (cw - iw * scale) / 2;
   ty = (ch - ih * scale) / 2;
 }
