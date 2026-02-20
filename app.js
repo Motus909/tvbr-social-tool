@@ -57,6 +57,9 @@ const OVERLAY = {
   subPadLeft: 24,
   subPadRight: 24,
 
+  logoSize: 40,
+  logoGap: 14,
+
 
   // Abstand zwischen Navy und Subbar (wird durch Orange Linie ersetzt -> 0)
   gapAfterAccent: 0
@@ -277,134 +280,141 @@ function draw() {
     return;
   }
 
-  // 1) Hintergrundbild
+  // 1) Hintergrundbild (transformiert)
   ctx.save();
   ctx.translate(tx, ty);
   ctx.scale(scale, scale);
   ctx.drawImage(img, 0, 0);
   ctx.restore();
 
-  // 2) Drittel-Linien
+  // 2) Drittel-Linien nur beim Interagieren
   if (isInteracting) drawThirds();
 
-    // (Optional) leichter Verlauf unten für Lesbarkeit – kannst du auch entfernen
-  const gradient = ctx.createLinearGradient(0, canvas.height - 450, 0, canvas.height);
-  gradient.addColorStop(0, "rgba(0,0,0,0)");
-  gradient.addColorStop(1, "rgba(0,0,0,0.35)");
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  // -------- Overlay im Stil der Screenshots (links, eckig, orange darunter) --------
-
-  // --- Unterer Farbverlauf (Transparent -> Blau 25%) ---
-
-  const gradientHeight = 420; // Höhe des Verlaufsbereichs (anpassen)
+  // 3) Unterer Farbverlauf (transparent -> #1A355B @ 25%)
+  const gradientHeight = 420;
   const gradientTop = canvas.height - gradientHeight;
+  const bottomGrad = ctx.createLinearGradient(0, gradientTop, 0, canvas.height);
+  bottomGrad.addColorStop(0, "rgba(26,53,91,0)");
+  bottomGrad.addColorStop(1, "rgba(26,53,91,0.25)");
+  ctx.fillStyle = bottomGrad;
+  ctx.fillRect(0, gradientTop, canvas.width, gradientHeight);
 
-  const grad = ctx.createLinearGradient(
-   0,
-   gradientTop,
-   0,
-   canvas.height
-  );
+  // -------- Overlay: Titel (Navy) + Unterbalken (Weiss) + Orange Linie --------
 
-// oben komplett transparent
-grad.addColorStop(0, "rgba(26,53,91,0)");
-
-// unten #1A355B mit 25% Transparenz
-grad.addColorStop(1, "rgba(26,53,91,0.25)");
-
-ctx.fillStyle = grad;
-ctx.fillRect(0, gradientTop, canvas.width, gradientHeight);
-
-
+  // --- Titel (Navy) ---
   const titleText = (titleInput.value || "").trim();
   const titleFont = `${OVERLAY.titleWeight} ${OVERLAY.titleFontPx}px Calibri, Arial, sans-serif`;
 
-  // Titelbreite messen -> Navy-Balkenbreite adaptiv, aber begrenzt
+  const navyX = OVERLAY.leftX;   // links bündig
+  const navyY = OVERLAY.topY;    // oben (wie Screenshot 2)
+  const navyH = OVERLAY.navyHeight;
+
   ctx.save();
   ctx.font = titleFont;
-  const textW = ctx.measureText(titleText || " ").width;
 
-  // Navy-Breite wie Screenshot: passt sich an, hat aber ein Maximum
-  const navyW = Math.min(OVERLAY.maxWidth, textW + 2 * OVERLAY.navyPadX);
+  // Navy Breite adaptiv (mit cap)
+  const titleW = ctx.measureText(titleText || " ").width;
+  const navyW = Math.min(OVERLAY.maxWidth, titleW + 2 * OVERLAY.navyPadX);
 
-  const navyX = OVERLAY.leftX;
-  const navyY = OVERLAY.topY;
-
-  // Navy Balken (eckig, links bündig)
+  // Navy Box (eckig)
   ctx.fillStyle = NAVY;
-  ctx.fillRect(navyX, navyY, navyW, OVERLAY.navyHeight);
+  ctx.fillRect(navyX, navyY, navyW, navyH);
 
-  // Titel im Navy Balken (vertikal zentriert, links mit Padding)
+  // Titeltext (links, vertikal zentriert)
   ctx.fillStyle = "#fff";
   ctx.textAlign = "left";
   ctx.textBaseline = "middle";
-  ctx.fillText(titleText || " ", navyX + OVERLAY.navyPadX, navyY + OVERLAY.navyHeight / 2);
+  ctx.fillText(titleText || " ", navyX + OVERLAY.navyPadX, navyY + navyH / 2);
 
   ctx.restore();
 
-  // Orange + Weiss: FIXE Breite (Orange folgt Weiss, NICHT Navy)
-  const subX = OVERLAY.leftX;            // links bündig
-  const subW = OVERLAY.subWidth;         // FIX
-  const accentY = navyY + OVERLAY.navyHeight;
+  // Positionen unterhalb Navy
+  const accentY = navyY + navyH;
+  const subY = accentY + (categorySelect.value === "leistung" ? OVERLAY.accentHeight : 0) + (OVERLAY.gapAfterAccent || 0);
+  const subH = OVERLAY.subBarHeight;
 
-  // Orange Linie direkt unter Navy (nur Leistungsteam) – Breite = subW
+  // --- Unterbalkenbreite adaptiv nach Inhalt (Logo + Anton + Label) ---
+  const hasLogo =
+    (typeof clubLogo !== "undefined") &&
+    clubLogo.complete &&
+    clubLogo.naturalWidth > 0;
+
+  const clubText = "TV BAD RAGAZ";
+  const labelText = subLabel(categorySelect.value);
+
+  const clubFont = `34px 'Anton', sans-serif`;
+  const labelFont = `700 28px Calibri, Arial, sans-serif`;
+
+  const between = 18; // Abstand zwischen Clubname und Label
+
+  // Breite berechnen: padL + logo + gap + club + between + label + padR
+  let subW = 0;
+  subW += OVERLAY.subPadLeft;
+
+  if (hasLogo) subW += OVERLAY.logoSize + OVERLAY.logoGap;
+
+  ctx.save();
+  ctx.font = clubFont;
+  subW += ctx.measureText(clubText).width;
+  ctx.restore();
+
+  subW += between;
+
+  ctx.save();
+  ctx.font = labelFont;
+  subW += ctx.measureText(labelText).width;
+  ctx.restore();
+
+  subW += OVERLAY.subPadRight;
+
+  if (OVERLAY.subMaxWidth) subW = Math.min(subW, OVERLAY.subMaxWidth);
+
+  const subX = OVERLAY.leftX; // links bündig
+
+  // --- Orange Linie (Breite folgt Weiss) ---
   if (categorySelect.value === "leistung") {
     ctx.fillStyle = ORANGE;
     ctx.fillRect(subX, accentY, subW, OVERLAY.accentHeight);
   }
 
-  // Weisser Balken darunter – Breite = subW
-  const subBarY =
-    accentY + (categorySelect.value === "leistung" ? OVERLAY.accentHeight : 0) + (OVERLAY.gapAfterAccent || 0);
+  // --- Weisser Balken (Breite adaptiv) ---
+  ctx.fillStyle = UNDER[categorySelect.value] || "#fff";
+  ctx.fillRect(subX, subY, subW, subH);
 
-  ctx.fillStyle = (UNDER[categorySelect.value] || "#fff");
-  ctx.fillRect(subX, subBarY, subW, OVERLAY.subBarHeight);
+  // --- Inhalt im weissen Balken: Logo + Anton + Label ---
+  let cursorX = subX + OVERLAY.subPadLeft;
 
+  if (hasLogo) {
+    ctx.drawImage(
+      clubLogo,
+      cursorX,
+      subY + (subH - OVERLAY.logoSize) / 2,
+      OVERLAY.logoSize,
+      OVERLAY.logoSize
+    );
+    cursorX += OVERLAY.logoSize + OVERLAY.logoGap;
+  }
 
+  // Clubname (Anton)
+  ctx.fillStyle = "#111";
+  ctx.font = clubFont;
+  ctx.textAlign = "left";
+  ctx.textBaseline = "middle";
+  ctx.fillText(clubText, cursorX, subY + subH / 2);
 
-// Subline im Unterbalken: Logo + Vereinsname (Anton)
-const subY = subBarY;
-const subH = OVERLAY.subBarHeight;
-const leftX = navyX;          // links bündig
-const pad = 24;
-const logoSize = 40;
-const gap = 14;
+  // Cursor weiter
+  ctx.save();
+  ctx.font = clubFont;
+  cursorX += ctx.measureText(clubText).width;
+  ctx.restore();
+  cursorX += between;
 
-// Logo (nur wenn geladen)
-const hasLogo = clubLogo.complete && clubLogo.naturalWidth > 0;
-
-if (hasLogo) {
-  ctx.drawImage(
-    clubLogo,
-    leftX + pad,
-    subY + (subH - logoSize) / 2,
-    logoSize,
-    logoSize
-  );
+  // Label (Calibri)
+  ctx.fillStyle = "rgba(17,17,17,0.7)";
+  ctx.font = labelFont;
+  ctx.fillText(labelText, cursorX, subY + subH / 2);
 }
 
-ctx.fillStyle = "#111";
-ctx.font = "34px 'Anton', sans-serif";
-ctx.textAlign = "left";
-ctx.textBaseline = "middle";
-
-const textX = leftX + pad + (hasLogo ? (logoSize + gap) : 0);
-
-// Hier willst du den Vereinsnamen fix:
-
-
-// ctx.fillText("TV BAD RAGAZ", textX, subY + subH / 2);
-
-// Optional zusätzlich: Kategorie/Label rechts daneben in Calibri
-// ctx.fillStyle = "rgba(17,17,17,0.7)";
-// ctx.font = "700 28px Calibri, Arial, sans-serif";
-ctx.fillText(subLabel(categorySelect.value), textX, subY + subH / 2 + 6);
-
-
-
-}
 
 // ---------- Labels ----------
 function subLabel(cat){
