@@ -390,7 +390,7 @@ const textX = leftX + pad + (hasLogo ? (logoSize + gap) : 0);
 // Optional zusätzlich: Kategorie/Label rechts daneben in Calibri
 // ctx.fillStyle = "rgba(17,17,17,0.7)";
 // ctx.font = "700 28px Calibri, Arial, sans-serif";
-ctx.fillText(subLabel(categorySelect.value), textX, subY + subH / 2 + 34 / 2);
+ctx.fillText(subLabel(categorySelect.value), textX, subY + subH / 2 + 34 / 4);
 
 
 
