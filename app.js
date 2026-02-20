@@ -53,7 +53,7 @@ const OVERLAY = {
   subBarPadX: 22,
   subFontPx: 32,
   subWeight: 900,
-  subWidth: 720,      // fixe Breite (Weiss + Orange)
+  // subWidth: 720,      // fixe Breite (Weiss + Orange)
   subPadLeft: 24,
   subPadRight: 24,
 
@@ -345,8 +345,6 @@ function draw() {
   const clubFont = `34px 'Anton', sans-serif`;
   const labelFont = `700 28px Calibri, Arial, sans-serif`;
 
-  const between = 18; // Abstand zwischen Clubname und Label
-
   // Breite berechnen: padL + logo + gap + club + between + label + padR
   let subW = 0;
   subW += OVERLAY.subPadLeft;
@@ -358,11 +356,8 @@ function draw() {
   subW += ctx.measureText(labelText).width;
   ctx.restore();
 
-  subW += between;
-
   ctx.save();
   ctx.font = labelFont;
-  subW += ctx.measureText(labelText).width;
   ctx.restore();
 
   subW += OVERLAY.subPadRight;
