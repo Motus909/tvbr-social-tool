@@ -383,11 +383,13 @@ ctx.textBaseline = "middle";
 const textX = leftX + pad + (hasLogo ? (logoSize + gap) : 0);
 
 // Hier willst du den Vereinsnamen fix:
-ctx.fillText("TV BAD RAGAZ", textX, subY + subH / 2);
+
+
+// ctx.fillText("TV BAD RAGAZ", textX, subY + subH / 2);
 
 // Optional zusätzlich: Kategorie/Label rechts daneben in Calibri
-ctx.fillStyle = "rgba(17,17,17,0.7)";
-ctx.font = "700 28px Calibri, Arial, sans-serif";
+// ctx.fillStyle = "rgba(17,17,17,0.7)";
+// ctx.font = "700 28px Calibri, Arial, sans-serif";
 ctx.fillText(subLabel(categorySelect.value), textX + 260, subY + subH / 2);
 
 
