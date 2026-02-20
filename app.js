@@ -53,6 +53,10 @@ const OVERLAY = {
   subBarPadX: 22,
   subFontPx: 32,
   subWeight: 900,
+  subWidth: 720,      // fixe Breite (Weiss + Orange)
+  subPadLeft: 24,
+  subPadRight: 24,
+
 
   // Abstand zwischen Navy und Subbar (wird durch Orange Linie ersetzt -> 0)
   gapAfterAccent: 0
@@ -340,18 +344,24 @@ ctx.fillRect(0, gradientTop, canvas.width, gradientHeight);
 
   ctx.restore();
 
-  // Orange Linie direkt unter Navy (nur Leistungsteam)
+  // Orange + Weiss: FIXE Breite (Orange folgt Weiss, NICHT Navy)
+  const subX = OVERLAY.leftX;            // links bündig
+  const subW = OVERLAY.subWidth;         // FIX
   const accentY = navyY + OVERLAY.navyHeight;
+
+  // Orange Linie direkt unter Navy (nur Leistungsteam) – Breite = subW
   if (categorySelect.value === "leistung") {
     ctx.fillStyle = ORANGE;
-    ctx.fillRect(navyX, accentY, navyW, OVERLAY.accentHeight);
+    ctx.fillRect(subX, accentY, subW, OVERLAY.accentHeight);
   }
 
-  // Weisser Balken darunter (links bündig, gleiche Breite wie Navy)
-  const subBarY = accentY + (categorySelect.value === "leistung" ? OVERLAY.accentHeight : 0) + OVERLAY.gapAfterAccent;
+  // Weisser Balken darunter – Breite = subW
+  const subBarY =
+    accentY + (categorySelect.value === "leistung" ? OVERLAY.accentHeight : 0) + (OVERLAY.gapAfterAccent || 0);
 
   ctx.fillStyle = (UNDER[categorySelect.value] || "#fff");
-  ctx.fillRect(navyX, subBarY, navyW, OVERLAY.subBarHeight);
+  ctx.fillRect(subX, subBarY, subW, OVERLAY.subBarHeight);
+
 
 
 // Subline im Unterbalken: Logo + Vereinsname (Anton)
@@ -390,7 +400,7 @@ const textX = leftX + pad + (hasLogo ? (logoSize + gap) : 0);
 // Optional zusätzlich: Kategorie/Label rechts daneben in Calibri
 // ctx.fillStyle = "rgba(17,17,17,0.7)";
 // ctx.font = "700 28px Calibri, Arial, sans-serif";
-ctx.fillText(subLabel(categorySelect.value), textX, subY + subH / 2 + 8);
+ctx.fillText(subLabel(categorySelect.value), textX, subY + subH / 2 + 6);
 
 
 
