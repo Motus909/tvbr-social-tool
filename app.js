@@ -12,7 +12,14 @@ const NAVY = "#1a355b";
 const ORANGE = "#e67e22";
 
 const clubLogo = new Image();
-clubLogo.src = "assets/Logo.svg";
+clubLogo.src = "./assets/Logo.svg";
+clubLogo.onload = () => draw();
+clubLogo.onerror = () => console.log("Logo nicht gefunden:", clubLogo.src);
+
+// Font laden und redraw
+if (document.fonts?.load) {
+  document.fonts.load("34px 'Anton'").then(() => draw());
+}
 
 
 // Unterbalken-Farben (Riegen/Segment)
@@ -346,35 +353,43 @@ ctx.fillRect(0, gradientTop, canvas.width, gradientHeight);
   ctx.fillStyle = (UNDER[categorySelect.value] || "#fff");
   ctx.fillRect(navyX, subBarY, navyW, OVERLAY.subBarHeight);
 
-  // Subline links im weissen Balken
-  // --- Logo + Vereinsname im Unterbalken ---
 
-  const logoSize = 38;       // Höhe des Logos
-  const logoPadding = 22;    // Abstand vom linken Rand
-  const textGap = 16;        // Abstand Logo -> Text
+// Subline im Unterbalken: Logo + Vereinsname (Anton)
+const subY = subBarY;
+const subH = OVERLAY.subBarHeight;
+const leftX = navyX;          // links bündig
+const pad = 24;
+const logoSize = 40;
+const gap = 14;
 
-  // Logo zeichnen (falls geladen)
-  if (clubLogo.complete) {
-   ctx.drawImage(
-      clubLogo,
-      leftX + logoPadding,
-      subY + (subH - logoSize) / 2,
-      logoSize,
-      logoSize
-    );
-  }
+// Logo (nur wenn geladen)
+const hasLogo = clubLogo.complete && clubLogo.naturalWidth > 0;
 
-// Vereinsname in ANTON
+if (hasLogo) {
+  ctx.drawImage(
+    clubLogo,
+    leftX + pad,
+    subY + (subH - logoSize) / 2,
+    logoSize,
+    logoSize
+  );
+}
+
 ctx.fillStyle = "#111";
-ctx.font = "400 34px Anton, sans-serif";
+ctx.font = "34px 'Anton', sans-serif";
 ctx.textAlign = "left";
 ctx.textBaseline = "middle";
 
-ctx.fillText(
-  subLabel(categorySelect.value),
-  leftX + logoPadding + logoSize + textGap,
-  subY + subH / 2
-);
+const textX = leftX + pad + (hasLogo ? (logoSize + gap) : 0);
+
+// Hier willst du den Vereinsnamen fix:
+ctx.fillText("TV BAD RAGAZ", textX, subY + subH / 2);
+
+// Optional zusätzlich: Kategorie/Label rechts daneben in Calibri
+ctx.fillStyle = "rgba(17,17,17,0.7)";
+ctx.font = "700 28px Calibri, Arial, sans-serif";
+ctx.fillText(subLabel(categorySelect.value), textX + 260, subY + subH / 2);
+
 
 
 }
