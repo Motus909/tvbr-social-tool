@@ -224,3 +224,14 @@ canvas{
   cursor:pointer;
 }
 
+/* Grading Canvas sauber responsive */
+#gradeCanvas{
+  width: 100%;
+  height: auto;
+  display:block;
+}
+
+/* Tab-Content darf nicht “quer” drücken */
+.tabcontent{
+  width: 100%;
+}
