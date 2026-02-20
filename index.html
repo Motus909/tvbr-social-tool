@@ -86,31 +86,43 @@
       </div>
     </section>
 
-    <section class="controls">
-      <label class="label">Fotos (mehrere möglich)</label>
-      <input class="control" type="file" id="gradeUpload" accept="image/*" multiple>
+    <label class="label">Fotos (mehrere möglich)</label>
+    <input class="control" type="file" id="gradeUpload" accept="image/*" multiple>
 
-      <div class="row">
-        <button class="btn" id="autoGradeBtn" type="button">Auto-Grade</button>
-        <button class="btn secondary" id="resetGradeBtn" type="button">Reset</button>
-      </div>
+    <div class="row">
+      <button class="btn" id="autoGradeBtn" type="button">Auto-Grade</button>
+      <button class="btn secondary" id="resetGradeBtn" type="button">Reset All</button>
+    </div>
 
+    <div class="sliderRow">
       <label class="label">Helligkeit</label>
-      <input class="control" type="range" id="bSlider" min="-40" max="40" value="0">
+     <button class="iconbtn" id="bReset" type="button" title="Reset">↻</button>
+    </div>
+    <input class="control" type="range" id="bSlider" min="-40" max="40" value="0">
 
+    <div class="sliderRow">
       <label class="label">Kontrast</label>
-      <input class="control" type="range" id="cSlider" min="-40" max="40" value="0">
+      <button class="iconbtn" id="cReset" type="button" title="Reset">↻</button>
+    </div>
+    <input class="control" type="range" id="cSlider" min="-40" max="40" value="0">
 
+    <div class="sliderRow">
       <label class="label">Sättigung</label>
-      <input class="control" type="range" id="sSlider" min="-40" max="40" value="0">
+      <button class="iconbtn" id="sReset" type="button" title="Reset">↻</button>
+    </div>
+    <input class="control" type="range" id="sSlider" min="-40" max="40" value="0">
 
+    <div class="sliderRow">
       <label class="label">Klarheit (Micro-Kontrast)</label>
-      <input class="control" type="range" id="kSlider" min="0" max="30" value="0">
+      <button class="iconbtn" id="kReset" type="button" title="Reset">↻</button>
+    </div>
+    <input class="control" type="range" id="kSlider" min="0" max="30" value="0">
 
-      <div class="row">
-        <button class="btn primary" id="downloadGradeBtn" type="button">Bild herunterladen</button>
-        <button class="btn" id="nextImgBtn" type="button">Nächstes</button>
-      </div>
+    <div class="row">
+      <button class="btn primary" id="downloadGradeBtn" type="button">Bild herunterladen</button>
+      <button class="btn" id="nextImgBtn" type="button">Nächstes</button>
+    </div>
+
 
       <div class="note">
         <div class="note-title">Workflow</div>
