@@ -299,11 +299,80 @@ function draw() {
   }
 
   // 1) Hintergrundbild (transformiert)
-  ctx.save();
-  ctx.translate(tx, ty);
-  ctx.scale(scale, scale);
-  ctx.drawImage(img, 0, 0);
-  ctx.restore();
+  // 1) Instagram-Style: Blur-Fill Background + Contain Vordergrund
+const cw = canvas.width, ch = canvas.height;
+const iw = img.width, ih = img.height;
+
+// Vordergrund = contain (dein scale/tx/ty aus autoFit + manuellem verschieben/zoomen)
+const fgScale = scale;
+const fgX = tx;
+const fgY = ty;
+const fgW = iw * fgScale;
+const fgH = ih * fgScale;
+
+// Hintergrund = cover (füllt Canvas immer komplett)
+const bgScale = Math.max(cw / iw, ch / ih);
+const bgW = iw * bgScale;
+const bgH = ih * bgScale;
+const bgX = (cw - bgW) / 2;
+const bgY = (ch - bgH) / 2;
+
+// Draw blurred background
+ctx.save();
+ctx.filter = "blur(24px)";
+ctx.drawImage(img, bgX, bgY, bgW, bgH);
+ctx.filter = "none";
+
+// optional: leicht abdunkeln / vereinheitlichen (IG Look)
+ctx.fillStyle = "rgba(0,0,0,0.18)";
+ctx.fillRect(0, 0, cw, ch);
+ctx.restore();
+
+// Draw foreground image (scharf)
+ctx.save();
+ctx.drawImage(img, fgX, fgY, fgW, fgH);
+ctx.restore();
+
+// Wenn oben/unten/seitlich “Bars” entstehen würden: weiche Verläufe darüberlegen
+const topGap = fgY;
+const bottomGap = ch - (fgY + fgH);
+const leftGap = fgX;
+const rightGap = cw - (fgX + fgW);
+
+// Top gradient (nur wenn oben Luft ist)
+if (topGap > 1) {
+  const gt = ctx.createLinearGradient(0, 0, 0, Math.min(160, topGap));
+  gt.addColorStop(0, "rgba(0,0,0,0.35)");
+  gt.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = gt;
+  ctx.fillRect(0, 0, cw, Math.min(160, topGap));
+}
+
+// Bottom gradient (nur wenn unten Luft ist)
+if (bottomGap > 1) {
+  const gb = ctx.createLinearGradient(0, ch - Math.min(220, bottomGap), 0, ch);
+  gb.addColorStop(0, "rgba(0,0,0,0)");
+  gb.addColorStop(1, "rgba(0,0,0,0.45)");
+  ctx.fillStyle = gb;
+  ctx.fillRect(0, ch - Math.min(220, bottomGap), cw, Math.min(220, bottomGap));
+}
+
+// Side gradients (optional, wenn links/rechts Luft ist)
+if (leftGap > 1) {
+  const gl = ctx.createLinearGradient(0, 0, Math.min(140, leftGap), 0);
+  gl.addColorStop(0, "rgba(0,0,0,0.25)");
+  gl.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = gl;
+  ctx.fillRect(0, 0, Math.min(140, leftGap), ch);
+}
+if (rightGap > 1) {
+  const gr = ctx.createLinearGradient(cw - Math.min(140, rightGap), 0, cw, 0);
+  gr.addColorStop(0, "rgba(0,0,0,0)");
+  gr.addColorStop(1, "rgba(0,0,0,0.25)");
+  ctx.fillStyle = gr;
+  ctx.fillRect(cw - Math.min(140, rightGap), 0, Math.min(140, rightGap), ch);
+}
+
 
   // 2) Drittel-Linien nur beim Interagieren
   if (isInteracting) drawThirds();
