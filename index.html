@@ -4,19 +4,31 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="color-scheme" content="dark">
-  <link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
   <title>TV Bad Ragaz – Social Tool</title>
+
+  <!-- Anton Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-  <header class="topbar">
-    <div class="brand">
-      <div class="brand-title">TV Bad Ragaz</div>
-      <div class="brand-sub">Social Tool – Titelbild (4:5)</div>
-    </div>
-  </header>
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-title">TV Bad Ragaz</div>
+    <div class="brand-sub">Social Tool</div>
+  </div>
+</header>
 
+<nav class="tabs">
+  <button class="tabbtn active" data-tab="generator">Titelbild</button>
+  <button class="tabbtn" data-tab="grading">Grading</button>
+</nav>
+
+<!-- TAB 1: Generator -->
+<section id="tab-generator" class="tabcontent active">
   <main class="main">
     <section class="preview">
       <div class="canvas-wrap">
@@ -58,3 +70,80 @@
   <script src="app.js"></script>
 </body>
 </html>
+
+</section>
+
+<!-- TAB 2: Grading -->
+<section id="tab-grading" class="tabcontent">
+  <main class="main">
+    <section class="preview">
+      <div class="canvas-wrap">
+        <canvas id="gradeCanvas" width="1080" height="1350"></canvas>
+      </div>
+      <div class="preview-footer">
+        <span class="pill">Auto-Grade passt sich an</span>
+        <span class="pill">Keine Speicherung</span>
+      </div>
+    </section>
+
+    <section class="controls">
+      <label class="label">Fotos (mehrere möglich)</label>
+      <input class="control" type="file" id="gradeUpload" accept="image/*" multiple>
+
+      <div class="row">
+        <button class="btn" id="autoGradeBtn" type="button">Auto-Grade</button>
+        <button class="btn secondary" id="resetGradeBtn" type="button">Reset</button>
+      </div>
+
+      <label class="label">Helligkeit</label>
+      <input class="control" type="range" id="bSlider" min="-40" max="40" value="0">
+
+      <label class="label">Kontrast</label>
+      <input class="control" type="range" id="cSlider" min="-40" max="40" value="0">
+
+      <label class="label">Sättigung</label>
+      <input class="control" type="range" id="sSlider" min="-40" max="40" value="0">
+
+      <label class="label">Klarheit (Micro-Kontrast)</label>
+      <input class="control" type="range" id="kSlider" min="0" max="30" value="0">
+
+      <div class="row">
+        <button class="btn primary" id="downloadGradeBtn" type="button">Bild herunterladen</button>
+        <button class="btn" id="nextImgBtn" type="button">Nächstes</button>
+      </div>
+
+      <div class="note">
+        <div class="note-title">Workflow</div>
+        <div class="note-text">
+          Upload → Auto-Grade → feinjustieren → Download → „Nächstes“.
+          (Alles läuft lokal im Browser.)
+        </div>
+      </div>
+    </section>
+  </main>
+</section>
+
+<script>
+  // Tabs
+  const btns = document.querySelectorAll(".tabbtn");
+  const tabs = {
+    generator: document.getElementById("tab-generator"),
+    grading: document.getElementById("tab-grading"),
+  };
+  btns.forEach(b => b.addEventListener("click", () => {
+    btns.forEach(x => x.classList.remove("active"));
+    b.classList.add("active");
+    Object.values(tabs).forEach(t => t.classList.remove("active"));
+    tabs[b.dataset.tab].classList.add("active");
+  }));
+</script>
+
+<script src="app.js"></script>
+<script src="grade.js"></script>
+</body>
+</html>
+
+
+
+
+  
