@@ -37,7 +37,7 @@ body{
 }
 
 .main{
-  display:flex;
+  display:block;
   gap:16px;
   padding:16px;
   align-items:flex-start;
@@ -234,4 +234,36 @@ canvas{
 /* Tab-Content darf nicht “quer” drücken */
 .tabcontent{
   width: 100%;
+}
+
+/* ===== Desktop Layout Fix ===== */
+@media (min-width: 1100px) {
+
+  .main {
+    display: grid;
+    grid-template-columns: 720px 1fr; /* Links fix Preview, rechts Controls */
+    gap: 40px;
+    align-items: start;
+  }
+
+  .preview {
+    max-width: 720px;
+  }
+
+  .canvas-wrap {
+    width: 100%;
+  }
+
+  .controls {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    max-width: 520px;
+  }
+
+  /* Slider nicht nebeneinander pressen */
+  .controls input[type="range"] {
+    width: 100%;
+  }
+
 }
