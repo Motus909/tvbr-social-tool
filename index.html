@@ -94,29 +94,37 @@
       <button class="btn secondary" id="resetGradeBtn" type="button">Reset All</button>
     </div>
 
-    <div class="sliderRow">
-      <label class="label">Helligkeit</label>
-     <button class="iconbtn" id="bReset" type="button" title="Reset">↻</button>
+    <div class="sliderBlock">
+      <div class="sliderLabel">Helligkeit</div>
+      <div class="sliderLine">
+        <input class="control" type="range" id="bSlider" min="-40" max="40" value="0">
+        <button class="iconbtn" id="bReset" type="button" title="Reset">↻</button>
+      </div>
     </div>
-    <input class="control" type="range" id="bSlider" min="-40" max="40" value="0">
 
-    <div class="sliderRow">
-      <label class="label">Kontrast</label>
-      <button class="iconbtn" id="cReset" type="button" title="Reset">↻</button>
+    <div class="sliderBlock">
+      <div class="sliderLabel">Kontrast</div>
+      <div class="sliderLine">
+       <input class="control" type="range" id="cSlider" min="-40" max="40" value="0">
+        <button class="iconbtn" id="cReset" type="button" title="Reset">↻</button>
+      </div>
     </div>
-    <input class="control" type="range" id="cSlider" min="-40" max="40" value="0">
 
-    <div class="sliderRow">
-      <label class="label">Sättigung</label>
-      <button class="iconbtn" id="sReset" type="button" title="Reset">↻</button>
+    <div class="sliderBlock">
+      <div class="sliderLabel">Sättigung</div>
+      <div class="sliderLine">
+        <input class="control" type="range" id="sSlider" min="-40" max="40" value="0">
+        <button class="iconbtn" id="sReset" type="button" title="Reset">↻</button>
+      </div>
     </div>
-    <input class="control" type="range" id="sSlider" min="-40" max="40" value="0">
 
-    <div class="sliderRow">
-      <label class="label">Klarheit (Micro-Kontrast)</label>
-      <button class="iconbtn" id="kReset" type="button" title="Reset">↻</button>
+    <div class="sliderBlock">
+      <div class="sliderLabel">Klarheit (Micro-Kontrast)</div>
+      <div class="sliderLine">
+        <input class="control" type="range" id="kSlider" min="0" max="30" value="0">
+        <button class="iconbtn" id="kReset" type="button" title="Reset">↻</button>
+      </div>
     </div>
-    <input class="control" type="range" id="kSlider" min="0" max="30" value="0">
 
     <div class="row">
       <button class="btn primary" id="downloadGradeBtn" type="button">Bild herunterladen</button>

@@ -288,4 +288,73 @@ canvas{
   }
 }
 
+/* ===== Unified Layout (Titelbild + Grading) ===== */
+.main{
+  width: min(1280px, 100%);
+  margin: 0 auto;
+  padding: 18px 16px 28px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
+
+.preview{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.controls{
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Desktop: nebeneinander */
+@media (min-width: 1100px){
+  .main{
+    grid-template-columns: 640px 1fr;
+    gap: 28px;
+    align-items: start;
+  }
+  .controls{
+    max-width: 560px;
+  }
+}
+
+/* Canvas immer sauber */
+.canvas-wrap{
+  width: 100%;
+  border-radius: 18px;
+  overflow: hidden;
+}
+canvas{
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ===== Slider Block ===== */
+.sliderBlock{
+  display:flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sliderLabel{
+  font-weight: 800;
+  color: rgba(232,238,252,0.85);
+  font-size: 14px;
+}
+
+.sliderLine{
+  display:grid;
+  grid-template-columns: 1fr 44px;
+  gap: 12px;
+  align-items: center;
+}
+
+.sliderLine input[type="range"]{
+  width: 100%;
+}
 
