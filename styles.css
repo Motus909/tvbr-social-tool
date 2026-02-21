@@ -237,33 +237,55 @@ canvas{
 }
 
 /* ===== Desktop Layout Fix ===== */
-@media (min-width: 1100px) {
+@media (min-width: 1100px){
 
-  .main {
-    display: grid;
-    grid-template-columns: 720px 1fr; /* Links fix Preview, rechts Controls */
-    gap: 40px;
+  /* Grading Layout erzwingen */
+  #tab-grading .main{
+    display: grid !important;
+    grid-template-columns: 640px 520px;
+    grid-template-areas: "preview controls";
+    gap: 32px;
     align-items: start;
   }
 
-  .preview {
-    max-width: 720px;
+  #tab-grading .preview{
+    grid-area: preview;
+    min-width: 0;
   }
 
-  .canvas-wrap {
-    width: 100%;
-  }
-
-  .controls {
+  #tab-grading .controls{
+    grid-area: controls;
+    min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 18px;
-    max-width: 520px;
+    gap: 14px;
   }
 
-  /* Slider nicht nebeneinander pressen */
-  .controls input[type="range"] {
+  /* falls controls versehentlich im preview steckt: rausziehen geht nicht per CSS,
+     aber wir verhindern, dass es sich horizontal ausbreitet */
+  #tab-grading .controls *{
+    max-width: 100%;
+  }
+
+  #tab-grading .canvas-wrap{
     width: 100%;
+    max-width: 640px;
   }
 
+  #tab-grading #gradeCanvas{
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  #tab-grading .row{
+    display:flex;
+    gap:12px;
+  }
+
+  #tab-grading .row .btn{
+    flex:1;
+  }
 }
+
+
