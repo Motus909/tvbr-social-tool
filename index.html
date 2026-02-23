@@ -16,16 +16,18 @@
 <body>
 
 <header class="topbar">
-  <div class="brand">
-    <div class="brand-title">TV Bad Ragaz</div>
-    <div class="brand-sub">Social Tool</div>
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="brand-title">TV Bad Ragaz</div>
+      <div class="brand-sub">Social Tool</div>
+    </div>
+
+    <nav class="tabs">
+      <button class="tabbtn active" data-tab="generator">Titelbild</button>
+      <button class="tabbtn" data-tab="grading">Grading</button>
+    </nav>
   </div>
 </header>
-
-<nav class="tabs">
-  <button class="tabbtn active" data-tab="generator">Titelbild</button>
-  <button class="tabbtn" data-tab="grading">Grading</button>
-</nav>
 
 <!-- TAB 1: Generator -->
 <section id="tab-generator" class="tabcontent active">
@@ -62,15 +64,8 @@
       </div>
 
       <button class="btn primary" id="downloadBtn" type="button">PNG herunterladen</button>
-
-      
     </section>
   </main>
-
-  <script src="app.js"></script>
-</body>
-</html>
-
 </section>
 
 <!-- TAB 2: Grading -->
@@ -86,57 +81,57 @@
       </div>
     </section>
 
-    <label class="label">Fotos (mehrere möglich)</label>
-    <input class="control" type="file" id="gradeUpload" accept="image/*" multiple>
+    <!-- WICHTIG: Controls sind jetzt korrekt in einer controls-Section -->
+    <section class="controls">
+      <label class="label">Fotos (mehrere möglich)</label>
+      <input class="control" type="file" id="gradeUpload" accept="image/*" multiple>
 
-    <div class="row">
-      <button class="btn" id="autoGradeBtn" type="button">Auto-Grade</button>
-      <button class="btn secondary" id="resetGradeBtn" type="button">Reset All</button>
-    </div>
-
-    <div class="sliderBlock">
-      <div class="sliderLabel">Helligkeit</div>
-      <div class="sliderLine">
-        <input class="control" type="range" id="bSlider" min="-40" max="40" value="0">
-        <button class="iconbtn" id="bReset" type="button" title="Reset">↻</button>
+      <div class="row">
+        <button class="btn" id="autoGradeBtn" type="button">Auto-Grade</button>
+        <button class="btn secondary" id="resetGradeBtn" type="button">Reset All</button>
       </div>
-    </div>
 
-    <div class="sliderBlock">
-      <div class="sliderLabel">Kontrast</div>
-      <div class="sliderLine">
-       <input class="control" type="range" id="cSlider" min="-40" max="40" value="0">
-        <button class="iconbtn" id="cReset" type="button" title="Reset">↻</button>
+      <div class="sliderBlock">
+        <div class="sliderLabel">Helligkeit</div>
+        <div class="sliderLine">
+          <input class="control" type="range" id="bSlider" min="-40" max="40" value="0">
+          <button class="iconbtn" id="bReset" type="button" title="Reset">↻</button>
+        </div>
       </div>
-    </div>
 
-    <div class="sliderBlock">
-      <div class="sliderLabel">Sättigung</div>
-      <div class="sliderLine">
-        <input class="control" type="range" id="sSlider" min="-40" max="40" value="0">
-        <button class="iconbtn" id="sReset" type="button" title="Reset">↻</button>
+      <div class="sliderBlock">
+        <div class="sliderLabel">Kontrast</div>
+        <div class="sliderLine">
+          <input class="control" type="range" id="cSlider" min="-40" max="40" value="0">
+          <button class="iconbtn" id="cReset" type="button" title="Reset">↻</button>
+        </div>
       </div>
-    </div>
 
-    <div class="sliderBlock">
-      <div class="sliderLabel">Klarheit (Micro-Kontrast)</div>
-      <div class="sliderLine">
-        <input class="control" type="range" id="kSlider" min="0" max="30" value="0">
-        <button class="iconbtn" id="kReset" type="button" title="Reset">↻</button>
+      <div class="sliderBlock">
+        <div class="sliderLabel">Sättigung</div>
+        <div class="sliderLine">
+          <input class="control" type="range" id="sSlider" min="-40" max="40" value="0">
+          <button class="iconbtn" id="sReset" type="button" title="Reset">↻</button>
+        </div>
       </div>
-    </div>
 
-    <div class="row">
-      <button class="btn primary" id="downloadGradeBtn" type="button">Bild herunterladen</button>
-      <button class="btn" id="nextImgBtn" type="button">Nächstes</button>
-    </div>
+      <div class="sliderBlock">
+        <div class="sliderLabel">Klarheit (Micro-Kontrast)</div>
+        <div class="sliderLine">
+          <input class="control" type="range" id="kSlider" min="0" max="30" value="0">
+          <button class="iconbtn" id="kReset" type="button" title="Reset">↻</button>
+        </div>
+      </div>
 
+      <div class="row">
+        <button class="btn primary" id="downloadGradeBtn" type="button">Bild herunterladen</button>
+        <button class="btn" id="nextImgBtn" type="button">Nächstes</button>
+      </div>
 
       <div class="note">
         <div class="note-title">Workflow</div>
         <div class="note-text">
-          Upload → Auto-Grade → feinjustieren → Download → „Nächstes“.
-          (Alles läuft lokal im Browser.)
+          Upload → Auto-Grade → feinjustieren → Download → „Nächstes“. (Alles läuft lokal im Browser.)
         </div>
       </div>
     </section>
@@ -162,8 +157,3 @@
 <script src="grade.js"></script>
 </body>
 </html>
-
-
-
-
-  
