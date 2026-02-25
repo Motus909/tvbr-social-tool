@@ -104,18 +104,19 @@ function applyPreset(category) {
     if (!preset) return;
 
     // Setze die Slider-Werte im UI (falls vorhanden)
-    if (document.getElementById('brightness-slider')) {
-        document.getElementById('brightness-slider').value = (preset.brightness - 1) * 50;
-        document.getElementById('contrast-slider').value = (preset.contrast - 1) * 100;
-        document.getElementById('saturation-slider').value = (preset.saturation - 1) * 100;
+    if (document.getElementById('bSlider')) {
+        document.getElementById('bSlider').value = (preset.brightness);
+        document.getElementById('cSlider').value = (preset.contrast);
+        document.getElementById('sSlider').value = (preset.saturation);
+        // document.getElementById('Klarheit (Micro-Kontrast)').value = (preset.saturation);
         // Falls weitere Slider vorhanden sind, hier ergänzen
     }
 
     // Wende die Änderungen auf das Bild an
     applyAdjustments(
-        (preset.brightness - 1) * 50,
-        (preset.contrast - 1) * 100,
-        (preset.saturation - 1) * 100,
+        (preset.brightness),
+        (preset.contrast),
+        (preset.saturation),
         0 // Kelvin/Temperatur wird in deiner aktuellen applyAdjustments nicht direkt unterstützt, aber du kannst es später ergänzen
     );
 }
