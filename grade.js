@@ -100,26 +100,23 @@ const presets = {
 
 // Funktion, um ein Preset auf das aktuelle Bild anzuwenden
 function applyPreset(category) {
-    const preset = presets[category];
-    if (!preset) return;
+  const preset = presets[category];
+  if (!preset) return;
 
-    // Setze die Slider-Werte im UI (falls vorhanden)
-    if (document.getElementById('bSlider')) {
-        document.getElementById('bSlider').value = (preset.brightness);
-        document.getElementById('cSlider').value = (preset.contrast);
-        document.getElementById('sSlider').value = (preset.saturation);
-        // document.getElementById('Klarheit (Micro-Kontrast)').value = (preset.saturation);
-        // Falls weitere Slider vorhanden sind, hier ergänzen
-    }
+  // Setze die Slider-Werte im UI
+  bSlider.value = Math.round((preset.brightness - 1) * 50);
+  cSlider.value = Math.round((preset.contrast - 1) * 100);
+  sSlider.value = Math.round((preset.saturation - 1) * 100);
 
-    // Wende die Änderungen auf das Bild an
-    applyAdjustments(
-        (preset.brightness),
-        (preset.contrast),
-        (preset.saturation),
-        0 // Kelvin/Temperatur wird in deiner aktuellen applyAdjustments nicht direkt unterstützt, aber du kannst es später ergänzen
-    );
+  // Wende die Änderungen auf das Bild an
+  applyAdjustments(
+    Math.round((preset.brightness - 1) * 50),
+    Math.round((preset.contrast - 1) * 100),
+    Math.round((preset.saturation - 1) * 100),
+    0 // Schärfe wird hier nicht berücksichtigt, da sie in deiner `applyAdjustments` nicht direkt unterstützt wird
+  );
 }
+
 
 // Funktion zur Kategorisierung (z. B. über Dropdown)
 function detectCategory() {
@@ -532,6 +529,17 @@ function detectCategory() {
 
   gradeCanvas.addEventListener("wheel", onWheelZoom, { passive:false, capture:true });
   if (gradeWrap) gradeWrap.addEventListener("wheel", onWheelZoom, { passive:false, capture:true });
+
+  document.addEventListener('DOMContentLoaded', function() {
+  const autoGradeButton = document.getElementById('auto-grade-button');
+  if (autoGradeButton) {
+    autoGradeButton.addEventListener('click', function() {
+      const category = detectCategory();
+      applyPreset(category);
+    });
+  }
+});
+
 
   // First draw
   render();
