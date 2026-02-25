@@ -57,6 +57,75 @@ if (!gradeCanvas) {
   let autoActive = false;
   let autoApplied = { b: 0, c: 0, s: 0, k: 0 };
 
+  // auto Grade
+  // Presets für die verschiedenen Kategorien
+const presets = {
+    drinnen: {
+        brightness: 1.10,  // Helligkeit +10%
+        contrast: 1.15,    // Kontrast +15%
+        saturation: 1.05,  // Sättigung +5%
+        vibrance: 1.10,    // Vibranz +10%
+        vignette: 0.10,    // Vignettierung +10
+        temperature: 4500, // Temperatur 4500K
+        sharpen: 1.20      // Schärfe +20%
+    },
+    draussen: {
+        brightness: 1.05,
+        contrast: 1.20,
+        saturation: 1.15,
+        vibrance: 1.10,
+        vignette: 0.00,
+        temperature: 5500,
+        sharpen: 1.25
+    },
+    sport: {
+        brightness: 1.15,
+        contrast: 1.25,
+        saturation: 1.20,
+        vibrance: 1.15,
+        vignette: 0.05,
+        temperature: 6000,
+        sharpen: 1.30
+    },
+    portraits: {
+        brightness: 1.05,
+        contrast: 1.10,
+        saturation: 1.05,
+        vibrance: 1.05,
+        vignette: 0.05,
+        temperature: 5000,
+        sharpen: 1.15
+    }
+};
+
+// Funktion, um ein Preset auf das aktuelle Bild anzuwenden
+function applyPreset(category) {
+    const preset = presets[category];
+    if (!preset) return;
+
+    // Setze die Slider-Werte im UI (falls vorhanden)
+    if (document.getElementById('brightness-slider')) {
+        document.getElementById('brightness-slider').value = (preset.brightness - 1) * 50;
+        document.getElementById('contrast-slider').value = (preset.contrast - 1) * 100;
+        document.getElementById('saturation-slider').value = (preset.saturation - 1) * 100;
+        // Falls weitere Slider vorhanden sind, hier ergänzen
+    }
+
+    // Wende die Änderungen auf das Bild an
+    applyAdjustments(
+        (preset.brightness - 1) * 50,
+        (preset.contrast - 1) * 100,
+        (preset.saturation - 1) * 100,
+        0 // Kelvin/Temperatur wird in deiner aktuellen applyAdjustments nicht direkt unterstützt, aber du kannst es später ergänzen
+    );
+}
+
+// Funktion zur Kategorisierung (z. B. über Dropdown)
+function detectCategory() {
+    return document.getElementById('category-select')?.value || 'sport'; // Standard: sport
+}
+
+
   // ---------------- Helpers ----------------
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
@@ -466,3 +535,4 @@ if (!gradeCanvas) {
   // First draw
   render();
 }
+
