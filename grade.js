@@ -157,7 +157,7 @@ if (!gradeCanvas) {
           gradedData[currentIndex].k
         );
       } else {
-        setSliders(0, 0, 0, 0);
+        // setSliders(0, 0, 0, 0);
       }
       render();
       updateThumbnailSelection();
