@@ -12,6 +12,50 @@
   <link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Thumbnail Container */
+    .thumbnail-container {
+      display: flex;
+      flex-wrap: wrap;
+      max-width: 100px;
+      margin-right: 10px;
+      justify-content: center;
+      max-height: 600px;
+      overflow-y: auto;
+    }
+
+    .thumbnail-container img {
+      width: 50px;
+      height: 50px;
+      margin: 5px;
+      cursor: pointer;
+      border: 2px solid transparent;
+    }
+
+    .thumbnail-container img.active {
+      border: 2px solid #007bff;
+    }
+
+    /* Preview Layout für mobile und desktop */
+    .preview {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    @media (max-width: 1100px) {
+      .preview {
+        flex-direction: column;
+      }
+      .thumbnail-container {
+        max-width: 100%;
+        justify-content: flex-start;
+        overflow-x: auto;
+        max-height: none;
+      }
+    }
+  </style>
 </head>
 <body>
 
@@ -33,7 +77,6 @@
 <section id="tab-generator" class="tabcontent active">
   <main class="main">
     <section class="preview">
-      <div class="thumbnail-container" id="thumbnailContainer"></div>
       <div class="canvas-wrap">
         <canvas id="canvas" width="1080" height="1350"></canvas>
       </div>
@@ -73,6 +116,7 @@
 <section id="tab-grading" class="tabcontent">
   <main class="main">
     <section class="preview">
+      <div class="thumbnail-container" id="thumbnailContainer"></div>
       <div class="canvas-wrap">
         <canvas id="gradeCanvas" width="1080" height="1350"></canvas>
       </div>
@@ -82,7 +126,6 @@
       </div>
     </section>
 
-    <!-- WICHTIG: Controls sind jetzt korrekt in einer controls-Section -->
     <section class="controls">
       <label class="label">Fotos (mehrere möglich)</label>
       <input class="control" type="file" id="gradeUpload" accept="image/*" multiple>
@@ -91,8 +134,7 @@
         <button class="btn" id="autoGradeBtn" type="button">Auto-Grade</button>
         <button class="btn secondary" id="resetGradeBtn" type="button">Reset All</button>
       </div>
-    
-      <!-- Kategorie-Auswahl-Dropdown -->
+
       <div class="form-group">
         <label for="category-select">Kategorie:</label>
         <select id="category-select" class="form-control">
@@ -103,25 +145,22 @@
         </select>
       </div>
 
-      <!-- Preset anwenden Button -->
-      <div class="row">
-        <button class="btn" id="auto-grade-button" type="button">Preset anwenden</button>
+      <button id="auto-grade-button" class="button btn">Preset anwenden</button>
+
+      <div class="form-group">
+        <input type="checkbox" id="titleImageCheckbox">
+        <label for="titleImageCheckbox">Als Titelbild verwenden</label>
       </div>
 
-        <div class="form-group">
-          <input type="checkbox" id="titleImageCheckbox">
-          <label for="titleImageCheckbox">Als Titelbild verwenden</label>
-        </div>
+      <div class="row">
+        <button class="btn" id="prevImgBtn" type="button">Vorheriges Bild</button>
+        <button class="btn" id="nextImgBtn" type="button">Nächstes Bild</button>
+      </div>
 
-        <div class="row">
-          <button class="btn" id="prevImgBtn" type="button">Vorheriges Bild</button>
-          <button class="btn" id="nextImgBtn" type="button">Nächstes Bild</button>
-        </div>
-
-        <div class="row">
-          <button class="btn primary" id="downloadGradeBtn" type="button">Aktuelles Bild herunterladen</button>
-          <button class="btn primary" id="downloadAllBtn" type="button">Alle Bilder herunterladen</button>
-        </div>
+      <div class="row">
+        <button class="btn primary" id="downloadGradeBtn" type="button">Bild herunterladen</button>
+        <button class="btn primary" id="downloadAllBtn" type="button">Alle Bilder herunterladen</button>
+      </div>
 
       <div class="sliderBlock">
         <div class="sliderLabel">Helligkeit</div>
@@ -153,11 +192,6 @@
           <input class="control" type="range" id="kSlider" min="0" max="30" value="0">
           <button class="iconbtn" id="kReset" type="button" title="Reset">↻</button>
         </div>
-      </div>
-
-      <div class="row">
-        <button class="btn primary" id="downloadGradeBtn" type="button">Bild herunterladen</button>
-        <button class="btn" id="nextImgBtn" type="button">Nächstes</button>
       </div>
 
       <div class="note">

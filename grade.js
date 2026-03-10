@@ -5,10 +5,7 @@ const gradeCanvas = document.getElementById("gradeCanvas");
 if (!gradeCanvas) {
   console.warn("gradeCanvas nicht gefunden – Grading Tab HTML prüfen (id=gradeCanvas).");
 } else {
-
   const gctx = gradeCanvas.getContext("2d");
-
-  
 
   // Safe-get helper (damit nichts crasht)
   const $ = (id) => document.getElementById(id);
@@ -18,6 +15,8 @@ if (!gradeCanvas) {
   const resetGradeBtn = $("resetGradeBtn");
   const downloadGradeBtn = $("downloadGradeBtn");
   const nextImgBtn = $("nextImgBtn");
+  const prevImgBtn = $("prevImgBtn"); // Neues Element für vorheriges Bild
+  const downloadAllBtn = $("downloadAllBtn"); // Neues Element für Download aller Bilder
 
   const bSlider = $("bSlider");
   const cSlider = $("cSlider");
@@ -29,14 +28,15 @@ if (!gradeCanvas) {
   const sReset = $("sReset");
   const kReset = $("kReset");
 
+  const titleImageCheckbox = $("titleImageCheckbox"); // Neues Element für Titelbild-Checkbox
+
   const gradeWrap = gradeCanvas.closest(".canvas-wrap");
 
-  // Queue
+  // Globale Variablen
   let files = [];
-  let idx = 0;
   let currentIndex = 0;
-  let gradedImages = [];
-  let gradeData = []; // sage grading for each individual image
+  let gradedData = []; // Speichert die Grading-Daten für jedes Bild
+  let titleImageIndex = -1; // Index des Titelbildes
 
   // Image
   const srcImg = new Image();
@@ -62,222 +62,205 @@ if (!gradeCanvas) {
   let autoActive = false;
   let autoApplied = { b: 0, c: 0, s: 0, k: 0 };
 
-  // auto Grade
   // Presets für die verschiedenen Kategorien
-const presets = {
+  const presets = {
     drinnen: {
-        brightness: 1.10,  // Helligkeit +10%
-        contrast: 1.15,    // Kontrast +15%
-        saturation: 1.05,  // Sättigung +5%
-        vibrance: 1.10,    // Vibranz +10%
-        vignette: 0.10,    // Vignettierung +10
-        temperature: 4500, // Temperatur 4500K
-        sharpen: 1.20      // Schärfe +20%
+      brightness: 1.10,  // Helligkeit +10%
+      contrast: 1.15,    // Kontrast +15%
+      saturation: 1.05,  // Sättigung +5%
+      vibrance: 1.10,    // Vibranz +10%
+      vignette: 0.10,    // Vignettierung +10
+      temperature: 4500, // Temperatur 4500K
+      sharpen: 1.20      // Schärfe +20%
     },
     draussen: {
-        brightness: 1.05,
-        contrast: 1.20,
-        saturation: 1.15,
-        vibrance: 1.10,
-        vignette: 0.00,
-        temperature: 5500,
-        sharpen: 1.25
+      brightness: 1.05,
+      contrast: 1.20,
+      saturation: 1.15,
+      vibrance: 1.10,
+      vignette: 0.00,
+      temperature: 5500,
+      sharpen: 1.25
     },
     sport: {
-        brightness: 1.15,
-        contrast: 1.25,
-        saturation: 1.20,
-        vibrance: 1.15,
-        vignette: 0.05,
-        temperature: 6000,
-        sharpen: 1.30
+      brightness: 1.15,
+      contrast: 1.25,
+      saturation: 1.20,
+      vibrance: 1.15,
+      vignette: 0.05,
+      temperature: 6000,
+      sharpen: 1.30
     },
     portraits: {
-        brightness: 1.05,
-        contrast: 1.10,
-        saturation: 1.05,
-        vibrance: 1.05,
-        vignette: 0.05,
-        temperature: 5000,
-        sharpen: 1.15
+      brightness: 1.05,
+      contrast: 1.10,
+      saturation: 1.05,
+      vibrance: 1.05,
+      vignette: 0.05,
+      temperature: 5000,
+      sharpen: 1.15
     }
-};
-
-// Funktion zum Laden der Bilder
-function loadImages(e) {
-  files = Array.from(e.target.files);
-  currentIndex = 0;
-  if (files.length > 0) {
-    loadCurrentImage();
-  }
-}
-
-//Function to load the images
-function loadImages(e) {
-  files = Array.from(e.target.files);
-  currentIndex = 0;
-  gradedImages = new Array(files.length);
-  gradeData = new Array(files.length).fill(null)
-  if (file.length > 0){
-    loadCurrentImage();
-    renderThumbnails();
-  }
-}
-
-// Funktion zum Laden des aktuellen Bildes
-function loadCurrentImage() {
-  const file = files[currentIndex];
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    srcImg.src = e.target.result;
-    if (gradedData[currentIndex]) {
-      setSliders(
-        gradedData[currentIndex].b,
-        gradedData[currentIndex].c,
-        gradedData[currentIndex].s,
-        gradedData[currentIndex].k
-      );
-    } else {
-      setSliders(0, 0, 0, 0);
-    }
-    render();
   };
-  reader.readAsDataURL(file);
-}
 
-// Funktion zum Speichern des Grading
-function saveCurrentGrading() {
-  const { b, c, s, k } = getSliders();
-  gradedData[currentIndex] = { b, c, s, k };
-}
+  // Funktion, um ein Preset auf das aktuelle Bild anzuwenden
+  function applyPreset(category) {
+    const preset = presets[category];
+    if (!preset) return;
 
-// Funktion zum Wechseln zum vorherigen Bild
-function prevImage() {
-  if (currentIndex > 0) {
-    saveCurrentGrading();
-    currentIndex--;
-    loadCurrentImage();
+    // Setze die Slider-Werte im UI
+    bSlider.value = Math.round((preset.brightness - 1) * 50);
+    cSlider.value = Math.round((preset.contrast - 1) * 100);
+    sSlider.value = Math.round((preset.saturation - 1) * 100);
+
+    // Wende die Änderungen auf das Bild an
+    applyAdjustments(
+      Math.round((preset.brightness - 1) * 50),
+      Math.round((preset.contrast - 1) * 100),
+      Math.round((preset.saturation - 1) * 100),
+      0 // Schärfe wird hier nicht berücksichtigt
+    );
   }
-}
 
-// Funktion zum Wechseln zum nächsten Bild
-function nextImage() {
-  if (currentIndex < files.length - 1) {
-    saveCurrentGrading();
-    currentIndex++;
-    loadCurrentImage();
+  // Funktion zur Kategorisierung (z. B. über Dropdown)
+  function detectCategory() {
+    return document.getElementById('category-select')?.value || 'sport';
   }
-}
 
-// Funktion zum Herunterladen aller Bilder
-function downloadAllImages() {
-  const titleImageIndex = gradedData.findIndex(data => data && data.isTitleImage);
-  files.forEach((file, index) => {
-    currentIndex = index;
-    loadCurrentImage();
-    setTimeout(() => {
-      const a = document.createElement("a");
-      const name = file.name.replace(/\.[^.]+$/, "");
-      a.download = `${name}_graded.png`;
-      a.href = gradeCanvas.toDataURL("image/png");
-      a.click();
+  // Funktion zum Speichern des Grading
+  function saveCurrentGrading() {
+    const { b, c, s, k } = getSliders();
+    gradedData[currentIndex] = { b, c, s, k, isTitleImage: currentIndex === titleImageIndex };
+  }
 
-      if (index === titleImageIndex) {
-        // Titelbild herunterladen
-        const titleA = document.createElement("a");
-        titleA.download = `${name}_title.png`;
-        titleA.href = applyTitleImageStyle(gradeCanvas.toDataURL("image/png"));
-        titleA.click();
-      }
-    }, 500);
-  });
-  currentIndex = 0;
-  loadCurrentImage();
-}
-
-// Funktion zum Herunterladen des aktuellen Bildes
-function downloadCurrentImage() {
-  const a = document.createElement("a");
-  const name = files[currentIndex]?.name ? files[currentIndex].name.replace(/\.[^.]+$/, "") : "graded";
-  a.download = `${name}_graded.png`;
-  a.href = gradeCanvas.toDataURL("image/png");
-  a.click();
-
-  // Speichere das gegradete Bild
-  gradedImages[currentIndex] = a.href;
-  saveCurrentGrading();
-}
-
-// Funktion zum Markieren eines Bildes als Titelbild
-function setAsTitleImage() {
-  const isTitleImage = document.getElementById('titleImageCheckbox').checked;
-  if (isTitleImage) {
-    if (!gradedData[currentIndex]) {
-      gradedData[currentIndex] = {};
-    }
-    gradedData[currentIndex].isTitleImage = true;
-  } else {
-    if (gradedData[currentIndex]) {
-      gradedData[currentIndex].isTitleImage = false;
+  // Funktion zum Laden der Bilder
+  function loadImages(e) {
+    files = Array.from(e.target.files);
+    currentIndex = 0;
+    gradedData = new Array(files.length).fill(null);
+    if (files.length > 0) {
+      loadCurrentImage();
+      renderThumbnails();
     }
   }
-}
 
-// Funktion zum Anwenden des Titelbildstils
-function applyTitleImageStyle() {
-  // Hier kannst du spezielle Stile für das Titelbild anwenden
-  // Beispiel: Gradient oder andere Effekte
-}
-
-// Funktion zum Rendern der Thumbnails
-function renderThumbnails() {
-  const thumbnailContainer = document.getElementById('thumbnailContainer');
-  thumbnailContainer.innerHTML = '';
-  files.forEach((file, index) => {
+  // Funktion zum Laden des aktuellen Bildes
+  function loadCurrentImage() {
+    const file = files[currentIndex];
     const reader = new FileReader();
     reader.onload = function(e) {
-      const img = document.createElement('img');
-      img.src = e.target.result;
-      img.style.width = '50px';
-      img.style.height = '50px';
-      img.style.margin = '5px';
-      img.style.cursor = 'pointer';
-      img.onclick = () => {
-        saveCurrentGrading();
-        currentIndex = index;
-        loadCurrentImage();
-      };
-      thumbnailContainer.appendChild(img);
+      srcImg.src = e.target.result;
+      if (gradedData[currentIndex]) {
+        setSliders(
+          gradedData[currentIndex].b,
+          gradedData[currentIndex].c,
+          gradedData[currentIndex].s,
+          gradedData[currentIndex].k
+        );
+      } else {
+        setSliders(0, 0, 0, 0);
+      }
+      render();
+      updateThumbnailSelection();
     };
     reader.readAsDataURL(file);
-  });
-}
+  }
 
-// Funktion, um ein Preset auf das aktuelle Bild anzuwenden
-function applyPreset(category) {
-  const preset = presets[category];
-  if (!preset) return;
+  // Funktion zum Wechseln zum vorherigen Bild
+  function prevImage() {
+    if (currentIndex > 0) {
+      saveCurrentGrading();
+      currentIndex--;
+      loadCurrentImage();
+    }
+  }
 
-  // Setze die Slider-Werte im UI
-  bSlider.value = Math.round((preset.brightness - 1) * 50);
-  cSlider.value = Math.round((preset.contrast - 1) * 100);
-  sSlider.value = Math.round((preset.saturation - 1) * 100);
+  // Funktion zum Wechseln zum nächsten Bild
+  function nextImage() {
+    if (currentIndex < files.length - 1) {
+      saveCurrentGrading();
+      currentIndex++;
+      loadCurrentImage();
+    }
+  }
 
-  // Wende die Änderungen auf das Bild an
-  applyAdjustments(
-    Math.round((preset.brightness - 1) * 50),
-    Math.round((preset.contrast - 1) * 100),
-    Math.round((preset.saturation - 1) * 100),
-    0 // Schärfe wird hier nicht berücksichtigt, da sie in deiner `applyAdjustments` nicht direkt unterstützt wird
-  );
-}
+  // Funktion zum Herunterladen aller Bilder
+  function downloadAllImages() {
+    files.forEach((file, index) => {
+      currentIndex = index;
+      loadCurrentImage();
+      setTimeout(() => {
+        const a = document.createElement("a");
+        const name = file.name.replace(/\.[^.]+$/, "");
+        a.download = gradedData[index]?.isTitleImage ? `${name}_title.png` : `${name}_graded.png`;
+        a.href = gradeCanvas.toDataURL("image/png");
+        a.click();
+      }, 500);
+    });
+    currentIndex = 0;
+    loadCurrentImage();
+  }
 
+  // Funktion zum Herunterladen des aktuellen Bildes
+  function downloadCurrentImage() {
+    const a = document.createElement("a");
+    const name = files[currentIndex]?.name ? files[currentIndex].name.replace(/\.[^.]+$/, "") : "graded";
+    a.download = `${name}_graded.png`;
+    a.href = gradeCanvas.toDataURL("image/png");
+    a.click();
+    saveCurrentGrading();
+  }
 
-// Funktion zur Kategorisierung (z. B. über Dropdown)
-function detectCategory() {
-    return document.getElementById('category-select')?.value || 'sport'; // Standard: sport
-}
+  // Funktion zum Markieren eines Bildes als Titelbild
+  function setAsTitleImage() {
+    const isTitleImage = document.getElementById('titleImageCheckbox').checked;
+    if (isTitleImage) {
+      titleImageIndex = currentIndex;
+      if (!gradedData[currentIndex]) {
+        gradedData[currentIndex] = {};
+      }
+      gradedData[currentIndex].isTitleImage = true;
+    } else {
+      if (gradedData[currentIndex]) {
+        gradedData[currentIndex].isTitleImage = false;
+      }
+      if (titleImageIndex === currentIndex) {
+        titleImageIndex = -1;
+      }
+    }
+  }
 
+  // Funktion zum Rendern der Thumbnails
+  function renderThumbnails() {
+    const thumbnailContainer = document.getElementById('thumbnailContainer');
+    thumbnailContainer.innerHTML = '';
+    files.forEach((file, index) => {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = document.createElement('img');
+        img.src = e.target.result;
+        img.style.width = '50px';
+        img.style.height = '50px';
+        img.style.margin = '5px';
+        img.style.cursor = 'pointer';
+        img.style.border = index === currentIndex ? '2px solid #007bff' : '2px solid transparent';
+        img.onclick = () => {
+          saveCurrentGrading();
+          currentIndex = index;
+          loadCurrentImage();
+        };
+        thumbnailContainer.appendChild(img);
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // Funktion zum Aktualisieren der Thumbnail-Auswahl
+  function updateThumbnailSelection() {
+    const thumbnails = document.querySelectorAll('#thumbnailContainer img');
+    thumbnails.forEach((thumbnail, index) => {
+      thumbnail.style.border = index === currentIndex ? '2px solid #007bff' : '2px solid transparent';
+    });
+  }
 
   // ---------------- Helpers ----------------
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
@@ -286,6 +269,7 @@ function detectCategory() {
     isInteracting = true;
     if (hideGridTimer) clearTimeout(hideGridTimer);
   }
+
   function stopInteractingSoon() {
     if (hideGridTimer) clearTimeout(hideGridTimer);
     hideGridTimer = setTimeout(() => {
@@ -293,6 +277,7 @@ function detectCategory() {
       render();
     }, 650);
   }
+
   function touchDist(t1, t2) {
     const dx = t1.clientX - t2.clientX;
     const dy = t1.clientY - t2.clientY;
@@ -338,7 +323,14 @@ function detectCategory() {
 
     gctx.clearRect(0, 0, cw, ch);
 
-    // Background cover + blur (Instagram style)
+    // Gradient zeichnen
+    const gradient = gctx.createLinearGradient(0, 0, 0, ch);
+    gradient.addColorStop(0.7, 'transparent');
+    gradient.addColorStop(1, 'rgba(0, 0, 139, 0.7)');
+    gctx.fillStyle = gradient;
+    gctx.fillRect(0, 0, cw, ch);
+
+    // Hintergrund cover + blur (Instagram style)
     const bgScale = Math.max(cw / iw, ch / ih);
     const bgW = iw * bgScale, bgH = ih * bgScale;
     const bgX = (cw - bgW) / 2, bgY = (ch - bgH) / 2;
@@ -351,9 +343,8 @@ function detectCategory() {
     gctx.fillRect(0, 0, cw, ch);
     gctx.restore();
 
-    // Foreground contain baseline
+    // Bild zeichnen
     baseScale = Math.min(cw / iw, ch / ih);
-
     const fgScale = baseScale * scaleMult;
     const fgW = iw * fgScale, fgH = ih * fgScale;
     const fgX = (cw - fgW) / 2 + offX;
@@ -361,7 +352,7 @@ function detectCategory() {
 
     gctx.drawImage(srcImg, fgX, fgY, fgW, fgH);
 
-    // capture pixels BEFORE thirds overlay (damit Linien nicht “eingebacken” werden)
+    // capture pixels BEFORE thirds overlay
     baseImageData = gctx.getImageData(0, 0, cw, ch);
 
     if (isInteracting) drawThirds(gctx);
@@ -380,7 +371,7 @@ function detectCategory() {
     const d = out.data;
 
     const bOff = b * 2.0;
-    const cFac = (259 * (c + 255)) / (255 * (259 - c)); // c in [-40..40] ok
+    const cFac = (259 * (c + 255)) / (255 * (259 - c));
     const sFac = 1 + (s / 60);
     const kFac = 1 + (k / 120);
 
@@ -444,7 +435,7 @@ function detectCategory() {
     autoActive = true;
     autoApplied = { b: bb, c: cc, s: ss, k: kk };
 
-    // Slider springen auf Auto-Werte (wie du wolltest)
+    // Slider springen auf Auto-Werte
     setSliders(bb, cc, ss, kk);
   }
 
@@ -494,55 +485,32 @@ function detectCategory() {
 
   // --------------- UI Events ---------------
   if (gradeUpload) {
-    gradeUpload.addEventListener("change", (e) => {
-      files = Array.from(e.target.files || []);
-      idx = 0;
-      if (files.length) loadCurrent();
-      else {
-        srcImg.src = "";
-        render();
-      }
-    });
+    gradeUpload.addEventListener("change", loadImages);
   }
 
   if (nextImgBtn) {
-    nextImgBtn.addEventListener("click", () => {
-      if (!files.length) return;
-      idx = (idx + 1) % files.length;
-      loadCurrent();
-    });
+    nextImgBtn.addEventListener("click", nextImage);
+  }
+
+  if (prevImgBtn) {
+    prevImgBtn.addEventListener("click", prevImage);
   }
 
   if (downloadGradeBtn) {
-    downloadGradeBtn.addEventListener("click", () => {
-      if (!srcImg.src) return;
-      const a = document.createElement("a");
-      const name = files[idx]?.name ? files[idx].name.replace(/\.[^.]+$/, "") : "graded";
-      a.download = `${name}_graded.png`;
-      a.href = gradeCanvas.toDataURL("image/png");
-      a.click();
-    });
+    downloadGradeBtn.addEventListener("click", downloadCurrentImage);
   }
 
-  // Slider input -> manual override
-  [bSlider, cSlider, sSlider, kSlider].forEach(sl => {
-    if (!sl) return;
-    sl.addEventListener("input", () => {
-      autoActive = false;
-      render();
-    });
-  });
+  if (downloadAllBtn) {
+    downloadAllBtn.addEventListener("click", downloadAllImages);
+  }
 
-  // Per-slider reset: zurück auf Auto-Wert, sonst 0
-  if (bReset) bReset.addEventListener("click", () => { bSlider.value = String(autoActive ? autoApplied.b : 0); render(); });
-  if (cReset) cReset.addEventListener("click", () => { cSlider.value = String(autoActive ? autoApplied.c : 0); render(); });
-  if (sReset) sReset.addEventListener("click", () => { sSlider.value = String(autoActive ? autoApplied.s : 0); render(); });
-  if (kReset) kReset.addEventListener("click", () => { kSlider.value = String(autoActive ? autoApplied.k : 0); render(); });
+  if (titleImageCheckbox) {
+    titleImageCheckbox.addEventListener("change", setAsTitleImage);
+  }
 
   if (autoGradeBtn) {
     autoGradeBtn.addEventListener("click", () => {
       if (!srcImg.src) return;
-      // Sicherstellen, dass baseImageData aktuell ist:
       render();
       runAutoGrade();
       render();
@@ -553,7 +521,7 @@ function detectCategory() {
     resetGradeBtn.addEventListener("click", () => {
       // reset everything
       files = [];
-      idx = 0;
+      currentIndex = 0;
       if (gradeUpload) gradeUpload.value = "";
 
       srcImg.src = "";
@@ -574,25 +542,27 @@ function detectCategory() {
     });
   }
 
-  document.getElementById('gradeUpload').addEventListener('change', loadImages);
-  document.getElementById('prevImgBtn').addEventListener('click', prevImage);
-  document.getElementById('nextImgBtn').addEventListener('click', nextImage);
-  document.getElementById('downloadGradeBtn').addEventListener('click', downloadCurrentImage);
-  document.getElementById('downloadAllBtn').addEventListener('click', downloadAllImages);
-  document.getElementById('titleImageCheckbox').addEventListener('change', setAsTitleImage);
-
-  // Event-Listener für Slider hinzufügen, um das Grading zu speichern
-  [bSlider, cSlider, sSlider, kSlider].forEach(slider => {
-    if (slider) {
-      slider.addEventListener('input', saveCurrentGrading);
-    }
+  // Slider input -> manual override
+  [bSlider, cSlider, sSlider, kSlider].forEach(sl => {
+    if (!sl) return;
+    sl.addEventListener("input", () => {
+      autoActive = false;
+      render();
+      saveCurrentGrading();
+    });
   });
+
+  // Per-slider reset: zurück auf Auto-Wert, sonst 0
+  if (bReset) bReset.addEventListener("click", () => { bSlider.value = String(autoActive ? autoApplied.b : 0); render(); });
+  if (cReset) cReset.addEventListener("click", () => { cSlider.value = String(autoActive ? autoApplied.c : 0); render(); });
+  if (sReset) sReset.addEventListener("click", () => { sSlider.value = String(autoActive ? autoApplied.s : 0); render(); });
+  if (kReset) kReset.addEventListener("click", () => { kSlider.value = String(autoActive ? autoApplied.k : 0); render(); });
 
   // --------------- Positioning (touch/mouse/wheel) ---------------
   // Prevent browser gestures
-  gradeCanvas.addEventListener("touchstart", (e)=>e.preventDefault(), { passive:false });
-  gradeCanvas.addEventListener("touchmove",  (e)=>e.preventDefault(), { passive:false });
-  gradeCanvas.addEventListener("touchend",   (e)=>e.preventDefault(), { passive:false });
+  gradeCanvas.addEventListener("touchstart", (e) => e.preventDefault(), { passive: false });
+  gradeCanvas.addEventListener("touchmove", (e) => e.preventDefault(), { passive: false });
+  gradeCanvas.addEventListener("touchend", (e) => e.preventDefault(), { passive: false });
 
   // Touch start
   gradeCanvas.addEventListener("touchstart", (e) => {
@@ -608,7 +578,7 @@ function detectCategory() {
       lastTouch = null;
     }
     render();
-  }, { passive:false });
+  }, { passive: false });
 
   // Touch move
   gradeCanvas.addEventListener("touchmove", (e) => {
@@ -638,7 +608,7 @@ function detectCategory() {
     }
 
     render();
-  }, { passive:false });
+  }, { passive: false });
 
   // Touch end
   gradeCanvas.addEventListener("touchend", (e) => {
@@ -649,7 +619,7 @@ function detectCategory() {
       stopInteractingSoon();
     }
     render();
-  }, { passive:false });
+  }, { passive: false });
 
   // Mouse drag
   gradeCanvas.addEventListener("mousedown", (e) => {
@@ -682,7 +652,7 @@ function detectCategory() {
   });
 
   // Wheel zoom (canvas + wrapper)
-  function onWheelZoom(e){
+  function onWheelZoom(e) {
     if (!srcImg.src) return;
     if (e.cancelable) e.preventDefault();
     e.stopPropagation();
@@ -696,21 +666,9 @@ function detectCategory() {
     stopInteractingSoon();
   }
 
-  gradeCanvas.addEventListener("wheel", onWheelZoom, { passive:false, capture:true });
-  if (gradeWrap) gradeWrap.addEventListener("wheel", onWheelZoom, { passive:false, capture:true });
-
-  document.addEventListener('DOMContentLoaded', function() {
-  const autoGradeButton = document.getElementById('auto-grade-button');
-  if (autoGradeButton) {
-    autoGradeButton.addEventListener('click', function() {
-      const category = detectCategory();
-      applyPreset(category);
-    });
-  }
-});
-
+  gradeCanvas.addEventListener("wheel", onWheelZoom, { passive: false, capture: true });
+  if (gradeWrap) gradeWrap.addEventListener("wheel", onWheelZoom, { passive: false, capture: true });
 
   // First draw
   render();
 }
-
