@@ -36,6 +36,7 @@ if (!gradeCanvas) {
   let idx = 0;
   let currentIndex = 0;
   let gradedImages = [];
+  let gradeData = []; // sage grading for each individual image
 
   // Image
   const srcImg = new Image();
@@ -111,20 +112,49 @@ function loadImages(e) {
   }
 }
 
+//Function to load the images
+function loadImages(e) {
+  files = Array.from(e.target.files);
+  currentIndex = 0;
+  gradedImages = new Array(files.length);
+  gradeData = new Array(files.length).fill(null)
+  if (file.length > 0){
+    loadCurrentImage();
+    renderThumbnails();
+  }
+}
+
 // Funktion zum Laden des aktuellen Bildes
 function loadCurrentImage() {
   const file = files[currentIndex];
   const reader = new FileReader();
   reader.onload = function(e) {
     srcImg.src = e.target.result;
+    if (gradedData[currentIndex]) {
+      setSliders(
+        gradedData[currentIndex].b,
+        gradedData[currentIndex].c,
+        gradedData[currentIndex].s,
+        gradedData[currentIndex].k
+      );
+    } else {
+      setSliders(0, 0, 0, 0);
+    }
     render();
   };
   reader.readAsDataURL(file);
 }
 
+// Funktion zum Speichern des Grading
+function saveCurrentGrading() {
+  const { b, c, s, k } = getSliders();
+  gradedData[currentIndex] = { b, c, s, k };
+}
+
 // Funktion zum Wechseln zum vorherigen Bild
 function prevImage() {
   if (currentIndex > 0) {
+    saveCurrentGrading();
     currentIndex--;
     loadCurrentImage();
   }
@@ -133,6 +163,7 @@ function prevImage() {
 // Funktion zum Wechseln zum nächsten Bild
 function nextImage() {
   if (currentIndex < files.length - 1) {
+    saveCurrentGrading();
     currentIndex++;
     loadCurrentImage();
   }
@@ -140,12 +171,28 @@ function nextImage() {
 
 // Funktion zum Herunterladen aller Bilder
 function downloadAllImages() {
-  gradedImages.forEach((imgData, index) => {
-    const a = document.createElement("a");
-    a.download = `graded_${index}.png`;
-    a.href = imgData;
-    a.click();
+  const titleImageIndex = gradedData.findIndex(data => data && data.isTitleImage);
+  files.forEach((file, index) => {
+    currentIndex = index;
+    loadCurrentImage();
+    setTimeout(() => {
+      const a = document.createElement("a");
+      const name = file.name.replace(/\.[^.]+$/, "");
+      a.download = `${name}_graded.png`;
+      a.href = gradeCanvas.toDataURL("image/png");
+      a.click();
+
+      if (index === titleImageIndex) {
+        // Titelbild herunterladen
+        const titleA = document.createElement("a");
+        titleA.download = `${name}_title.png`;
+        titleA.href = applyTitleImageStyle(gradeCanvas.toDataURL("image/png"));
+        titleA.click();
+      }
+    }, 500);
   });
+  currentIndex = 0;
+  loadCurrentImage();
 }
 
 // Funktion zum Herunterladen des aktuellen Bildes
@@ -158,14 +205,21 @@ function downloadCurrentImage() {
 
   // Speichere das gegradete Bild
   gradedImages[currentIndex] = a.href;
+  saveCurrentGrading();
 }
 
 // Funktion zum Markieren eines Bildes als Titelbild
 function setAsTitleImage() {
   const isTitleImage = document.getElementById('titleImageCheckbox').checked;
   if (isTitleImage) {
-    // Titelbildstil anwenden
-    applyTitleImageStyle();
+    if (!gradedData[currentIndex]) {
+      gradedData[currentIndex] = {};
+    }
+    gradedData[currentIndex].isTitleImage = true;
+  } else {
+    if (gradedData[currentIndex]) {
+      gradedData[currentIndex].isTitleImage = false;
+    }
   }
 }
 
@@ -173,6 +227,30 @@ function setAsTitleImage() {
 function applyTitleImageStyle() {
   // Hier kannst du spezielle Stile für das Titelbild anwenden
   // Beispiel: Gradient oder andere Effekte
+}
+
+// Funktion zum Rendern der Thumbnails
+function renderThumbnails() {
+  const thumbnailContainer = document.getElementById('thumbnailContainer');
+  thumbnailContainer.innerHTML = '';
+  files.forEach((file, index) => {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = document.createElement('img');
+      img.src = e.target.result;
+      img.style.width = '50px';
+      img.style.height = '50px';
+      img.style.margin = '5px';
+      img.style.cursor = 'pointer';
+      img.onclick = () => {
+        saveCurrentGrading();
+        currentIndex = index;
+        loadCurrentImage();
+      };
+      thumbnailContainer.appendChild(img);
+    };
+    reader.readAsDataURL(file);
+  });
 }
 
 // Funktion, um ein Preset auf das aktuelle Bild anzuwenden
@@ -502,6 +580,13 @@ function detectCategory() {
   document.getElementById('downloadGradeBtn').addEventListener('click', downloadCurrentImage);
   document.getElementById('downloadAllBtn').addEventListener('click', downloadAllImages);
   document.getElementById('titleImageCheckbox').addEventListener('change', setAsTitleImage);
+
+  // Event-Listener für Slider hinzufügen, um das Grading zu speichern
+  [bSlider, cSlider, sSlider, kSlider].forEach(slider => {
+    if (slider) {
+      slider.addEventListener('input', saveCurrentGrading);
+    }
+  });
 
   // --------------- Positioning (touch/mouse/wheel) ---------------
   // Prevent browser gestures
