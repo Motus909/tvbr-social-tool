@@ -8,6 +8,8 @@ if (!gradeCanvas) {
 
   const gctx = gradeCanvas.getContext("2d");
 
+  
+
   // Safe-get helper (damit nichts crasht)
   const $ = (id) => document.getElementById(id);
 
@@ -32,6 +34,8 @@ if (!gradeCanvas) {
   // Queue
   let files = [];
   let idx = 0;
+  let currentIndex = 0;
+  let gradedImages = [];
 
   // Image
   const srcImg = new Image();
@@ -97,6 +101,79 @@ const presets = {
         sharpen: 1.15
     }
 };
+
+// Funktion zum Laden der Bilder
+function loadImages(e) {
+  files = Array.from(e.target.files);
+  currentIndex = 0;
+  if (files.length > 0) {
+    loadCurrentImage();
+  }
+}
+
+// Funktion zum Laden des aktuellen Bildes
+function loadCurrentImage() {
+  const file = files[currentIndex];
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    srcImg.src = e.target.result;
+    render();
+  };
+  reader.readAsDataURL(file);
+}
+
+// Funktion zum Wechseln zum vorherigen Bild
+function prevImage() {
+  if (currentIndex > 0) {
+    currentIndex--;
+    loadCurrentImage();
+  }
+}
+
+// Funktion zum Wechseln zum nächsten Bild
+function nextImage() {
+  if (currentIndex < files.length - 1) {
+    currentIndex++;
+    loadCurrentImage();
+  }
+}
+
+// Funktion zum Herunterladen aller Bilder
+function downloadAllImages() {
+  gradedImages.forEach((imgData, index) => {
+    const a = document.createElement("a");
+    a.download = `graded_${index}.png`;
+    a.href = imgData;
+    a.click();
+  });
+}
+
+// Funktion zum Herunterladen des aktuellen Bildes
+function downloadCurrentImage() {
+  const a = document.createElement("a");
+  const name = files[currentIndex]?.name ? files[currentIndex].name.replace(/\.[^.]+$/, "") : "graded";
+  a.download = `${name}_graded.png`;
+  a.href = gradeCanvas.toDataURL("image/png");
+  a.click();
+
+  // Speichere das gegradete Bild
+  gradedImages[currentIndex] = a.href;
+}
+
+// Funktion zum Markieren eines Bildes als Titelbild
+function setAsTitleImage() {
+  const isTitleImage = document.getElementById('titleImageCheckbox').checked;
+  if (isTitleImage) {
+    // Titelbildstil anwenden
+    applyTitleImageStyle();
+  }
+}
+
+// Funktion zum Anwenden des Titelbildstils
+function applyTitleImageStyle() {
+  // Hier kannst du spezielle Stile für das Titelbild anwenden
+  // Beispiel: Gradient oder andere Effekte
+}
 
 // Funktion, um ein Preset auf das aktuelle Bild anzuwenden
 function applyPreset(category) {
@@ -418,6 +495,13 @@ function detectCategory() {
       render();
     });
   }
+
+  document.getElementById('gradeUpload').addEventListener('change', loadImages);
+  document.getElementById('prevImgBtn').addEventListener('click', prevImage);
+  document.getElementById('nextImgBtn').addEventListener('click', nextImage);
+  document.getElementById('downloadGradeBtn').addEventListener('click', downloadCurrentImage);
+  document.getElementById('downloadAllBtn').addEventListener('click', downloadAllImages);
+  document.getElementById('titleImageCheckbox').addEventListener('change', setAsTitleImage);
 
   // --------------- Positioning (touch/mouse/wheel) ---------------
   // Prevent browser gestures
