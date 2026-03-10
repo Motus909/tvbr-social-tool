@@ -129,7 +129,13 @@ if (!gradeCanvas) {
   // Funktion zum Speichern des Grading
   function saveCurrentGrading() {
     const { b, c, s, k } = getSliders();
-    gradedData[currentIndex] = { b, c, s, k, isTitleImage: currentIndex === titleImageIndex };
+    if (!gradedData[currentIndex]) {
+     gradedData[currentIndex] = {};
+   }
+    gradedData[currentIndex].b = b;
+    gradedData[currentIndex].c = c;
+    gradedData[currentIndex].s = s;
+    gradedData[currentIndex].k = k;
   }
 
   // Funktion zum Laden der Bilder
@@ -156,8 +162,6 @@ if (!gradeCanvas) {
           gradedData[currentIndex].s,
           gradedData[currentIndex].k
         );
-      } else {
-        // setSliders(0, 0, 0, 0);
       }
       render();
       updateThumbnailSelection();
@@ -494,7 +498,7 @@ if (!gradeCanvas) {
     // reset grading
     autoActive = false;
     autoApplied = { b: 0, c: 0, s: 0, k: 0 };
-    setSliders(0, 0, 0, 0);
+    // setSliders(0, 0, 0, 0);
 
     render();
   };
