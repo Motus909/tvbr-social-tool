@@ -371,3 +371,40 @@ select.control{
   border: 2px solid #007bff;
 }
 
+/* Thumbnail Container */
+.thumbnail-container {
+  display: flex;
+  flex-direction: column;
+  width: 100px;
+  margin-right: 10px;
+  gap: 5px;
+  overflow-y: auto;
+  max-height: 600px;
+}
+
+.thumbnail-container img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  margin: 5px 0;
+  cursor: pointer;
+  border: 2px solid transparent;
+  border-radius: 4px;
+}
+
+.thumbnail-container img.active {
+  border: 2px solid #007bff;
+}
+
+@media (max-width: 1100px) {
+  .preview {
+    flex-direction: column;
+  }
+  .thumbnail-container {
+    flex-direction: row;
+    width: 100%;
+    max-height: none;
+    overflow-x: auto;
+  }
+}
+

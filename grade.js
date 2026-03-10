@@ -229,6 +229,22 @@ if (!gradeCanvas) {
     }
   }
 
+  // Event-Listener hinzufügen
+  document.getElementById('gradeUpload').addEventListener('change', loadImages);
+  document.getElementById('prevImgBtn').addEventListener('click', prevImage);
+  document.getElementById('nextImgBtn').addEventListener('click', nextImage);
+  document.getElementById('downloadGradeBtn').addEventListener('click', downloadCurrentImage);
+  document.getElementById('downloadAllBtn').addEventListener('click', downloadAllImages);
+  document.getElementById('titleImageCheckbox').addEventListener('change', setAsTitleImage);
+
+// Event-Listener für Slider hinzufügen, um das Grading zu speichern
+[bSlider, cSlider, sSlider, kSlider].forEach(slider => {
+  if (slider) {
+    slider.addEventListener('input', saveCurrentGrading);
+  }
+});
+
+
   // Funktion zum Rendern der Thumbnails
   function renderThumbnails() {
     const thumbnailContainer = document.getElementById('thumbnailContainer');
