@@ -162,6 +162,9 @@ if (!gradeCanvas) {
           gradedData[currentIndex].s,
           gradedData[currentIndex].k
         );
+      } else {
+        setSliders(0, 0, 0, 0);
+        gradedData[currentIndex] = {b:0, c:0, s:0, k:0};
       }
       render();
       updateThumbnailSelection();
