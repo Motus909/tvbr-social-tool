@@ -136,15 +136,16 @@ if (!gradeCanvas) {
     const reader = new FileReader();
     reader.onload = function(e) {
       srcImg.src = e.target.result;
-      if (gradedData[currentIndex]) {
+      if (!gradedData[currentIndex]) {
+        setSliders(0, 0, 0, 0);
+        gradedData[currentIndex] = { b: 0, c: 0, s: 0, k: 0 };
+      } else {
         setSliders(
           gradedData[currentIndex].b,
           gradedData[currentIndex].c,
           gradedData[currentIndex].s,
           gradedData[currentIndex].k
         );
-      } else {
-        setSliders(0, 0, 0, 0);
       }
       render();
       updateThumbnailSelection();
