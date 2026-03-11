@@ -12,50 +12,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="styles.css">
-  <style>
-    /* Thumbnail Container */
-    .thumbnail-container {
-      display: flex;
-      flex-wrap: wrap;
-      max-width: 100px;
-      margin-right: 10px;
-      justify-content: center;
-      max-height: 600px;
-      overflow-y: auto;
-    }
+  <!-- <style>
 
-    .thumbnail-container img {
-      width: 50px;
-      height: 50px;
-      margin: 5px;
-      cursor: pointer;
-      border: 2px solid transparent;
-    }
-
-    .thumbnail-container img.active {
-      border: 2px solid #007bff;
-    }
-
-    /* Preview Layout für mobile und desktop */
-    .preview {
-      display: flex;
-      flex-direction: row;
-      align-items: flex-start;
-      gap: 10px;
-    }
-
-    @media (max-width: 1100px) {
-      .preview {
-        flex-direction: column;
-      }
-      .thumbnail-container {
-        max-width: 100%;
-        justify-content: flex-start;
-        overflow-x: auto;
-        max-height: none;
-      }
-    }
-  </style>
+  </style> -->
 </head>
 <body>
 
@@ -77,6 +36,7 @@
 <section id="tab-generator" class="tabcontent active">
   <main class="main">
     <section class="preview">
+      <div class="thumbnail-container" id="thumbnailContainer"></div>
       <div class="canvas-wrap">
         <canvas id="canvas" width="1080" height="1350"></canvas>
       </div>

@@ -246,24 +246,18 @@ if (!gradeCanvas) {
       reader.onload = function(e) {
         const img = document.createElement('img');
         img.src = e.target.result;
-        img.style.width = '80px';
-        img.style.height = '80px';
-        img.style.margin = '5px 0';
-        img.style.cursor = 'pointer';
-        img.style.border = index === currentIndex ? '2px solid #007bff' : '2px solid transparent';
-        img.style.borderRadius = '4px';
         img.dataset.index = index;
         img.onclick = function() {
-          saveCurrentGrading();
-          currentIndex = parseInt(this.dataset.index);
-          loadCurrentImage();
+         saveCurrentGrading();
+         currentIndex = parseInt(this.dataset.index);
+         loadCurrentImage();
         };
         thumbnailContainer.appendChild(img);
       };
-      reader.readAsDataURL(file);
+     reader.readAsDataURL(file);
     });
+    updateThumbnailSelection();
   }
-
   // Funktion zum Aktualisieren der Thumbnail-Auswahl
   function updateThumbnailSelection() {
     const thumbnails = document.querySelectorAll('#thumbnailContainer img');
