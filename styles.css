@@ -126,14 +126,14 @@ body {
 }
 
 .canvas-wrap {
-  width: 100%;
+  flex: 1 1 0;
+  min-width: 0;
   aspect-ratio: 4 / 5;
   border-radius: var(--radius);
   overflow: hidden;
   background: #000;
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
-  flex-grow: 1;
 }
 
 /* Canvas renders inside wrap */
@@ -376,9 +376,10 @@ select.control {
 
 /* ---- Thumbnail Container ---- */
 .thumbnail-container {
+  flex: 0 0 90px;
+  width: 90px;
   display: flex;
   flex-direction: column;
-  width: 100px;
   margin-right: 10px;
   gap: 5px;
   overflow-y: auto;
