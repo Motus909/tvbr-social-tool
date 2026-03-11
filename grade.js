@@ -247,17 +247,25 @@ if (!gradeCanvas) {
         const img = document.createElement('img');
         img.src = e.target.result;
         img.dataset.index = index;
+        img.style.width = '80px';
+        img.style.height = '80px';
+        img.style.margin = '5px 0';
+        img.style.cursor = 'pointer';
+        img.style.border = '2px solid transparent';
+        img.style.borderRadius = '4px';
         img.onclick = function() {
-         saveCurrentGrading();
-         currentIndex = parseInt(this.dataset.index);
-         loadCurrentImage();
+          saveCurrentGrading();
+          currentIndex = parseInt(this.dataset.index);
+          loadCurrentImage();
         };
         thumbnailContainer.appendChild(img);
       };
-     reader.readAsDataURL(file);
+      reader.readAsDataURL(file);
     });
     updateThumbnailSelection();
   }
+
+
   // Funktion zum Aktualisieren der Thumbnail-Auswahl
   function updateThumbnailSelection() {
     const thumbnails = document.querySelectorAll('#thumbnailContainer img');
@@ -480,15 +488,24 @@ if (!gradeCanvas) {
     });
   }
 
-  // Slider input -> manual override
-  [bSlider, cSlider, sSlider, kSlider].forEach(sl => {
-    if (!sl) return;
-    sl.addEventListener("input", () => {
-      autoActive = false;
-      render();
-      saveCurrentGrading();
-    });
+  // Event-Listener hinzufügen
+  document.getElementById('gradeUpload').addEventListener('change', loadImages);
+  document.getElementById('prevImgBtn').addEventListener('click', prevImage);
+  document.getElementById('nextImgBtn').addEventListener('click', nextImage);
+  document.getElementById('downloadGradeBtn').addEventListener('click', downloadCurrentImage);
+  document.getElementById('downloadAllBtn').addEventListener('click', downloadAllImages);
+  document.getElementById('titleImageCheckbox').addEventListener('change', setAsTitleImage);
+
+  // Event-Listener für Slider hinzufügen, um das Grading zu speichern
+  [bSlider, cSlider, sSlider, kSlider].forEach(slider => {
+    if (slider) {
+      slider.addEventListener('input', () => {
+        saveCurrentGrading();
+        render();
+      });
+    }
   });
+
 
   // Per-slider reset: zurück auf Auto-Wert, sonst 0
   if (bReset) bReset.addEventListener("click", () => { bSlider.value = String(autoActive ? autoApplied.b : 0); render(); });
