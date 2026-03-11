@@ -406,10 +406,10 @@ if (!gradeCanvas) {
       gctx.fillRect(0, 0, cw, ch);
       gctx.fillStyle = "rgba(255,255,255,0.55)";
       gctx.font = "800 72px system-ui";
-      gctx.fillText("Fotos laden …", 70, 160);
+      gctx.fillText("Bilder laden …", 70, 160);
       gctx.fillStyle = "rgba(255,255,255,0.35)";
-      gctx.font = "500 34px system-ui";
-      gctx.fillText("Dann verschieben / zoomen", 70, 220);
+      // gctx.font = "500 34px system-ui";
+      // gctx.fillText("Dann verschieben / zoomen", 70, 220);
       return;
     }
 

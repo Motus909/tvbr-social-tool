@@ -293,8 +293,8 @@ function draw() {
     ctx.font = "800 72px system-ui";
     ctx.fillText("Bild laden …", 70, 160);
     ctx.fillStyle = "rgba(255,255,255,0.35)";
-    ctx.font = "500 34px system-ui";
-    ctx.fillText("Dann ziehen & pinch-zoomen", 70, 220);
+    // ctx.font = "500 34px system-ui";
+    // ctx.fillText("Dann ziehen & pinch-zoomen", 70, 220);
     return;
   }
 
