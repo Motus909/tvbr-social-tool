@@ -269,6 +269,7 @@ if (!gradeCanvas) {
           saveCurrentGrading();
           currentIndex = parseInt(this.dataset.index);
           loadCurrentImage();
+          updateThumbnailSelection();
         };
         thumbnailContainer.appendChild(img);
       };
@@ -502,8 +503,8 @@ if (!gradeCanvas) {
 
   // Event-Listener hinzufügen
   document.getElementById('gradeUpload').addEventListener('change', loadImages);
-  document.getElementById('prevImgBtn').addEventListener('click', prevImage);
-  document.getElementById('nextImgBtn').addEventListener('click', nextImage);
+  document.getElementById('prevImgBtn').addEventListener('click',() => { prevImage; updateThumbnailSelection();});
+  document.getElementById('nextImgBtn').addEventListener('click',() => { nextImage; updateThumbnailSelection();});
   document.getElementById('downloadGradeBtn').addEventListener('click', downloadCurrentImage);
   document.getElementById('downloadAllBtn').addEventListener('click', downloadAllImages);
   document.getElementById('titleImageCheckbox').addEventListener('change', setAsTitleImage);
