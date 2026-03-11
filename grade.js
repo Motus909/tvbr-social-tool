@@ -159,6 +159,10 @@ if (!gradeCanvas) {
       saveCurrentGrading();
       currentIndex--;
       loadCurrentImage();
+    } else {
+      saveCurrentGrading();
+      currentIndex = files.length - 1;
+      loadCurrentImage();
     }
   }
 
@@ -167,6 +171,10 @@ if (!gradeCanvas) {
     if (currentIndex < files.length - 1) {
       saveCurrentGrading();
       currentIndex++;
+      loadCurrentImage();
+    } else {
+      saveCurrentGrading();
+      currentIndex = 0;
       loadCurrentImage();
     }
   }
