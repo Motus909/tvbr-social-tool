@@ -133,6 +133,7 @@ body {
   background: #000;
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
+  flex-grow: 1;
 }
 
 /* Canvas renders inside wrap */
@@ -396,6 +397,21 @@ select.control {
 
 .thumbnail-container img.active {
   border: 2px solid #007bff;
+}
+
+/* Desktop: try to fit everything without scroll */
+@media (min-width: 1100px) {
+  .canvas-wrap {
+    height: calc(100vh - 170px);
+    max-height: 900px;
+    aspect-ratio: auto;
+  }
+  .preview {
+    flex-direction: row;
+  }
+  .thumbnail-container {
+    flex-direction: column;
+  }
 }
 
 @media (max-width: 1100px) {

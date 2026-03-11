@@ -159,10 +159,12 @@ if (!gradeCanvas) {
       saveCurrentGrading();
       currentIndex--;
       loadCurrentImage();
+      updateThumbnailSelection();
     } else {
       saveCurrentGrading();
       currentIndex = files.length - 1;
       loadCurrentImage();
+      updateThumbnailSelection();
     }
   }
 
@@ -172,10 +174,12 @@ if (!gradeCanvas) {
       saveCurrentGrading();
       currentIndex++;
       loadCurrentImage();
+      updateThumbnailSelection();
     } else {
       saveCurrentGrading();
       currentIndex = 0;
       loadCurrentImage();
+      updateThumbnailSelection();
     }
   }
 
