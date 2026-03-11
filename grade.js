@@ -142,7 +142,7 @@ if (!gradeCanvas) {
   function loadImages(e) {
     files = Array.from(e.target.files);
     currentIndex = 0;
-    gradedData = new Array(files.length).fill(null);
+    gradedData = files.map(() => null);
     if (files.length > 0) {
       loadCurrentImage();
       renderThumbnails();
@@ -305,10 +305,10 @@ if (!gradeCanvas) {
   }
 
   function setSliders(b, c, s, k) {
-    if (bSlider) bSlider.value = String(b);
-    if (cSlider) cSlider.value = String(c);
-    if (sSlider) sSlider.value = String(s);
-    if (kSlider) kSlider.value = String(k);
+    if (bSlider) bSlider.value = b;
+    if (cSlider) cSlider.value = c;
+    if (sSlider) sSlider.value = s;
+    if (kSlider) kSlider.value = k;
   }
 
   function getSliders() {
@@ -496,8 +496,8 @@ if (!gradeCanvas) {
     offY = 0;
 
     // reset grading
-    autoActive = false;
-    autoApplied = { b: 0, c: 0, s: 0, k: 0 };
+    // autoActive = false;
+    // autoApplied = { b: 0, c: 0, s: 0, k: 0 };
     // setSliders(0, 0, 0, 0);
 
     render();
@@ -563,13 +563,13 @@ if (!gradeCanvas) {
   }
 
   // Slider input -> manual override
-  [bSlider, cSlider, sSlider, kSlider].forEach(sl => {
-    if (!sl) return;
-    sl.addEventListener("input", () => {
-      autoActive = false;
-      render();
-      saveCurrentGrading();
-    });
+  [bSlider, cSlider, sSlider, kSlider].forEach(slider => {
+    if (slider) {
+      slider.addEventListener('input', () => {
+        saveCurrentGrading();
+        render();
+      });
+    }
   });
 
   // Per-slider reset: zurück auf Auto-Wert, sonst 0
