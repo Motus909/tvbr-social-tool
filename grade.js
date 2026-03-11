@@ -10,6 +10,13 @@ if (!gradeCanvas) {
   // Safe-get helper (damit nichts crasht)
   const $ = (id) => document.getElementById(id);
 
+  // Gleiche Grösse wie Haupt-Canvas erzwingen
+  const mainCanvas = document.getElementById("canvas");
+  if (mainCanvas) {
+   gradeCanvas.width = mainCanvas.width;
+    gradeCanvas.height = mainCanvas.height;
+  }
+
   const gradeUpload = $("gradeUpload");
   const autoGradeBtn = $("autoGradeBtn");
   const resetGradeBtn = $("resetGradeBtn");
@@ -503,8 +510,8 @@ if (!gradeCanvas) {
 
   // Event-Listener hinzufügen
   document.getElementById('gradeUpload').addEventListener('change', loadImages);
-  document.getElementById('prevImgBtn').addEventListener('click',() => { prevImage; updateThumbnailSelection();});
-  document.getElementById('nextImgBtn').addEventListener('click',() => { nextImage; updateThumbnailSelection();});
+  document.getElementById('prevImgBtn').addEventListener('click', prevImage());
+  document.getElementById('nextImgBtn').addEventListener('click',nextImage());
   document.getElementById('downloadGradeBtn').addEventListener('click', downloadCurrentImage);
   document.getElementById('downloadAllBtn').addEventListener('click', downloadAllImages);
   document.getElementById('titleImageCheckbox').addEventListener('change', setAsTitleImage);
