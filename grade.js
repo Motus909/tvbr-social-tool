@@ -15,8 +15,9 @@ if (!gradeCanvas) {
   const resetGradeBtn = $("resetGradeBtn");
   const downloadGradeBtn = $("downloadGradeBtn");
   const nextImgBtn = $("nextImgBtn");
-  const prevImgBtn = $("prevImgBtn"); // Neues Element für vorheriges Bild
-  const downloadAllBtn = $("downloadAllBtn"); // Neues Element für Download aller Bilder
+  const prevImgBtn = $("prevImgBtn");
+  const downloadAllBtn = $("downloadAllBtn");
+  const titleImageCheckbox = $("titleImageCheckbox");
 
   const bSlider = $("bSlider");
   const cSlider = $("cSlider");
@@ -28,23 +29,21 @@ if (!gradeCanvas) {
   const sReset = $("sReset");
   const kReset = $("kReset");
 
-  const titleImageCheckbox = $("titleImageCheckbox"); // Neues Element für Titelbild-Checkbox
-
   const gradeWrap = gradeCanvas.closest(".canvas-wrap");
 
   // Globale Variablen
   let files = [];
   let currentIndex = 0;
-  let gradedData = []; // Speichert die Grading-Daten für jedes Bild
-  let titleImageIndex = -1; // Index des Titelbildes
+  let gradedData = [];
+  let titleImageIndex = -1;
 
   // Image
   const srcImg = new Image();
 
   // Foreground positioning (contain + user)
-  let baseScale = 1;   // contain scale
-  let scaleMult = 1;   // user zoom multiplier
-  let offX = 0;        // user shift (canvas px)
+  let baseScale = 1;
+  let scaleMult = 1;
+  let offX = 0;
   let offY = 0;
 
   // Interaction
@@ -62,87 +61,69 @@ if (!gradeCanvas) {
   let autoActive = false;
   let autoApplied = { b: 0, c: 0, s: 0, k: 0 };
 
-  // Presets für die verschiedenen Kategorien
-  const presets = {
-    drinnen: {
-      brightness: 1.10,  // Helligkeit +10%
-      contrast: 1.15,    // Kontrast +15%
-      saturation: 1.05,  // Sättigung +5%
-      vibrance: 1.10,    // Vibranz +10%
-      vignette: 0.10,    // Vignettierung +10
-      temperature: 4500, // Temperatur 4500K
-      sharpen: 1.20      // Schärfe +20%
-    },
-    draussen: {
-      brightness: 1.05,
-      contrast: 1.20,
-      saturation: 1.15,
-      vibrance: 1.10,
-      vignette: 0.00,
-      temperature: 5500,
-      sharpen: 1.25
-    },
-    sport: {
-      brightness: 1.15,
-      contrast: 1.25,
-      saturation: 1.20,
-      vibrance: 1.15,
-      vignette: 0.05,
-      temperature: 6000,
-      sharpen: 1.30
-    },
-    portraits: {
-      brightness: 1.05,
-      contrast: 1.10,
-      saturation: 1.05,
-      vibrance: 1.05,
-      vignette: 0.05,
-      temperature: 5000,
-      sharpen: 1.15
-    }
-  };
+  // ---------------- Helpers ----------------
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
-  // Funktion, um ein Preset auf das aktuelle Bild anzuwenden
-  function applyPreset(category) {
-    const preset = presets[category];
-    if (!preset) return;
-
-    // Setze die Slider-Werte im UI
-    bSlider.value = Math.round((preset.brightness - 1) * 50);
-    cSlider.value = Math.round((preset.contrast - 1) * 100);
-    sSlider.value = Math.round((preset.saturation - 1) * 100);
-
-    // Wende die Änderungen auf das Bild an
-    applyAdjustments(
-      Math.round((preset.brightness - 1) * 50),
-      Math.round((preset.contrast - 1) * 100),
-      Math.round((preset.saturation - 1) * 100),
-      0 // Schärfe wird hier nicht berücksichtigt
-    );
+  function startInteracting() {
+    isInteracting = true;
+    if (hideGridTimer) clearTimeout(hideGridTimer);
   }
 
-  // Funktion zur Kategorisierung (z. B. über Dropdown)
-  function detectCategory() {
-    return document.getElementById('category-select')?.value || 'sport';
+  function stopInteractingSoon() {
+    if (hideGridTimer) clearTimeout(hideGridTimer);
+    hideGridTimer = setTimeout(() => {
+      isInteracting = false;
+      render();
+    }, 650);
+  }
+
+  function touchDist(t1, t2) {
+    const dx = t1.clientX - t2.clientX;
+    const dy = t1.clientY - t2.clientY;
+    return Math.hypot(dx, dy);
+  }
+
+  function setSliders(b, c, s, k) {
+    if (bSlider) bSlider.value = b;
+    if (cSlider) cSlider.value = c;
+    if (sSlider) sSlider.value = s;
+    if (kSlider) kSlider.value = k;
+  }
+
+  function getSliders() {
+    return {
+      b: bSlider ? parseInt(bSlider.value, 10) : 0,
+      c: cSlider ? parseInt(cSlider.value, 10) : 0,
+      s: sSlider ? parseInt(sSlider.value, 10) : 0,
+      k: kSlider ? parseInt(kSlider.value, 10) : 0,
+    };
+  }
+
+  function drawThirds(ctx) {
+    const w = gradeCanvas.width, h = gradeCanvas.height;
+    ctx.save();
+    ctx.strokeStyle = "rgba(255,255,255,0.55)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(w / 3, 0); ctx.lineTo(w / 3, h);
+    ctx.moveTo(2 * w / 3, 0); ctx.lineTo(2 * w / 3, h);
+    ctx.moveTo(0, h / 3); ctx.lineTo(w, h / 3);
+    ctx.moveTo(0, 2 * h / 3); ctx.lineTo(w, 2 * h / 3);
+    ctx.stroke();
+    ctx.restore();
   }
 
   // Funktion zum Speichern des Grading
   function saveCurrentGrading() {
     const { b, c, s, k } = getSliders();
-    if (!gradedData[currentIndex]) {
-     gradedData[currentIndex] = {};
-   }
-    gradedData[currentIndex].b = b;
-    gradedData[currentIndex].c = c;
-    gradedData[currentIndex].s = s;
-    gradedData[currentIndex].k = k;
+    gradedData[currentIndex] = { b, c, s, k };
   }
 
   // Funktion zum Laden der Bilder
   function loadImages(e) {
     files = Array.from(e.target.files);
     currentIndex = 0;
-    gradedData = files.map(() => null);
+    gradedData = new Array(files.length).fill(null);
     if (files.length > 0) {
       loadCurrentImage();
       renderThumbnails();
@@ -164,7 +145,6 @@ if (!gradeCanvas) {
         );
       } else {
         setSliders(0, 0, 0, 0);
-        // gradedData[currentIndex] = {b:0, c:0, s:0, k:0};
       }
       render();
       updateThumbnailSelection();
@@ -226,6 +206,7 @@ if (!gradeCanvas) {
         gradedData[currentIndex] = {};
       }
       gradedData[currentIndex].isTitleImage = true;
+      updateTitleImage();
     } else {
       if (gradedData[currentIndex]) {
         gradedData[currentIndex].isTitleImage = false;
@@ -236,21 +217,24 @@ if (!gradeCanvas) {
     }
   }
 
-  // Event-Listener hinzufügen
-  document.getElementById('gradeUpload').addEventListener('change', loadImages);
-  document.getElementById('prevImgBtn').addEventListener('click', prevImage);
-  document.getElementById('nextImgBtn').addEventListener('click', nextImage);
-  document.getElementById('downloadGradeBtn').addEventListener('click', downloadCurrentImage);
-  document.getElementById('downloadAllBtn').addEventListener('click', downloadAllImages);
-  document.getElementById('titleImageCheckbox').addEventListener('change', setAsTitleImage);
-
-// Event-Listener für Slider hinzufügen, um das Grading zu speichern
-[bSlider, cSlider, sSlider, kSlider].forEach(slider => {
-  if (slider) {
-    slider.addEventListener('input', saveCurrentGrading);
+  // Funktion zum Aktualisieren des Titelbildes im Titelbild-Tab
+  function updateTitleImage() {
+    if (titleImageIndex >= 0) {
+      const titleImage = files[titleImageIndex];
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const titleCanvas = document.getElementById('canvas');
+        const titleCtx = titleCanvas.getContext('2d');
+        const titleImg = new Image();
+        titleImg.onload = function() {
+          titleCtx.clearRect(0, 0, titleCanvas.width, titleCanvas.height);
+          titleCtx.drawImage(titleImg, 0, 0, titleCanvas.width, titleCanvas.height);
+        };
+        titleImg.src = e.target.result;
+      };
+      reader.readAsDataURL(titleImage);
+    }
   }
-});
-
 
   // Funktion zum Rendern der Thumbnails
   function renderThumbnails() {
@@ -261,14 +245,16 @@ if (!gradeCanvas) {
       reader.onload = function(e) {
         const img = document.createElement('img');
         img.src = e.target.result;
-        img.style.width = '50px';
-        img.style.height = '50px';
-        img.style.margin = '5px';
+        img.style.width = '80px';
+        img.style.height = '80px';
+        img.style.margin = '5px 0';
         img.style.cursor = 'pointer';
         img.style.border = index === currentIndex ? '2px solid #007bff' : '2px solid transparent';
-        img.onclick = () => {
+        img.style.borderRadius = '4px';
+        img.dataset.index = index;
+        img.onclick = function() {
           saveCurrentGrading();
-          currentIndex = index;
+          currentIndex = parseInt(this.dataset.index);
           loadCurrentImage();
         };
         thumbnailContainer.appendChild(img);
@@ -283,58 +269,6 @@ if (!gradeCanvas) {
     thumbnails.forEach((thumbnail, index) => {
       thumbnail.style.border = index === currentIndex ? '2px solid #007bff' : '2px solid transparent';
     });
-  }
-
-  // ---------------- Helpers ----------------
-  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
-
-  function startInteracting() {
-    isInteracting = true;
-    if (hideGridTimer) clearTimeout(hideGridTimer);
-  }
-
-  function stopInteractingSoon() {
-    if (hideGridTimer) clearTimeout(hideGridTimer);
-    hideGridTimer = setTimeout(() => {
-      isInteracting = false;
-      render();
-    }, 650);
-  }
-
-  function touchDist(t1, t2) {
-    const dx = t1.clientX - t2.clientX;
-    const dy = t1.clientY - t2.clientY;
-    return Math.hypot(dx, dy);
-  }
-
-  function setSliders(b, c, s, k) {
-    if (bSlider) bSlider.value = b;
-    if (cSlider) cSlider.value = c;
-    if (sSlider) sSlider.value = s;
-    if (kSlider) kSlider.value = k;
-  }
-
-  function getSliders() {
-    return {
-      b: bSlider ? parseInt(bSlider.value, 10) : 0,
-      c: cSlider ? parseInt(cSlider.value, 10) : 0,
-      s: sSlider ? parseInt(sSlider.value, 10) : 0,
-      k: kSlider ? parseInt(kSlider.value, 10) : 0,
-    };
-  }
-
-  function drawThirds(ctx) {
-    const w = gradeCanvas.width, h = gradeCanvas.height;
-    ctx.save();
-    ctx.strokeStyle = "rgba(255,255,255,0.55)";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(w / 3, 0); ctx.lineTo(w / 3, h);
-    ctx.moveTo(2 * w / 3, 0); ctx.lineTo(2 * w / 3, h);
-    ctx.moveTo(0, h / 3); ctx.lineTo(w, h / 3);
-    ctx.moveTo(0, 2 * h / 3); ctx.lineTo(w, 2 * h / 3);
-    ctx.stroke();
-    ctx.restore();
   }
 
   // --------------- Base draw ---------------
@@ -484,25 +418,11 @@ if (!gradeCanvas) {
   }
 
   // --------------- Loading ---------------
-  function loadCurrent() {
-    if (!files.length) return;
-    const f = files[idx];
-    const reader = new FileReader();
-    reader.onload = (ev) => { srcImg.src = ev.target.result; };
-    reader.readAsDataURL(f);
-  }
-
   srcImg.onload = () => {
     // reset framing
     scaleMult = 1;
     offX = 0;
     offY = 0;
-
-    // reset grading
-    // autoActive = false;
-    // autoApplied = { b: 0, c: 0, s: 0, k: 0 };
-    // setSliders(0, 0, 0, 0);
-
     render();
   };
 
@@ -566,13 +486,13 @@ if (!gradeCanvas) {
   }
 
   // Slider input -> manual override
-  [bSlider, cSlider, sSlider, kSlider].forEach(slider => {
-    if (slider) {
-      slider.addEventListener('input', () => {
-        saveCurrentGrading();
-        render();
-      });
-    }
+  [bSlider, cSlider, sSlider, kSlider].forEach(sl => {
+    if (!sl) return;
+    sl.addEventListener("input", () => {
+      autoActive = false;
+      render();
+      saveCurrentGrading();
+    });
   });
 
   // Per-slider reset: zurück auf Auto-Wert, sonst 0
