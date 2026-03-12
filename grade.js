@@ -85,7 +85,7 @@ if (!gradeCanvas) {
     if (files.length === 0) return;
     const { b, c, s, k } = getSliders();
     if (!gradedData[currentIndex]) gradedData[currentIndex] = {};
-    Object.assign(gradedData[currentIndex], { b, c, s, k });
+    Object.assign(gradedData[currentIndex], { b, c, s, k, scaleMult, offX, offY });
   }
 
   function startInteracting() {
@@ -147,10 +147,20 @@ if (!gradeCanvas) {
   const srcImg = new Image();
 
   srcImg.onload = () => {
-    scaleMult = 1;
-    offX = 0;
-    offY = 0;
+    // Restore saved framing, or reset to defaults for new images
+    const saved = gradedData[currentIndex];
+    if (saved && saved.scaleMult !== undefined) {
+      scaleMult = saved.scaleMult;
+      offX      = saved.offX;
+      offY      = saved.offY;
+    } else {
+      scaleMult = 1;
+      offX = 0;
+      offY = 0;
+    }
     render();
+    // If this is the title image, sync Tab 1 canvas live
+    if (gradedData[currentIndex]?.isTitleImage) syncTitleCanvas();
   };
 
   function loadCurrentImage() {
@@ -208,27 +218,23 @@ if (!gradeCanvas) {
     gradedData[currentIndex].isTitleImage = checked;
     if (checked) {
       titleImageIndex = currentIndex;
-      updateTitleImage();
+      syncTitleCanvas();
     } else if (titleImageIndex === currentIndex) {
       titleImageIndex = -1;
     }
   }
 
-  function updateTitleImage() {
-    if (titleImageIndex < 0 || !files[titleImageIndex]) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const titleCanvas = $('canvas');
-      if (!titleCanvas) return;
-      const titleCtx = titleCanvas.getContext('2d');
-      const titleImg = new Image();
-      titleImg.onload = () => {
-        titleCtx.clearRect(0, 0, titleCanvas.width, titleCanvas.height);
-        titleCtx.drawImage(titleImg, 0, 0, titleCanvas.width, titleCanvas.height);
-      };
-      titleImg.src = e.target.result;
-    };
-    reader.readAsDataURL(files[titleImageIndex]);
+  // Copies the fully rendered gradeCanvas (framing + grading applied) onto Tab-1 canvas
+  function syncTitleCanvas() {
+    if (titleImageIndex < 0) return;
+    // Only sync if currently viewing the title image
+    if (currentIndex !== titleImageIndex) return;
+    const titleCanvas = $('canvas');
+    if (!titleCanvas) return;
+    const titleCtx = titleCanvas.getContext('2d');
+    titleCtx.clearRect(0, 0, titleCanvas.width, titleCanvas.height);
+    // gradeCanvas is 1080×1350, titleCanvas is also 1080×1350 — direct copy
+    titleCtx.drawImage(gradeCanvas, 0, 0);
   }
 
   // ---- Download ----
@@ -335,7 +341,6 @@ if (!gradeCanvas) {
       gctx.fillStyle = "#000";
       gctx.fillRect(0, 0, cw, ch);
       gctx.fillStyle = "rgba(255,255,255,0.55)";
-      // Scale font to canvas pixel dimensions (canvas is 1080px wide internally)
       gctx.font = "800 72px system-ui";
       gctx.textBaseline = "middle";
       gctx.textAlign = "center";
@@ -345,6 +350,8 @@ if (!gradeCanvas) {
     drawBase();
     const { b, c, s, k } = getSliders();
     applyAdjustments(b, c, s, k);
+    // Live sync to Tab 1 if this is the title image
+    if (currentIndex === titleImageIndex) syncTitleCanvas();
   }
 
   // ---- Auto-grade ----
