@@ -17,14 +17,14 @@ body {
 
 /* ---- Theme Vars ---- */
 :root {
-  --navy:    #1A355B;
-  --accent:  #e67e22;
-  --border:  rgba(255, 255, 255, 0.10);
-  --panel:   rgba(255, 255, 255, 0.035);
-  --panel2:  rgba(255, 255, 255, 0.055);
-  --textDim: rgba(232, 238, 252, 0.72);
-  --shadow:  0 12px 30px rgba(0, 0, 0, 0.30);
-  --radius:  16px;
+  --navy:     #1A355B;
+  --accent:   #e67e22;
+  --border:   rgba(255, 255, 255, 0.10);
+  --panel:    rgba(255, 255, 255, 0.035);
+  --textDim:  rgba(232, 238, 252, 0.72);
+  --shadow:   0 12px 30px rgba(0, 0, 0, 0.30);
+  --radius:   16px;
+  --topbar-h: 72px;
 }
 
 
@@ -32,13 +32,17 @@ body {
    TOPBAR
    ============================================================ */
 .topbar {
-  padding: 14px 16px;
+  height: var(--topbar-h);
+  padding: 0 16px;
   border-bottom: 1px solid var(--border);
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent);
+  display: flex;
+  align-items: center;
 }
 
 .topbar-inner {
-  max-width: 1280px;
+  width: 100%;
+  max-width: 1440px;
   margin: 0 auto;
   display: flex;
   align-items: center;
@@ -46,31 +50,11 @@ body {
   gap: 16px;
 }
 
-.brand {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
+.brand       { display: flex; flex-direction: column; gap: 2px; }
+.brand-title { font-weight: 900; font-size: 18px; letter-spacing: 0.2px; }
+.brand-sub   { font-size: 13px; color: var(--textDim); }
 
-.brand-title {
-  font-weight: 900;
-  font-size: 18px;
-  letter-spacing: 0.2px;
-}
-
-.brand-sub {
-  font-size: 13px;
-  color: var(--textDim);
-}
-
-
-/* ============================================================
-   TABS
-   ============================================================ */
-.tabs {
-  display: flex;
-  gap: 10px;
-}
+.tabs   { display: flex; gap: 10px; }
 
 .tabbtn {
   appearance: none;
@@ -81,66 +65,48 @@ body {
   color: rgba(232, 238, 252, 0.92);
   font-weight: 800;
   cursor: pointer;
-  transition: transform 0.12s ease, background 0.12s ease, border-color 0.12s ease;
+  transition: transform 0.12s, background 0.12s, border-color 0.12s;
 }
+.tabbtn:hover  { transform: translateY(-1px); background: rgba(255, 255, 255, 0.05); }
+.tabbtn.active { background: rgba(26, 53, 91, 0.55); border-color: rgba(120, 150, 210, 0.35); }
 
-.tabbtn:hover {
-  transform: translateY(-1px);
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.tabbtn.active {
-  background: rgba(26, 53, 91, 0.55);
-  border-color: rgba(120, 150, 210, 0.35);
-}
-
-/* Tab content visibility */
 .tabcontent        { display: none; }
 .tabcontent.active { display: block; }
 
 
 /* ============================================================
-   MAIN LAYOUT  (2-column on desktop, 1-column on mobile)
+   MAIN LAYOUT
+   Mobile:  1 column for both tabs
+   Desktop Titelbild:  [canvas 640px] [controls 1fr]
+   Desktop Grading:    [thumbs 90px] [canvas 640px] [controls 1fr]
    ============================================================ */
 .main {
-  width: min(1280px, 100%);
+  max-width: 1440px;
   margin: 0 auto;
   padding: 18px 16px 28px;
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: 1fr;   /* mobile default */
   gap: 18px;
   align-items: start;
 }
 
 @media (min-width: 1100px) {
-  .main {
+  .main--generator {
     grid-template-columns: 640px 1fr;
     gap: 28px;
+  }
+  .main--grading {
+    grid-template-columns: 90px 640px 1fr;
+    gap: 16px;
   }
 }
 
 
 /* ============================================================
-   PREVIEW  (thumbnail strip + canvas, side by side)
+   CANVAS WRAP  — shared, identical in both tabs
    ============================================================ */
-.preview {
-  display: flex;
-  flex-direction: row;   /* thumbnails left, canvas right */
-  align-items: flex-start;
-  gap: 10px;
-  width: 100%;
-}
-
-/* ---- Canvas wrapper ---- */
-/*
- * flex: 1 1 auto  → takes all remaining space after thumbnails
- * min-width: 0    → prevents flex overflow
- * aspect-ratio    → correct 4:5 portrait by default (mobile / no fixed height)
- */
 .canvas-wrap {
-  flex: 1 1 auto;
-  min-width: 0;
-  aspect-ratio: 4 / 5;
+  aspect-ratio: 4 / 5;     /* portrait on mobile */
   border-radius: var(--radius);
   overflow: hidden;
   background: #000;
@@ -148,44 +114,43 @@ body {
   box-shadow: var(--shadow);
 }
 
-/* On large screens override aspect-ratio with a viewport-relative height */
+/* Desktop: switch to height-driven (aspect-ratio: auto) */
 @media (min-width: 1100px) {
   .canvas-wrap {
-    height: calc(100vh - 170px);
-    max-height: 900px;
-    aspect-ratio: auto;   /* let height drive, width follows flex */
+    height: calc(100vh - var(--topbar-h) - 36px);
+    max-height: 860px;
+    aspect-ratio: auto;
   }
 }
 
 canvas {
+  display: block;
   width: 100%;
   height: 100%;
-  display: block;
   touch-action: none;
   user-select: none;
 }
 
-/* ---- Thumbnail strip ---- */
-.thumbnail-container {
-  /* fixed width; flex won't shrink it */
-  flex: 0 0 90px;
-  width: 90px;
 
+/* ============================================================
+   THUMBNAIL STRIP  (Grading, column 1)
+   ============================================================ */
+.thumbnail-container {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 6px;
   overflow-y: auto;
-  /* match canvas height on desktop so it scrolls in sync */
-  max-height: calc(100vh - 170px);
 }
 
-/* When empty (Titelbild tab): occupy zero space so canvas fills full width */
-.thumbnail-container:empty {
-  flex: 0 0 0;
-  width: 0;
-  gap: 0;
-  overflow: hidden;
+@media (min-width: 1100px) {
+  .thumbnail-container {
+    height: calc(100vh - var(--topbar-h) - 36px);
+    max-height: 860px;   /* same cap as canvas */
+  }
 }
+
+/* Empty: hide completely so canvas isn't offset */
+.thumbnail-container:empty { display: none; }
 
 .thumbnail-container img {
   width: 80px;
@@ -193,24 +158,21 @@ canvas {
   object-fit: cover;
   cursor: pointer;
   border: 2px solid transparent;
-  border-radius: 4px;
+  border-radius: 6px;
   flex-shrink: 0;
-  transition: border-color 0.12s ease;
+  transition: border-color 0.12s;
 }
-
-/* Active thumbnail — works both via class and inline style set by JS */
+.thumbnail-container img:hover               { border-color: rgba(120, 150, 210, 0.5); }
 .thumbnail-container img.active,
-.thumbnail-container img[style*="solid #007bff"] {
-  border-color: #007bff;
-}
+.thumbnail-container img[style*="solid #007bff"] { border-color: #007bff; }
 
-/* ---- Mobile: stack vertically, thumbnails become horizontal row ---- */
+
+/* ============================================================
+   MOBILE  (< 1100px)
+   ============================================================ */
 @media (max-width: 1099px) {
-  .preview {
-    flex-direction: column;
-  }
 
-  /* canvas must fill full width and respect aspect-ratio again */
+  /* Canvas: aspect-ratio only, no fixed height */
   .canvas-wrap {
     width: 100%;
     height: auto !important;
@@ -218,19 +180,21 @@ canvas {
     aspect-ratio: 4 / 5;
   }
 
+  /* Thumbnails: horizontal row below canvas */
   .thumbnail-container {
-    flex: none;
-    width: 100%;
-    height: 90px;
-    max-height: none;
     flex-direction: row;
+    width: 100%;
     overflow-x: auto;
     overflow-y: hidden;
+    max-height: 92px;
+    display: flex;   /* restore if empty:none was inherited */
   }
+  .thumbnail-container:empty { display: none; max-height: 0; }
 
-  .thumbnail-container:empty {
-    height: 0;
-  }
+  /* Grading tab: canvas → thumbs → controls */
+  .main--grading .canvas-wrap         { order: 1; }
+  .main--grading .thumbnail-container { order: 2; }
+  .main--grading .controls            { order: 3; }
 }
 
 
@@ -239,8 +203,6 @@ canvas {
    ============================================================ */
 .controls {
   width: 100%;
-  max-width: 520px;
-  margin: 0 auto;
   padding: 12px;
   display: flex;
   flex-direction: column;
@@ -249,13 +211,7 @@ canvas {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-}
-
-@media (min-width: 1100px) {
-  .controls {
-    margin: 0;
-    align-self: start;
-  }
+  align-self: start;
 }
 
 
@@ -266,7 +222,7 @@ canvas {
   font-size: 13px;
   font-weight: 800;
   color: rgba(232, 238, 252, 0.75);
-  margin-top: 6px;
+  margin-top: 4px;
 }
 
 .control {
@@ -278,7 +234,6 @@ canvas {
   color: rgba(232, 238, 252, 0.92);
   outline: none;
 }
-
 .control:focus {
   border-color: rgba(120, 150, 210, 0.45);
   box-shadow: 0 0 0 3px rgba(26, 53, 91, 0.35);
@@ -287,15 +242,19 @@ canvas {
 input[type="file"].control { padding: 10px; }
 select.control             { padding: 11px 12px; }
 
+.form-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--textDim);
+}
+
 
 /* ============================================================
    BUTTONS
    ============================================================ */
-.row {
-  display: flex;
-  gap: 12px;
-}
-
+.row      { display: flex; gap: 12px; }
 .row .btn { flex: 1; }
 
 .btn {
@@ -307,20 +266,20 @@ select.control             { padding: 11px 12px; }
   color: rgba(232, 238, 252, 0.92);
   font-weight: 900;
   cursor: pointer;
-  transition: transform 0.12s ease, background 0.12s ease, border-color 0.12s ease;
+  text-align: center;
+  transition: transform 0.12s, background 0.12s, border-color 0.12s;
 }
-
 .btn:hover  { transform: translateY(-1px); background: rgba(255, 255, 255, 0.06); }
 .btn:active { transform: translateY(0); }
 
-.btn.primary          { background: rgba(26, 53, 91, 0.65); border-color: rgba(120, 150, 210, 0.35); }
-.btn.primary:hover    { background: rgba(26, 53, 91, 0.78); }
-.btn.secondary        { background: rgba(255, 255, 255, 0.02); }
+.btn.primary       { background: rgba(26, 53, 91, 0.65); border-color: rgba(120, 150, 210, 0.35); }
+.btn.primary:hover { background: rgba(26, 53, 91, 0.78); }
+.btn.secondary     { background: rgba(255, 255, 255, 0.02); }
 
-/* Icon-only reset button next to sliders */
 .iconbtn {
   width: 44px;
   height: 44px;
+  flex-shrink: 0;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.04);
@@ -331,10 +290,8 @@ select.control             { padding: 11px 12px; }
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.12s ease, background 0.12s ease;
-  flex-shrink: 0;
+  transition: transform 0.12s, background 0.12s;
 }
-
 .iconbtn:hover { transform: translateY(-1px); background: rgba(255, 255, 255, 0.06); }
 
 
@@ -345,22 +302,19 @@ select.control             { padding: 11px 12px; }
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding-top: 6px;
+  padding-top: 4px;
 }
-
 .sliderLabel {
   font-size: 14px;
   font-weight: 900;
   color: rgba(232, 238, 252, 0.82);
 }
-
 .sliderLine {
   display: grid;
   grid-template-columns: 1fr 44px;
   gap: 12px;
   align-items: center;
 }
-
 .sliderLine input[type="range"].control {
   padding: 0;
   height: 40px;
@@ -371,7 +325,7 @@ select.control             { padding: 11px 12px; }
 
 
 /* ============================================================
-   NOTE / WORKFLOW BOX
+   MISC: note box, pills
    ============================================================ */
 .note {
   padding: 12px;
@@ -379,23 +333,9 @@ select.control             { padding: 11px 12px; }
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.02);
 }
+.note-title { font-size: 13px; font-weight: 900; margin-bottom: 6px; }
+.note-text  { font-size: 13px; line-height: 1.35; color: var(--textDim); }
 
-.note-title {
-  font-size: 13px;
-  font-weight: 900;
-  margin-bottom: 6px;
-}
-
-.note-text {
-  font-size: 13px;
-  line-height: 1.35;
-  color: rgba(232, 238, 252, 0.72);
-}
-
-
-/* ============================================================
-   PREVIEW FOOTER PILLS
-   ============================================================ */
 .preview-footer {
   display: flex;
   flex-wrap: wrap;
@@ -403,7 +343,6 @@ select.control             { padding: 11px 12px; }
   margin-top: 10px;
   justify-content: center;
 }
-
 .pill {
   font-size: 12px;
   padding: 7px 10px;
@@ -418,21 +357,9 @@ select.control             { padding: 11px 12px; }
    SMALL SCREENS  (≤ 520px)
    ============================================================ */
 @media (max-width: 520px) {
-  .topbar-inner { gap: 10px; }
-  .brand        { min-width: 0; }
-  .brand-title  { font-size: 16px; }
-
-  .tabbtn {
-    padding: 9px 12px;
-    border-radius: 12px;
-  }
-
-  .row {
-    flex-direction: column;
-  }
-
-  .row .btn {
-    flex: unset;
-    width: 100%;
-  }
+  .topbar      { height: auto; padding: 12px 16px; }
+  .brand-title { font-size: 16px; }
+  .tabbtn      { padding: 9px 12px; }
+  .row         { flex-direction: column; }
+  .row .btn    { flex: unset; width: 100%; }
 }
