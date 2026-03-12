@@ -24,11 +24,17 @@ body {
   --radius:   16px;
   --topbar-h: 72px;
 
-  /* Canvas: max 680px tall, or viewport minus topbar+padding if smaller */
-  --cv-max-h: 680px;
-  --cv-h: min(calc(100vh - var(--topbar-h) - 36px), var(--cv-max-h));
-  /* Width is always exactly 4:5 of height */
+  /*
+    Canvas height: at most 700px, or viewport minus header+padding.
+    Canvas width:  exactly height * 4/5  →  guaranteed undistorted 4:5.
+    These values are used directly in grid-template-columns so both tabs
+    always get the IDENTICAL canvas column width.
+  */
+  --cv-h: min(calc(100vh - var(--topbar-h) - 36px), 700px);
   --cv-w: calc(var(--cv-h) * 4 / 5);
+
+  /* Controls panel max width */
+  --ctrl-w: 340px;
 }
 
 
@@ -77,8 +83,13 @@ body {
 
 /* ============================================================
    PAGE LAYOUT
-   --cv-w  is the exact canvas column width (height * 4/5)
-   Both tabs use this same value → identical canvas size
+
+   Titelbild desktop:  [--cv-w]  [--ctrl-w]
+   Grading desktop:    [90px]  [--cv-w]  [--ctrl-w]
+   Mobile:             single column, stacked
+
+   --cv-w is derived from --cv-h via aspect-ratio math,
+   so the canvas column is ALWAYS exactly 4:5 — no distortion.
    ============================================================ */
 .main {
   max-width: 1600px;
@@ -91,14 +102,12 @@ body {
 }
 
 @media (min-width: 1100px) {
-  /* Titelbild: [canvas] [controls] */
   .main--generator {
-    grid-template-columns: var(--cv-w) 1fr;
+    grid-template-columns: var(--cv-w) var(--ctrl-w);
     gap: 24px;
   }
-  /* Grading: [thumbnails 90px] [canvas] [controls] */
   .main--grading {
-    grid-template-columns: 90px var(--cv-w) 1fr;
+    grid-template-columns: 90px var(--cv-w) var(--ctrl-w);
     gap: 16px;
   }
 }
@@ -106,13 +115,14 @@ body {
 
 /* ============================================================
    CANVAS WRAP
-   Width comes from grid column (= --cv-w).
-   Height is explicitly --cv-h.
-   Both are in sync → perfect 4:5, no distortion.
+   Width = grid column = --cv-w (already 4:5 of --cv-h).
+   Height = --cv-h.  → perfect ratio, never distorted.
+   Mobile uses aspect-ratio fallback (no fixed height).
    ============================================================ */
 .canvas-wrap {
+  /* mobile: full column width, height via aspect-ratio */
   width: 100%;
-  aspect-ratio: 4 / 5;   /* mobile: width-driven */
+  aspect-ratio: 4 / 5;
   border-radius: var(--radius);
   overflow: hidden;
   background: #000;
@@ -122,9 +132,9 @@ body {
 
 @media (min-width: 1100px) {
   .canvas-wrap {
-    /* Desktop: grid column sets width = --cv-w, height = --cv-h */
-    aspect-ratio: unset;
+    width: 100%;         /* = grid column = --cv-w */
     height: var(--cv-h);
+    aspect-ratio: unset;
   }
 }
 
@@ -138,7 +148,7 @@ canvas {
 
 
 /* ============================================================
-   THUMBNAIL STRIP  (Grading column 1)
+   THUMBNAIL STRIP
    ============================================================ */
 .thumbnail-container {
   display: flex;
@@ -153,6 +163,7 @@ canvas {
   }
 }
 
+/* Empty: no space at all */
 .thumbnail-container:empty { display: none; }
 
 .thumbnail-container img {
@@ -166,6 +177,7 @@ canvas {
   transition: border-color 0.12s;
 }
 .thumbnail-container img:hover { border-color: rgba(120,150,210,0.5); }
+/* Active state set via JS inline style — CSS selector covers both approaches */
 .thumbnail-container img.active,
 .thumbnail-container img[style*="solid #007bff"] { border-color: #007bff; }
 
@@ -215,9 +227,7 @@ canvas {
   align-self: start;
 }
 
-@media (min-width: 1100px) {
-  .controls { max-width: 360px; }
-}
+/* On desktop controls column is already var(--ctrl-w) wide via grid */
 
 
 /* ============================================================

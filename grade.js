@@ -10,13 +10,6 @@ if (!gradeCanvas) {
   // Safe-get helper (damit nichts crasht)
   const $ = (id) => document.getElementById(id);
 
-  // Gleiche Grösse wie Haupt-Canvas erzwingen
-  const mainCanvas = document.getElementById("canvas");
-  if (mainCanvas) {
-   gradeCanvas.width = mainCanvas.width;
-    gradeCanvas.height = mainCanvas.height;
-  }
-
   const gradeUpload = $("gradeUpload");
   const autoGradeBtn = $("autoGradeBtn");
   const resetGradeBtn = $("resetGradeBtn");
@@ -303,13 +296,6 @@ if (!gradeCanvas) {
 
     gctx.clearRect(0, 0, cw, ch);
 
-    // Gradient zeichnen
-    const gradient = gctx.createLinearGradient(0, 0, 0, ch);
-    gradient.addColorStop(0.7, 'transparent');
-    gradient.addColorStop(1, 'rgba(0, 0, 139, 0.7)');
-    gctx.fillStyle = gradient;
-    gctx.fillRect(0, 0, cw, ch);
-
     // Hintergrund cover + blur (Instagram style)
     const bgScale = Math.max(cw / iw, ch / ih);
     const bgW = iw * bgScale, bgH = ih * bgScale;
@@ -493,6 +479,12 @@ if (!gradeCanvas) {
       srcImg.src = "";
       baseImageData = null;
 
+      // Thumbnails leeren
+      const thumbContainer = document.getElementById('thumbnailContainer');
+      if (thumbContainer) thumbContainer.innerHTML = '';
+      gradedData = [];
+      titleImageIndex = -1;
+
       autoActive = false;
       autoApplied = { b: 0, c: 0, s: 0, k: 0 };
       setSliders(0, 0, 0, 0);
@@ -510,8 +502,8 @@ if (!gradeCanvas) {
 
   // Event-Listener hinzufügen
   document.getElementById('gradeUpload').addEventListener('change', loadImages);
-  document.getElementById('prevImgBtn').addEventListener('click', prevImage());
-  document.getElementById('nextImgBtn').addEventListener('click',nextImage());
+  document.getElementById('prevImgBtn').addEventListener('click', () => { prevImage(); });
+  document.getElementById('nextImgBtn').addEventListener('click', () => { nextImage(); });
   document.getElementById('downloadGradeBtn').addEventListener('click', downloadCurrentImage);
   document.getElementById('downloadAllBtn').addEventListener('click', downloadAllImages);
   document.getElementById('titleImageCheckbox').addEventListener('change', setAsTitleImage);
