@@ -236,11 +236,21 @@ if (!gradeCanvas) {
     }
   }
 
-  // Copies the fully rendered gradeCanvas (framing + grading) to Tab-1 via bridge
+  // Passes raw image + framing data to Tab-1 so app.js can render it natively
   function syncTitleCanvas() {
     if (titleImageIndex < 0 || currentIndex !== titleImageIndex) return;
     if (typeof window.syncTitleFromGrade === 'function') {
-      window.syncTitleFromGrade(gradeCanvas);
+      const iw = srcImg.naturalWidth, ih = srcImg.naturalHeight;
+      const cw = gradeCanvas.width,   ch = gradeCanvas.height;
+      baseScale = Math.min(cw / iw, ch / ih);
+      const fgScale = baseScale * scaleMult;
+      window.syncTitleFromGrade({
+        img:   srcImg,
+        fgX:   (cw - iw * fgScale) / 2 + offX,
+        fgY:   (ch - ih * fgScale) / 2 + offY,
+        fgW:   iw * fgScale,
+        fgH:   ih * fgScale,
+      });
     }
   }
 

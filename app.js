@@ -221,14 +221,51 @@ function draw() {
   }
 
   if (hasTitleSync) {
-    // Draw graded image with current pan/zoom transform (user can reframe in Tab 1)
-    const sw = window.titleImageData.width  || cw;
-    const sh = window.titleImageData.height || ch;
-    const fgScale = scale === 1 ? 1 : scale;
-    const fw = sw * fgScale, fh = sh * fgScale;
-    const fx = scale === 1 ? 0 : tx;
-    const fy = scale === 1 ? 0 : ty;
-    ctx.drawImage(window.titleImageData, fx, fy, fw, fh);
+    // Render graded image with blur background — same technique as Grading tab
+    const d   = window.titleImageData;
+    const src = d.img;
+    const iw  = src.naturalWidth, ih = src.naturalHeight;
+
+    // Blurred cover background
+    const bgScale = Math.max(cw / iw, ch / ih);
+    const bgW = iw * bgScale, bgH = ih * bgScale;
+    const bgX = (cw - bgW) / 2,  bgY = (ch - bgH) / 2;
+    ctx.save();
+    ctx.filter = "blur(24px)";
+    ctx.drawImage(src, bgX, bgY, bgW, bgH);
+    ctx.filter = "none";
+    ctx.fillStyle = "rgba(0,0,0,0.18)";
+    ctx.fillRect(0, 0, cw, ch);
+    ctx.restore();
+
+    // Framed foreground (exact position from grading)
+    ctx.drawImage(src, d.fgX, d.fgY, d.fgW, d.fgH);
+
+    // Edge gradients (same as normal Tab-1 flow)
+    const topGap    = d.fgY;
+    const bottomGap = ch - (d.fgY + d.fgH);
+    const leftGap   = d.fgX;
+    const rightGap  = cw - (d.fgX + d.fgW);
+    if (topGap > 1) {
+      const gt = ctx.createLinearGradient(0, 0, 0, Math.min(160, topGap));
+      gt.addColorStop(0, "rgba(0,0,0,0.35)"); gt.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = gt; ctx.fillRect(0, 0, cw, Math.min(160, topGap));
+    }
+    if (bottomGap > 1) {
+      const gb = ctx.createLinearGradient(0, ch - Math.min(220, bottomGap), 0, ch);
+      gb.addColorStop(0, "rgba(0,0,0,0)"); gb.addColorStop(1, "rgba(0,0,0,0.45)");
+      ctx.fillStyle = gb; ctx.fillRect(0, ch - Math.min(220, bottomGap), cw, Math.min(220, bottomGap));
+    }
+    if (leftGap > 1) {
+      const gl = ctx.createLinearGradient(0, 0, Math.min(140, leftGap), 0);
+      gl.addColorStop(0, "rgba(0,0,0,0.25)"); gl.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = gl; ctx.fillRect(0, 0, Math.min(140, leftGap), ch);
+    }
+    if (rightGap > 1) {
+      const gr = ctx.createLinearGradient(cw - Math.min(140, rightGap), 0, cw, 0);
+      gr.addColorStop(0, "rgba(0,0,0,0)"); gr.addColorStop(1, "rgba(0,0,0,0.25)");
+      ctx.fillStyle = gr; ctx.fillRect(cw - Math.min(140, rightGap), 0, Math.min(140, rightGap), ch);
+    }
   } else {
     // Normal Tab-1 flow: blurred bg + framed foreground
     const iw = img.width, ih = img.height;
@@ -405,12 +442,10 @@ function clamp(v, lo, hi) {
 }
 
 // ---- Grade-to-Title bridge ----
-// Called by grade.js after every render when titleImageIndex === currentIndex
-window.syncTitleFromGrade = function(gradeCanvasEl) {
-  window.titleImageData = gradeCanvasEl; // null = clear
-  if (gradeCanvasEl) {
-    hasImage = false; // titleImageData takes over as source
-  }
+window.syncTitleFromGrade = function(data) {
+  // data = { img, fgX, fgY, fgW, fgH } or null to clear
+  window.titleImageData = data;
+  if (data) hasImage = false;
   draw();
 };
 
