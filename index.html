@@ -26,7 +26,7 @@
 </header>
 
 <!-- ================================================
-     TAB 1: Titelbild  →  [canvas-wrap] [controls]
+     TAB 1: Titelbild
      ================================================ -->
 <section id="tab-generator" class="tabcontent active">
   <main class="main main--generator">
@@ -63,17 +63,20 @@
 </section>
 
 <!-- ================================================
-     TAB 2: Grading  →  [thumbnails] [canvas-wrap] [controls]
+     TAB 2: Grading
      ================================================ -->
 <section id="tab-grading" class="tabcontent">
   <main class="main main--grading">
 
+    <!-- Spalte 1: Thumbnails -->
     <div class="thumbnail-container" id="thumbnailContainer"></div>
 
+    <!-- Spalte 2: Canvas -->
     <div class="canvas-wrap">
       <canvas id="gradeCanvas" width="1080" height="1350"></canvas>
     </div>
 
+    <!-- Spalte 3: Controls -->
     <section class="controls">
       <label class="label">Fotos (mehrere möglich)</label>
       <input class="control" type="file" id="gradeUpload" accept="image/*" multiple>
@@ -82,6 +85,16 @@
         <button class="btn" id="autoGradeBtn" type="button">Auto-Grade</button>
         <button class="btn secondary" id="resetGradeBtn" type="button">Reset All</button>
       </div>
+
+      <!-- Preset -->
+      <label class="label">Preset</label>
+      <select class="control" id="category-select">
+        <option value="drinnen">Drinnen</option>
+        <option value="draussen">Draußen</option>
+        <option value="sport">Sport</option>
+        <option value="portraits">Portraits</option>
+      </select>
+      <button class="btn" id="auto-grade-button" type="button">Preset anwenden</button>
 
       <div class="form-group">
         <input type="checkbox" id="titleImageCheckbox">
@@ -118,7 +131,7 @@
         <div class="sliderLabel">Sättigung</div>
         <div class="sliderLine">
           <input class="control" type="range" id="sSlider" min="-40" max="40" value="0">
-          <button class="iconbtn" id="kReset" type="button" title="Reset">↻</button>
+          <button class="iconbtn" id="sReset" type="button" title="Reset">↻</button>
         </div>
       </div>
 
@@ -126,7 +139,7 @@
         <div class="sliderLabel">Klarheit (Micro-Kontrast)</div>
         <div class="sliderLine">
           <input class="control" type="range" id="kSlider" min="0" max="30" value="0">
-          <button class="iconbtn" id="sReset" type="button" title="Reset">↻</button>
+          <button class="iconbtn" id="kReset" type="button" title="Reset">↻</button>
         </div>
       </div>
 

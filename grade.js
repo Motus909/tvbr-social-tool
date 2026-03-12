@@ -109,6 +109,14 @@ if (!gradeCanvas) {
     if (!container) return;
     container.innerHTML = '';
 
+    // Pre-create placeholder slots — guarantees index 0 is always at top
+    const slots = files.map((_, index) => {
+      const div = document.createElement('div');
+      div.dataset.slot = index;
+      container.appendChild(div);
+      return div;
+    });
+
     files.forEach((file, index) => {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -120,8 +128,7 @@ if (!gradeCanvas) {
           currentIndex = index;
           loadCurrentImage();
         };
-        container.appendChild(img);
-        // Refresh selection after every insert (handles async ordering)
+        slots[index].replaceWith(img);
         updateThumbnailSelection();
       };
       reader.readAsDataURL(file);
@@ -328,8 +335,11 @@ if (!gradeCanvas) {
       gctx.fillStyle = "#000";
       gctx.fillRect(0, 0, cw, ch);
       gctx.fillStyle = "rgba(255,255,255,0.55)";
+      // Scale font to canvas pixel dimensions (canvas is 1080px wide internally)
       gctx.font = "800 72px system-ui";
-      gctx.fillText("Bilder laden …", 70, 160);
+      gctx.textBaseline = "middle";
+      gctx.textAlign = "center";
+      gctx.fillText("Bilder laden …", cw / 2, ch / 2);
       return;
     }
     drawBase();
