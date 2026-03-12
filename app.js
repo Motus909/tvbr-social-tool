@@ -1,280 +1,199 @@
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
-const imageUpload = document.getElementById("imageUpload");
-const titleInput = document.getElementById("titleInput");
+const imageUpload   = document.getElementById("imageUpload");
+const titleInput    = document.getElementById("titleInput");
 const categorySelect = document.getElementById("categorySelect");
-const downloadBtn = document.getElementById("downloadBtn");
-const fitBtn = document.getElementById("fitBtn");
-const resetBtn = document.getElementById("resetBtn");
+const downloadBtn   = document.getElementById("downloadBtn");
+const fitBtn        = document.getElementById("fitBtn");
+const resetBtn      = document.getElementById("resetBtn");
 
-const NAVY = "#1a355b";
+const NAVY   = "#1a355b";
 const ORANGE = "#e67e22";
 
 const clubLogo = new Image();
 clubLogo.src = "./assets/Logo.svg";
-clubLogo.onload = () => draw();
+clubLogo.onload  = () => draw();
 clubLogo.onerror = () => console.log("Logo nicht gefunden:", clubLogo.src);
 
-// Font laden und redraw
 if (document.fonts?.load) {
   document.fonts.load("34px 'Anton'").then(() => draw());
 }
 
-
-// Unterbalken-Farben (Riegen/Segment)
 const UNDER = {
-  aktiv: "#ffffff",
-  jugi: "#76869D",
-  leistung: "#ffffff",
+  aktiv:        "#ffffff",
+  jugi:         "#76869D",
+  leistung:     "#ffffff",
   gesellschaft: "#CDCCCC"
 };
 
-// Overlay Einstellungen
 const OVERLAY = {
-  // Position: oben links wie Screenshot 2
-  topY: 1000,           // Abstand von oben
-  leftX: 0,            // links bündig
-  maxWidth: 860,       // maximale Breite der Navy-Bauchbinde (ähnlich Screenshot)
-
-  // Navy Balken
-  navyHeight: 130,
-  navyPadX: 52,
-
-  // Titel Typo (ähnlich Screenshot)
-  titleFontPx: 54,
-  titleWeight: 800,
-
-  // Orange Linie (unter Navy)
+  topY:         1000,
+  leftX:        0,
+  maxWidth:     860,
+  navyHeight:   130,
+  navyPadX:     52,
+  titleFontPx:  54,
+  titleWeight:  800,
   accentHeight: 10,
-
-  // Weisser Balken darunter
   subBarHeight: 50,
-  subBarPadX: 22,
-  subFontPx: 32,
-  subWeight: 900,
-  // subWidth: 720,      // fixe Breite (Weiss + Orange)
-  subPadLeft: 24,
-  subPadRight: 24,
-
-  logoSize: 40,
-  logoGap: 14,
-
-
-  // Abstand zwischen Navy und Subbar (wird durch Orange Linie ersetzt -> 0)
+  subBarPadX:   22,
+  subFontPx:    32,
+  subWeight:    900,
+  subPadLeft:   24,
+  subPadRight:  24,
+  logoSize:     40,
+  logoGap:      14,
   gapAfterAccent: 0
 };
 
-
-let img = new Image();
+let img      = new Image();
 let hasImage = false;
 
-// Transform fürs Framing
-let scale = 1;
-let tx = 0;
-let ty = 0;
+// Framing
+let scale = 1, tx = 0, ty = 0;
 
-// Interaktionsstatus
+// Interaction
 let isInteracting = false;
 let hideGridTimer = null;
+let lastTouch     = null;
+let lastDist      = null;
+let mouseDown     = false;
+let lastMouse     = null;
 
-// Touch tracking
-let lastTouch = null;
-let lastDist = null;
-
-// Wrapper für Wheel-Zoom
 const canvasWrap = document.querySelector(".canvas-wrap");
 
-// Verhindert Browser-Scroll/Pinch-Zoom auf dem Canvas (WICHTIG)
+// ---- Touch passthrough prevention ----
 canvas.addEventListener("touchstart", (e) => e.preventDefault(), { passive: false });
 canvas.addEventListener("touchmove",  (e) => e.preventDefault(), { passive: false });
 canvas.addEventListener("touchend",   (e) => e.preventDefault(), { passive: false });
 
-// Upload
+// ---- Upload ----
 imageUpload.addEventListener("change", (e) => {
   const f = e.target.files?.[0];
   if (!f) return;
-
+  // User uploaded their own image: clear any grading title sync
+  window.titleImageData = null;
   const reader = new FileReader();
   reader.onload = (ev) => { img.src = ev.target.result; };
   reader.readAsDataURL(f);
 });
 
 img.onload = () => {
-  hasImage = true;
-  autoFit();
+  // Only auto-fit for user-uploaded images, not grading sync
+  if (!window._titleImageSyncing) {
+    hasImage = true;
+    autoFit();
+  }
   draw();
 };
 
-// UI
+// ---- UI listeners ----
 titleInput.addEventListener("input", draw);
 categorySelect.addEventListener("change", draw);
-fitBtn.addEventListener("click", () => { autoFit(); draw(); });
-resetBtn.addEventListener("click", () => { 
-  // UI reset
-  titleInput.value = "";
-  categorySelect.value = "aktiv";
-  imageUpload.value = "" // delete current image
-
-  hasImage = false;
-  img.src = "";
-  scale = 1;
-  tx = 0;
-  ty = 0;
-
-  //disable grid
-  isInteracting = false;
-  if(hideGridTimer) clearTimeout(hideGridTimer);
-
+fitBtn.addEventListener("click",  () => { autoFit(); draw(); });
+resetBtn.addEventListener("click", () => {
+  titleInput.value      = "";
+  categorySelect.value  = "aktiv";
+  imageUpload.value     = "";
+  hasImage              = false;
+  img.src               = "";
+  window.titleImageData = null;
+  scale = 1; tx = 0; ty = 0;
+  isInteracting         = false;
+  if (hideGridTimer) clearTimeout(hideGridTimer);
   draw();
-
 });
 
-// ---------- Wheel / Trackpad Zoom (Canvas + Wrapper, capture) ----------
-function onWheelZoom(e){
-  if (!hasImage) return;
-
+// ---- Zoom (wheel) ----
+function onWheelZoom(e) {
+  if (!hasImage && !window.titleImageData) return;
   if (e.cancelable) e.preventDefault();
   e.stopPropagation();
-
   startInteracting();
-
   const rect = canvas.getBoundingClientRect();
-  const sx = canvas.width / rect.width;
-  const sy = canvas.height / rect.height;
-
-  const mx = (e.clientX - rect.left) * sx;
-  const my = (e.clientY - rect.top) * sy;
-
-  const zoomIntensity = 0.0015;
-  const factor = Math.exp(-e.deltaY * zoomIntensity);
+  const sx   = canvas.width  / rect.width;
+  const sy   = canvas.height / rect.height;
+  const mx   = (e.clientX - rect.left) * sx;
+  const my   = (e.clientY - rect.top)  * sy;
+  const factor   = Math.exp(-e.deltaY * 0.0015);
   const newScale = clamp(scale * factor, 0.15, 8);
-
   const wx = (mx - tx) / scale;
   const wy = (my - ty) / scale;
-
   scale = newScale;
   tx = mx - wx * scale;
   ty = my - wy * scale;
-
   draw();
   stopInteractingSoon();
 }
-
 canvas.addEventListener("wheel", onWheelZoom, { passive: false, capture: true });
 if (canvasWrap) canvasWrap.addEventListener("wheel", onWheelZoom, { passive: false, capture: true });
 
-// ---------- Touch: Drag + Pinch ----------
+// ---- Touch drag + pinch ----
 canvas.addEventListener("touchstart", (e) => {
   e.preventDefault();
-  if (!hasImage) return;
-
+  if (!hasImage && !window.titleImageData) return;
   startInteracting();
-
-  if (e.touches.length === 1) {
-    lastTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-    lastDist = null;
-  } else if (e.touches.length === 2) {
-    lastDist = touchDist(e.touches[0], e.touches[1]);
-    lastTouch = null;
-  }
+  if (e.touches.length === 1) { lastTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY }; lastDist = null; }
+  else if (e.touches.length === 2) { lastDist = touchDist(e.touches[0], e.touches[1]); lastTouch = null; }
   draw();
 }, { passive: false });
 
 canvas.addEventListener("touchmove", (e) => {
   e.preventDefault();
-  if (!hasImage) return;
-
+  if (!hasImage && !window.titleImageData) return;
   startInteracting();
-
   const rect = canvas.getBoundingClientRect();
-  const sx = canvas.width / rect.width;
-  const sy = canvas.height / rect.height;
-
-  // Drag
+  const sx = canvas.width / rect.width, sy = canvas.height / rect.height;
   if (e.touches.length === 1 && lastTouch) {
-    const nx = e.touches[0].clientX;
-    const ny = e.touches[0].clientY;
-    tx += (nx - lastTouch.x) * sx;
-    ty += (ny - lastTouch.y) * sy;
-    lastTouch = { x: nx, y: ny };
+    tx += (e.touches[0].clientX - lastTouch.x) * sx;
+    ty += (e.touches[0].clientY - lastTouch.y) * sy;
+    lastTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY };
   }
-
-  // Pinch zoom
   if (e.touches.length === 2) {
     const d = touchDist(e.touches[0], e.touches[1]);
     if (lastDist) {
       const factor = d / lastDist;
       const newScale = clamp(scale * factor, 0.15, 8);
-
       const mx = ((e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left) * sx;
       const my = ((e.touches[0].clientY + e.touches[1].clientY) / 2 - rect.top) * sy;
-
-      const wx = (mx - tx) / scale;
-      const wy = (my - ty) / scale;
-
-      scale = newScale;
-      tx = mx - wx * scale;
-      ty = my - wy * scale;
+      const wx = (mx - tx) / scale, wy = (my - ty) / scale;
+      scale = newScale; tx = mx - wx * scale; ty = my - wy * scale;
     }
     lastDist = d;
   }
-
   draw();
 }, { passive: false });
 
 canvas.addEventListener("touchend", (e) => {
   e.preventDefault();
-
-  if (e.touches.length === 0) {
-    lastTouch = null;
-    lastDist = null;
-    stopInteractingSoon();
-  } else if (e.touches.length === 1) {
-    lastTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-    lastDist = null;
-  } else if (e.touches.length === 2) {
-    lastDist = touchDist(e.touches[0], e.touches[1]);
-    lastTouch = null;
-  }
-
+  if (e.touches.length === 0) { lastTouch = null; lastDist = null; stopInteractingSoon(); }
+  else if (e.touches.length === 1) { lastTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY }; lastDist = null; }
+  else if (e.touches.length === 2) { lastDist = touchDist(e.touches[0], e.touches[1]); lastTouch = null; }
   draw();
 }, { passive: false });
 
-// ---------- Desktop: Mouse Drag ----------
-let mouseDown = false;
-let lastMouse = null;
-
+// ---- Mouse drag ----
 canvas.addEventListener("mousedown", (e) => {
-  if (!hasImage) return;
-  mouseDown = true;
-  lastMouse = { x: e.clientX, y: e.clientY };
-  startInteracting();
-  draw();
+  if (!hasImage && !window.titleImageData) return;
+  mouseDown = true; lastMouse = { x: e.clientX, y: e.clientY };
+  startInteracting(); draw();
 });
-
 window.addEventListener("mousemove", (e) => {
-  if (!mouseDown || !hasImage) return;
-
+  if (!mouseDown || (!hasImage && !window.titleImageData)) return;
   const rect = canvas.getBoundingClientRect();
-  const sx = canvas.width / rect.width;
-  const sy = canvas.height / rect.height;
-
+  const sx = canvas.width / rect.width, sy = canvas.height / rect.height;
   tx += (e.clientX - lastMouse.x) * sx;
   ty += (e.clientY - lastMouse.y) * sy;
   lastMouse = { x: e.clientX, y: e.clientY };
-
   draw();
 });
-
 window.addEventListener("mouseup", () => {
   if (!mouseDown) return;
-  mouseDown = false;
-  stopInteractingSoon();
-  draw();
+  mouseDown = false; stopInteractingSoon(); draw();
 });
 
-// ---------- Download ----------
+// ---- Download ----
 downloadBtn.addEventListener("click", () => {
   const link = document.createElement("a");
   link.download = "tvbr_post.png";
@@ -282,232 +201,151 @@ downloadBtn.addEventListener("click", () => {
   link.click();
 });
 
-// ---------- Rendering ----------
+// ---- Main draw ----
 function draw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const cw = canvas.width, ch = canvas.height;
+  ctx.clearRect(0, 0, cw, ch);
 
-  if (!hasImage) {
+  const hasTitleSync = !!(window.titleImageData);
+
+  if (!hasImage && !hasTitleSync) {
     ctx.fillStyle = "#000";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(0, 0, cw, ch);
     ctx.fillStyle = "rgba(255,255,255,0.55)";
     ctx.font = "800 72px system-ui";
-    ctx.fillText("Bild laden …", 70, 160);
-    ctx.fillStyle = "rgba(255,255,255,0.35)";
-    // ctx.font = "500 34px system-ui";
-    // ctx.fillText("Dann ziehen & pinch-zoomen", 70, 220);
+    ctx.textBaseline = "middle";
+    ctx.textAlign    = "center";
+    ctx.fillText("Bild laden …", cw / 2, ch / 2);
     return;
   }
 
-  // 1) Hintergrundbild (transformiert)
-  // 1) Instagram-Style: Blur-Fill Background + Contain Vordergrund
-const cw = canvas.width, ch = canvas.height;
-const iw = img.width, ih = img.height;
+  if (hasTitleSync) {
+    // Draw graded+framed image from grading tab directly (1080×1350 → 1080×1350)
+    ctx.drawImage(window.titleImageData, 0, 0, cw, ch);
+  } else {
+    // Normal Tab-1 flow: blurred bg + framed foreground
+    const iw = img.width, ih = img.height;
+    const bgScale = Math.max(cw / iw, ch / ih);
+    const bgW = iw * bgScale, bgH = ih * bgScale;
+    const bgX = (cw - bgW) / 2, bgY = (ch - bgH) / 2;
 
-// Vordergrund = contain (dein scale/tx/ty aus autoFit + manuellem verschieben/zoomen)
-const fgScale = scale;
-const fgX = tx;
-const fgY = ty;
-const fgW = iw * fgScale;
-const fgH = ih * fgScale;
+    ctx.save();
+    ctx.filter = "blur(24px)";
+    ctx.drawImage(img, bgX, bgY, bgW, bgH);
+    ctx.filter = "none";
+    ctx.fillStyle = "rgba(0,0,0,0.18)";
+    ctx.fillRect(0, 0, cw, ch);
+    ctx.restore();
 
-// Hintergrund = cover (füllt Canvas immer komplett)
-const bgScale = Math.max(cw / iw, ch / ih);
-const bgW = iw * bgScale;
-const bgH = ih * bgScale;
-const bgX = (cw - bgW) / 2;
-const bgY = (ch - bgH) / 2;
+    const fgW = img.width * scale, fgH = img.height * scale;
+    ctx.save();
+    ctx.drawImage(img, tx, ty, fgW, fgH);
+    ctx.restore();
 
-// Draw blurred background
-ctx.save();
-ctx.filter = "blur(24px)";
-ctx.drawImage(img, bgX, bgY, bgW, bgH);
-ctx.filter = "none";
+    const topGap    = ty;
+    const bottomGap = ch - (ty + fgH);
+    const leftGap   = tx;
+    const rightGap  = cw - (tx + fgW);
 
-// optional: leicht abdunkeln / vereinheitlichen (IG Look)
-ctx.fillStyle = "rgba(0,0,0,0.18)";
-ctx.fillRect(0, 0, cw, ch);
-ctx.restore();
+    if (topGap > 1) {
+      const gt = ctx.createLinearGradient(0, 0, 0, Math.min(160, topGap));
+      gt.addColorStop(0, "rgba(0,0,0,0.35)"); gt.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = gt; ctx.fillRect(0, 0, cw, Math.min(160, topGap));
+    }
+    if (bottomGap > 1) {
+      const gb = ctx.createLinearGradient(0, ch - Math.min(220, bottomGap), 0, ch);
+      gb.addColorStop(0, "rgba(0,0,0,0)"); gb.addColorStop(1, "rgba(0,0,0,0.45)");
+      ctx.fillStyle = gb; ctx.fillRect(0, ch - Math.min(220, bottomGap), cw, Math.min(220, bottomGap));
+    }
+    if (leftGap > 1) {
+      const gl = ctx.createLinearGradient(0, 0, Math.min(140, leftGap), 0);
+      gl.addColorStop(0, "rgba(0,0,0,0.25)"); gl.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = gl; ctx.fillRect(0, 0, Math.min(140, leftGap), ch);
+    }
+    if (rightGap > 1) {
+      const gr = ctx.createLinearGradient(cw - Math.min(140, rightGap), 0, cw, 0);
+      gr.addColorStop(0, "rgba(0,0,0,0)"); gr.addColorStop(1, "rgba(0,0,0,0.25)");
+      ctx.fillStyle = gr; ctx.fillRect(cw - Math.min(140, rightGap), 0, Math.min(140, rightGap), ch);
+    }
+  }
 
-// Draw foreground image (scharf)
-ctx.save();
-ctx.drawImage(img, fgX, fgY, fgW, fgH);
-ctx.restore();
-
-// Wenn oben/unten/seitlich “Bars” entstehen würden: weiche Verläufe darüberlegen
-const topGap = fgY;
-const bottomGap = ch - (fgY + fgH);
-const leftGap = fgX;
-const rightGap = cw - (fgX + fgW);
-
-// Top gradient (nur wenn oben Luft ist)
-if (topGap > 1) {
-  const gt = ctx.createLinearGradient(0, 0, 0, Math.min(160, topGap));
-  gt.addColorStop(0, "rgba(0,0,0,0.35)");
-  gt.addColorStop(1, "rgba(0,0,0,0)");
-  ctx.fillStyle = gt;
-  ctx.fillRect(0, 0, cw, Math.min(160, topGap));
-}
-
-// Bottom gradient (nur wenn unten Luft ist)
-if (bottomGap > 1) {
-  const gb = ctx.createLinearGradient(0, ch - Math.min(220, bottomGap), 0, ch);
-  gb.addColorStop(0, "rgba(0,0,0,0)");
-  gb.addColorStop(1, "rgba(0,0,0,0.45)");
-  ctx.fillStyle = gb;
-  ctx.fillRect(0, ch - Math.min(220, bottomGap), cw, Math.min(220, bottomGap));
-}
-
-// Side gradients (optional, wenn links/rechts Luft ist)
-if (leftGap > 1) {
-  const gl = ctx.createLinearGradient(0, 0, Math.min(140, leftGap), 0);
-  gl.addColorStop(0, "rgba(0,0,0,0.25)");
-  gl.addColorStop(1, "rgba(0,0,0,0)");
-  ctx.fillStyle = gl;
-  ctx.fillRect(0, 0, Math.min(140, leftGap), ch);
-}
-if (rightGap > 1) {
-  const gr = ctx.createLinearGradient(cw - Math.min(140, rightGap), 0, cw, 0);
-  gr.addColorStop(0, "rgba(0,0,0,0)");
-  gr.addColorStop(1, "rgba(0,0,0,0.25)");
-  ctx.fillStyle = gr;
-  ctx.fillRect(cw - Math.min(140, rightGap), 0, Math.min(140, rightGap), ch);
-}
-
-
-  // 2) Drittel-Linien nur beim Interagieren
   if (isInteracting) drawThirds();
 
-  // 3) Unterer Farbverlauf (transparent -> #1A355B @ 25%)
+  // Bottom navy gradient (always, for overlay readability)
   const gradientHeight = 420;
-  const gradientTop = canvas.height - gradientHeight;
-  const bottomGrad = ctx.createLinearGradient(0, gradientTop, 0, canvas.height);
+  const gradientTop    = ch - gradientHeight;
+  const bottomGrad = ctx.createLinearGradient(0, gradientTop, 0, ch);
   bottomGrad.addColorStop(0, "rgba(26,53,91,0)");
   bottomGrad.addColorStop(1, "rgba(26,53,91,0.25)");
   ctx.fillStyle = bottomGrad;
-  ctx.fillRect(0, gradientTop, canvas.width, gradientHeight);
+  ctx.fillRect(0, gradientTop, cw, gradientHeight);
 
-  // -------- Overlay: Titel (Navy) + Unterbalken (Weiss) + Orange Linie --------
-
-  // --- Titel (Navy) ---
+  // ---- Overlay: Navy title bar + accent + sub bar ----
   const titleText = (titleInput.value || "").trim();
   const titleFont = `${OVERLAY.titleWeight} ${OVERLAY.titleFontPx}px Calibri, Arial, sans-serif`;
-
-  const navyX = OVERLAY.leftX;   // links bündig
-  const navyY = OVERLAY.topY;    // oben (wie Screenshot 2)
-  const navyH = OVERLAY.navyHeight;
+  const navyX = OVERLAY.leftX, navyY = OVERLAY.topY, navyH = OVERLAY.navyHeight;
 
   ctx.save();
   ctx.font = titleFont;
-
-  // Navy Breite adaptiv (mit cap)
   const titleW = ctx.measureText(titleText || " ").width;
-  const navyW = Math.min(OVERLAY.maxWidth, titleW + 2 * OVERLAY.navyPadX);
-
-  // Navy Box (eckig)
+  const navyW  = Math.min(OVERLAY.maxWidth, titleW + 2 * OVERLAY.navyPadX);
   ctx.fillStyle = NAVY;
   ctx.fillRect(navyX, navyY, navyW, navyH);
-
-  // Titeltext (links, vertikal zentriert)
-  ctx.fillStyle = "#fff";
-  ctx.textAlign = "left";
+  ctx.fillStyle    = "#fff";
+  ctx.textAlign    = "left";
   ctx.textBaseline = "middle";
   ctx.fillText(titleText || " ", navyX + OVERLAY.navyPadX, navyY + navyH / 2);
-
   ctx.restore();
 
-  // Positionen unterhalb Navy
   const accentY = navyY + navyH;
   const subY = accentY + (categorySelect.value === "leistung" ? OVERLAY.accentHeight : 0) + (OVERLAY.gapAfterAccent || 0);
   const subH = OVERLAY.subBarHeight;
 
-  // --- Unterbalkenbreite adaptiv nach Inhalt (Logo + Anton + Label) ---
-  const hasLogo =
-    (typeof clubLogo !== "undefined") &&
-    clubLogo.complete &&
-    clubLogo.naturalWidth > 0;
-
-  const clubText = "TV BAD RAGAZ";
+  const hasLogo = (typeof clubLogo !== "undefined") && clubLogo.complete && clubLogo.naturalWidth > 0;
   const labelText = subLabel(categorySelect.value);
+  const clubFont  = `34px 'Anton', sans-serif`;
 
-  const clubFont = `34px 'Anton', sans-serif`;
-  const labelFont = `700 28px Calibri, Arial, sans-serif`;
-
-  // Breite berechnen: padL + logo + gap + club + between + label + padR
-  let subW = 0;
-  subW += OVERLAY.subPadLeft;
-
+  let subW = OVERLAY.subPadLeft;
   if (hasLogo) subW += OVERLAY.logoSize + OVERLAY.logoGap;
-
   ctx.save();
   ctx.font = clubFont;
   subW += ctx.measureText(labelText).width;
   ctx.restore();
-
-  ctx.save();
-  ctx.font = labelFont;
-  ctx.restore();
-
   subW += OVERLAY.subPadRight;
-
   if (OVERLAY.subMaxWidth) subW = Math.min(subW, OVERLAY.subMaxWidth);
 
-  const subX = OVERLAY.leftX; // links bündig
+  const subX = OVERLAY.leftX;
 
-  // --- Orange Linie (Breite folgt Weiss) ---
   if (categorySelect.value === "leistung") {
     ctx.fillStyle = ORANGE;
     ctx.fillRect(subX, accentY, subW, OVERLAY.accentHeight);
   }
 
-  // --- Weisser Balken (Breite adaptiv) ---
   ctx.fillStyle = UNDER[categorySelect.value] || "#fff";
   ctx.fillRect(subX, subY, subW, subH);
 
-  // --- Inhalt im weissen Balken: Logo + Anton + Label ---
   let cursorX = subX + OVERLAY.subPadLeft;
-
   if (hasLogo) {
-    ctx.drawImage(
-      clubLogo,
-      cursorX,
-      subY + (subH - OVERLAY.logoSize) / 2,
-      OVERLAY.logoSize,
-      OVERLAY.logoSize
-    );
+    ctx.drawImage(clubLogo, cursorX, subY + (subH - OVERLAY.logoSize) / 2, OVERLAY.logoSize, OVERLAY.logoSize);
     cursorX += OVERLAY.logoSize + OVERLAY.logoGap;
   }
-
-  // Clubname (Anton)
-  ctx.fillStyle = "#111";
-  ctx.font = clubFont;
-  ctx.textAlign = "left";
+  ctx.fillStyle    = "#111";
+  ctx.font         = clubFont;
+  ctx.textAlign    = "left";
   ctx.textBaseline = "middle";
   ctx.fillText(labelText, cursorX, subY + subH / 2 + 6);
-
-  // Cursor weiter
-  ctx.save();
-  ctx.font = clubFont;
-  cursorX += ctx.measureText(labelText).width;
-  ctx.restore();
-  cursorX += between;
-
-  // // Label (Calibri)
-  // ctx.fillStyle = "rgba(17,17,17,0.7)";
-  // ctx.font = labelFont;
-  // ctx.fillText(labelText, cursorX, subY + subH / 2);
 }
 
-
-// ---------- Labels ----------
-function subLabel(cat){
-  if (cat === "jugi") return "JUGI BAD RAGAZ";
-  if (cat === "leistung") return "TV BAD RAGAZ LA LEISTUNGSTEAM";
+// ---- Labels ----
+function subLabel(cat) {
+  if (cat === "jugi")        return "JUGI BAD RAGAZ";
+  if (cat === "leistung")    return "TV BAD RAGAZ LA LEISTUNGSTEAM";
   if (cat === "gesellschaft") return "TV BAD RAGAZ";
   return "TV BAD RAGAZ";
 }
 
-// ---------- Drawing Helpers ----------
-function roundRect(ctx, x, y, w, h, r){
+// ---- Helpers ----
+function roundRect(ctx, x, y, w, h, r) {
   const radius = Math.min(r, w/2, h/2);
   ctx.beginPath();
   ctx.moveTo(x + radius, y);
@@ -518,21 +356,19 @@ function roundRect(ctx, x, y, w, h, r){
   ctx.closePath();
 }
 
-function drawThirds(){
+function drawThirds() {
   const w = canvas.width, h = canvas.height;
   ctx.save();
   ctx.strokeStyle = "rgba(255,255,255,0.55)";
-  ctx.lineWidth = 2;
+  ctx.lineWidth   = 2;
   ctx.beginPath();
-  ctx.moveTo(w/3, 0);     ctx.lineTo(w/3, h);
-  ctx.moveTo(2*w/3, 0);   ctx.lineTo(2*w/3, h);
-  ctx.moveTo(0, h/3);     ctx.lineTo(w, h/3);
-  ctx.moveTo(0, 2*h/3);   ctx.lineTo(w, 2*h/3);
+  ctx.moveTo(w/3, 0);   ctx.lineTo(w/3, h);
+  ctx.moveTo(2*w/3, 0); ctx.lineTo(2*w/3, h);
+  ctx.moveTo(0, h/3);   ctx.lineTo(w, h/3);
+  ctx.moveTo(0, 2*h/3); ctx.lineTo(w, 2*h/3);
   ctx.stroke();
-
   ctx.fillStyle = "rgba(255,255,255,0.75)";
-  const pts = [[w/3,h/3],[2*w/3,h/3],[w/3,2*h/3],[2*w/3,2*h/3]];
-  for (const [x,y] of pts){
+  for (const [x, y] of [[w/3,h/3],[2*w/3,h/3],[w/3,2*h/3],[2*w/3,2*h/3]]) {
     ctx.fillRect(x-3, y-3, 6, 6);
   }
   ctx.restore();
@@ -540,34 +376,31 @@ function drawThirds(){
 
 function autoFit() {
   if (!hasImage) return;
-
   const cw = canvas.width, ch = canvas.height;
-  const iw = img.width, ih = img.height;
-
-  scale = Math.max(cw / iw, ch / ih);
-  tx = (cw - iw * scale) / 2;
-  ty = (ch - ih * scale) / 2;
+  scale = Math.max(cw / img.width, ch / img.height);
+  tx = (cw - img.width  * scale) / 2;
+  ty = (ch - img.height * scale) / 2;
 }
 
-function startInteracting(){
+function startInteracting() {
   isInteracting = true;
   if (hideGridTimer) clearTimeout(hideGridTimer);
 }
-
-function stopInteractingSoon(){
+function stopInteractingSoon() {
   if (hideGridTimer) clearTimeout(hideGridTimer);
-  hideGridTimer = setTimeout(() => {
-    isInteracting = false;
-    draw();
-  }, 650);
+  hideGridTimer = setTimeout(() => { isInteracting = false; draw(); }, 650);
 }
-
-function touchDist(t1, t2){
-  const dx = t1.clientX - t2.clientX;
-  const dy = t1.clientY - t2.clientY;
-  return Math.hypot(dx, dy);
+function touchDist(t1, t2) {
+  return Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
 }
-
-function clamp(v, lo, hi){
+function clamp(v, lo, hi) {
   return Math.max(lo, Math.min(hi, v));
 }
+
+// ---- Grade-to-Title bridge ----
+// Called by grade.js after every render when titleImageIndex === currentIndex
+window.syncTitleFromGrade = function(gradeCanvasEl) {
+  window.titleImageData = gradeCanvasEl;
+  hasImage = false; // let titleImageData take over
+  draw();
+};

@@ -224,17 +224,12 @@ if (!gradeCanvas) {
     }
   }
 
-  // Copies the fully rendered gradeCanvas (framing + grading applied) onto Tab-1 canvas
+  // Copies the fully rendered gradeCanvas (framing + grading) to Tab-1 via bridge
   function syncTitleCanvas() {
-    if (titleImageIndex < 0) return;
-    // Only sync if currently viewing the title image
-    if (currentIndex !== titleImageIndex) return;
-    const titleCanvas = $('canvas');
-    if (!titleCanvas) return;
-    const titleCtx = titleCanvas.getContext('2d');
-    titleCtx.clearRect(0, 0, titleCanvas.width, titleCanvas.height);
-    // gradeCanvas is 1080×1350, titleCanvas is also 1080×1350 — direct copy
-    titleCtx.drawImage(gradeCanvas, 0, 0);
+    if (titleImageIndex < 0 || currentIndex !== titleImageIndex) return;
+    if (typeof window.syncTitleFromGrade === 'function') {
+      window.syncTitleFromGrade(gradeCanvas);
+    }
   }
 
   // ---- Download ----
