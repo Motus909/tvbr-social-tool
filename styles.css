@@ -1,11 +1,12 @@
 /* =========================
    TV Bad Ragaz – Social Tool
-   styles.css (FULL)
+   styles.css
    ========================= */
 
 /* ---- Reset / Base ---- */
-* { box-sizing: border-box; }
+*, *::before, *::after { box-sizing: border-box; }
 html, body { height: 100%; }
+
 body {
   margin: 0;
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
@@ -16,21 +17,24 @@ body {
 
 /* ---- Theme Vars ---- */
 :root {
-  --navy: #1A355B;
-  --accent: #e67e22;
-  --border: rgba(255, 255, 255, 0.10);
-  --panel: rgba(255, 255, 255, 0.035);
-  --panel2: rgba(255, 255, 255, 0.055);
+  --navy:    #1A355B;
+  --accent:  #e67e22;
+  --border:  rgba(255, 255, 255, 0.10);
+  --panel:   rgba(255, 255, 255, 0.035);
+  --panel2:  rgba(255, 255, 255, 0.055);
   --textDim: rgba(232, 238, 252, 0.72);
-  --shadow: 0 12px 30px rgba(0, 0, 0, 0.30);
-  --radius: 16px;
+  --shadow:  0 12px 30px rgba(0, 0, 0, 0.30);
+  --radius:  16px;
 }
 
-/* ---- Topbar (Header + Tabs in one line) ---- */
+
+/* ============================================================
+   TOPBAR
+   ============================================================ */
 .topbar {
   padding: 14px 16px;
   border-bottom: 1px solid var(--border);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent);
 }
 
 .topbar-inner {
@@ -46,13 +50,12 @@ body {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  min-width: 220px;
 }
 
 .brand-title {
   font-weight: 900;
-  letter-spacing: 0.2px;
   font-size: 18px;
+  letter-spacing: 0.2px;
 }
 
 .brand-sub {
@@ -60,22 +63,24 @@ body {
   color: var(--textDim);
 }
 
-/* ---- Tabs ---- */
+
+/* ============================================================
+   TABS
+   ============================================================ */
 .tabs {
   display: flex;
   gap: 10px;
-  flex-wrap: nowrap;
 }
 
 .tabbtn {
   appearance: none;
+  padding: 10px 14px;
   border: 1px solid var(--border);
+  border-radius: 12px;
   background: rgba(255, 255, 255, 0.03);
   color: rgba(232, 238, 252, 0.92);
-  padding: 10px 14px;
-  border-radius: 12px;
-  cursor: pointer;
   font-weight: 800;
+  cursor: pointer;
   transition: transform 0.12s ease, background 0.12s ease, border-color 0.12s ease;
 }
 
@@ -89,16 +94,14 @@ body {
   border-color: rgba(120, 150, 210, 0.35);
 }
 
-/* ---- Tabs Content ---- */
-.tabcontent {
-  display: none;
-}
+/* Tab content visibility */
+.tabcontent        { display: none; }
+.tabcontent.active { display: block; }
 
-.tabcontent.active {
-  display: block;
-}
 
-/* ---- Main Layout (shared for both tabs) ---- */
+/* ============================================================
+   MAIN LAYOUT  (2-column on desktop, 1-column on mobile)
+   ============================================================ */
 .main {
   width: min(1280px, 100%);
   margin: 0 auto;
@@ -116,17 +119,26 @@ body {
   }
 }
 
-/* ---- Preview (Canvas area) ---- */
+
+/* ============================================================
+   PREVIEW  (thumbnail strip + canvas, side by side)
+   ============================================================ */
 .preview {
   display: flex;
-  flex-direction: row;
+  flex-direction: row;   /* thumbnails left, canvas right */
   align-items: flex-start;
   gap: 10px;
   width: 100%;
 }
 
+/* ---- Canvas wrapper ---- */
+/*
+ * flex: 1 1 auto  → takes all remaining space after thumbnails
+ * min-width: 0    → prevents flex overflow
+ * aspect-ratio    → correct 4:5 portrait by default (mobile / no fixed height)
+ */
 .canvas-wrap {
-  flex: 1 1 0;
+  flex: 1 1 auto;
   min-width: 0;
   aspect-ratio: 4 / 5;
   border-radius: var(--radius);
@@ -136,7 +148,15 @@ body {
   box-shadow: var(--shadow);
 }
 
-/* Canvas renders inside wrap */
+/* On large screens override aspect-ratio with a viewport-relative height */
+@media (min-width: 1100px) {
+  .canvas-wrap {
+    height: calc(100vh - 170px);
+    max-height: 900px;
+    aspect-ratio: auto;   /* let height drive, width follows flex */
+  }
+}
+
 canvas {
   width: 100%;
   height: 100%;
@@ -145,7 +165,237 @@ canvas {
   user-select: none;
 }
 
-/* Preview footer pills */
+/* ---- Thumbnail strip ---- */
+.thumbnail-container {
+  /* fixed width; flex won't shrink it */
+  flex: 0 0 90px;
+  width: 90px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  overflow-y: auto;
+  /* match canvas height on desktop so it scrolls in sync */
+  max-height: calc(100vh - 170px);
+}
+
+/* When empty (Titelbild tab): occupy zero space so canvas fills full width */
+.thumbnail-container:empty {
+  flex: 0 0 0;
+  width: 0;
+  gap: 0;
+  overflow: hidden;
+}
+
+.thumbnail-container img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  cursor: pointer;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  flex-shrink: 0;
+  transition: border-color 0.12s ease;
+}
+
+/* Active thumbnail — works both via class and inline style set by JS */
+.thumbnail-container img.active,
+.thumbnail-container img[style*="solid #007bff"] {
+  border-color: #007bff;
+}
+
+/* ---- Mobile: stack vertically, thumbnails become horizontal row ---- */
+@media (max-width: 1099px) {
+  .preview {
+    flex-direction: column;
+  }
+
+  /* canvas must fill full width and respect aspect-ratio again */
+  .canvas-wrap {
+    width: 100%;
+    height: auto !important;
+    max-height: none !important;
+    aspect-ratio: 4 / 5;
+  }
+
+  .thumbnail-container {
+    flex: none;
+    width: 100%;
+    height: 90px;
+    max-height: none;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  .thumbnail-container:empty {
+    height: 0;
+  }
+}
+
+
+/* ============================================================
+   CONTROLS PANEL
+   ============================================================ */
+.controls {
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+@media (min-width: 1100px) {
+  .controls {
+    margin: 0;
+    align-self: start;
+  }
+}
+
+
+/* ============================================================
+   FORM ELEMENTS
+   ============================================================ */
+.label {
+  font-size: 13px;
+  font-weight: 800;
+  color: rgba(232, 238, 252, 0.75);
+  margin-top: 6px;
+}
+
+.control {
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(232, 238, 252, 0.92);
+  outline: none;
+}
+
+.control:focus {
+  border-color: rgba(120, 150, 210, 0.45);
+  box-shadow: 0 0 0 3px rgba(26, 53, 91, 0.35);
+}
+
+input[type="file"].control { padding: 10px; }
+select.control             { padding: 11px 12px; }
+
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.row {
+  display: flex;
+  gap: 12px;
+}
+
+.row .btn { flex: 1; }
+
+.btn {
+  appearance: none;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(232, 238, 252, 0.92);
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform 0.12s ease, background 0.12s ease, border-color 0.12s ease;
+}
+
+.btn:hover  { transform: translateY(-1px); background: rgba(255, 255, 255, 0.06); }
+.btn:active { transform: translateY(0); }
+
+.btn.primary          { background: rgba(26, 53, 91, 0.65); border-color: rgba(120, 150, 210, 0.35); }
+.btn.primary:hover    { background: rgba(26, 53, 91, 0.78); }
+.btn.secondary        { background: rgba(255, 255, 255, 0.02); }
+
+/* Icon-only reset button next to sliders */
+.iconbtn {
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(232, 238, 252, 0.92);
+  font-size: 18px;
+  font-weight: 900;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.12s ease, background 0.12s ease;
+  flex-shrink: 0;
+}
+
+.iconbtn:hover { transform: translateY(-1px); background: rgba(255, 255, 255, 0.06); }
+
+
+/* ============================================================
+   SLIDER BLOCKS
+   ============================================================ */
+.sliderBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 6px;
+}
+
+.sliderLabel {
+  font-size: 14px;
+  font-weight: 900;
+  color: rgba(232, 238, 252, 0.82);
+}
+
+.sliderLine {
+  display: grid;
+  grid-template-columns: 1fr 44px;
+  gap: 12px;
+  align-items: center;
+}
+
+.sliderLine input[type="range"].control {
+  padding: 0;
+  height: 40px;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+
+/* ============================================================
+   NOTE / WORKFLOW BOX
+   ============================================================ */
+.note {
+  padding: 12px;
+  border: 1px dashed rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.note-title {
+  font-size: 13px;
+  font-weight: 900;
+  margin-bottom: 6px;
+}
+
+.note-text {
+  font-size: 13px;
+  line-height: 1.35;
+  color: rgba(232, 238, 252, 0.72);
+}
+
+
+/* ============================================================
+   PREVIEW FOOTER PILLS
+   ============================================================ */
 .preview-footer {
   display: flex;
   flex-wrap: wrap;
@@ -156,199 +406,21 @@ canvas {
 
 .pill {
   font-size: 12px;
-  color: rgba(232, 238, 252, 0.78);
-  border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.03);
   padding: 7px 10px;
-  border-radius: 999px;
-}
-
-/* ---- Controls Panel ---- */
-.controls {
-  width: 100%;
-  max-width: 520px;
-  margin: 0 auto;
-  background: var(--panel);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 12px;
-  box-shadow: var(--shadow);
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-@media (min-width: 1100px) {
-  .controls {
-    margin: 0;
-    align-self: start;
-  }
-}
-
-/* ---- Form Elements ---- */
-.label {
-  font-size: 13px;
-  font-weight: 800;
-  color: rgba(232, 238, 252, 0.75);
-  margin-top: 6px;
-}
-
-.control {
-  width: 100%;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 999px;
   background: rgba(255, 255, 255, 0.03);
-  color: rgba(232, 238, 252, 0.92);
-  padding: 11px 12px;
-  outline: none;
+  color: rgba(232, 238, 252, 0.78);
 }
 
-.control:focus {
-  border-color: rgba(120, 150, 210, 0.45);
-  box-shadow: 0 0 0 3px rgba(26, 53, 91, 0.35);
-}
 
-/* file input looks ugly by default; keep minimal */
-input[type="file"].control {
-  padding: 10px;
-}
-
-/* select */
-select.control {
-  padding: 11px 12px;
-}
-
-/* ---- Buttons ---- */
-.row {
-  display: flex;
-  gap: 12px;
-}
-
-.btn {
-  appearance: none;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.04);
-  color: rgba(232, 238, 252, 0.92);
-  padding: 12px 14px;
-  border-radius: 14px;
-  cursor: pointer;
-  font-weight: 900;
-  transition: transform 0.12s ease, background 0.12s ease, border-color 0.12s ease;
-}
-
-.btn:hover {
-  transform: translateY(-1px);
-  background: rgba(255, 255, 255, 0.06);
-}
-
-.btn:active {
-  transform: translateY(0px);
-}
-
-.btn.primary {
-  background: rgba(26, 53, 91, 0.65);
-  border-color: rgba(120, 150, 210, 0.35);
-}
-
-.btn.primary:hover {
-  background: rgba(26, 53, 91, 0.78);
-}
-
-.btn.secondary {
-  background: rgba(255, 255, 255, 0.02);
-}
-
-/* Make row buttons split equally */
-.row .btn {
-  flex: 1;
-}
-
-/* ---- Slider Blocks (label above, slider + reset) ---- */
-.sliderBlock {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding-top: 6px;
-}
-
-.sliderLabel {
-  font-weight: 900;
-  color: rgba(232, 238, 252, 0.82);
-  font-size: 14px;
-}
-
-/* slider line: range + reset button */
-.sliderLine {
-  display: grid;
-  grid-template-columns: 1fr 44px;
-  gap: 12px;
-  align-items: center;
-}
-
-/* range input */
-.sliderLine input[type="range"].control {
-  padding: 0;
-  height: 40px;
-  background: transparent;
-  border: none;
-  box-shadow: none;
-}
-
-/* reset icon button */
-.iconbtn {
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.04);
-  color: rgba(232, 238, 252, 0.92);
-  font-size: 18px;
-  font-weight: 900;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.12s ease, background 0.12s ease;
-}
-
-.iconbtn:hover {
-  transform: translateY(-1px);
-  background: rgba(255, 255, 255, 0.06);
-}
-
-/* ---- Note / Workflow box ---- */
-.note {
-  border: 1px dashed rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 14px;
-  padding: 12px;
-}
-
-.note-title {
-  font-weight: 900;
-  font-size: 13px;
-  margin-bottom: 6px;
-}
-
-.note-text {
-  color: rgba(232, 238, 252, 0.72);
-  font-size: 13px;
-  line-height: 1.35;
-}
-
-/* ---- Small screens ---- */
+/* ============================================================
+   SMALL SCREENS  (≤ 520px)
+   ============================================================ */
 @media (max-width: 520px) {
-  .topbar-inner {
-    gap: 10px;
-  }
-
-  .brand {
-    min-width: 0;
-  }
-
-  .brand-title {
-    font-size: 16px;
-  }
+  .topbar-inner { gap: 10px; }
+  .brand        { min-width: 0; }
+  .brand-title  { font-size: 16px; }
 
   .tabbtn {
     padding: 9px 12px;
@@ -362,58 +434,5 @@ select.control {
   .row .btn {
     flex: unset;
     width: 100%;
-  }
-}
-
-/* ---- Thumbnail Container ---- */
-.thumbnail-container {
-  flex: 0 0 90px;
-  width: 90px;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  overflow-y: auto;
-  max-height: 600px;
-}
-
-.thumbnail-container img {
-  width: 80px;
-  height: 80px;
-  object-fit: cover;
-  margin: 5px 0;
-  cursor: pointer;
-  border: 2px solid transparent;
-  border-radius: 4px;
-}
-
-.thumbnail-container img.active {
-  border: 2px solid #007bff;
-}
-
-/* Desktop: try to fit everything without scroll */
-@media (min-width: 1100px) {
-  .canvas-wrap {
-    height: calc(100vh - 170px);
-    max-height: 900px;
-    aspect-ratio: auto;
-  }
-  .preview {
-    flex-direction: row;
-  }
-  .thumbnail-container {
-    flex-direction: column;
-  }
-}
-
-@media (max-width: 1100px) {
-  .preview {
-    flex-direction: column;
-  }
-
-  .thumbnail-container {
-    flex-direction: row;
-    width: 100%;
-    max-height: none;
-    overflow-x: auto;
   }
 }
