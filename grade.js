@@ -253,37 +253,38 @@ if (!gradeCanvas) {
   function renderThumbnails() {
     const thumbnailContainer = document.getElementById('thumbnailContainer');
     thumbnailContainer.innerHTML = '';
+    let loaded = 0;
     files.forEach((file, index) => {
       const reader = new FileReader();
       reader.onload = function(e) {
         const img = document.createElement('img');
         img.src = e.target.result;
         img.dataset.index = index;
-        img.style.width = '80px';
-        img.style.height = '80px';
-        img.style.margin = '5px 0';
         img.style.cursor = 'pointer';
         img.style.border = '2px solid transparent';
-        img.style.borderRadius = '4px';
+        img.style.borderRadius = '6px';
+        img.style.flexShrink = '0';
         img.onclick = function() {
           saveCurrentGrading();
           currentIndex = parseInt(this.dataset.index);
           loadCurrentImage();
-          updateThumbnailSelection();
         };
+        // Insert at correct position so order matches files[]
         thumbnailContainer.appendChild(img);
+        loaded++;
+        if (loaded === files.length) updateThumbnailSelection();
       };
       reader.readAsDataURL(file);
     });
-    updateThumbnailSelection();
   }
 
 
   // Funktion zum Aktualisieren der Thumbnail-Auswahl
   function updateThumbnailSelection() {
     const thumbnails = document.querySelectorAll('#thumbnailContainer img');
-    thumbnails.forEach((thumbnail, index) => {
-      thumbnail.style.border = index === currentIndex ? '2px solid #007bff' : '2px solid transparent';
+    thumbnails.forEach((thumbnail) => {
+      const idx = parseInt(thumbnail.dataset.index);
+      thumbnail.style.border = idx === currentIndex ? '2px solid #007bff' : '2px solid transparent';
     });
   }
 
@@ -500,13 +501,21 @@ if (!gradeCanvas) {
     });
   }
 
-  // Event-Listener hinzufügen
-  document.getElementById('gradeUpload').addEventListener('change', loadImages);
-  document.getElementById('prevImgBtn').addEventListener('click', () => { prevImage(); });
-  document.getElementById('nextImgBtn').addEventListener('click', () => { nextImage(); });
-  document.getElementById('downloadGradeBtn').addEventListener('click', downloadCurrentImage);
-  document.getElementById('downloadAllBtn').addEventListener('click', downloadAllImages);
-  document.getElementById('titleImageCheckbox').addEventListener('change', setAsTitleImage);
+  // Preset-Kategorie anwenden
+  const categorySelect = document.getElementById('category-select');
+  const applyPresetBtn = document.getElementById('auto-grade-button');
+  const PRESETS = {
+    drinnen:   { b:  5, c:  8, s: -5, k:  4 },
+    draussen:  { b:  0, c:  5, s:  8, k:  6 },
+    sport:     { b:  3, c: 12, s: 10, k:  8 },
+    portraits: { b:  4, c:  6, s:  2, k:  2 },
+  };
+  if (applyPresetBtn && categorySelect) {
+    applyPresetBtn.addEventListener('click', () => {
+      const preset = PRESETS[categorySelect.value];
+      if (preset) { setSliders(preset.b, preset.c, preset.s, preset.k); saveCurrentGrading(); render(); }
+    });
+  }
 
   // Event-Listener für Slider hinzufügen, um das Grading zu speichern
   [bSlider, cSlider, sSlider, kSlider].forEach(slider => {
