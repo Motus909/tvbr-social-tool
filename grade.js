@@ -215,12 +215,24 @@ if (!gradeCanvas) {
     if (!titleImageCheckbox) return;
     const checked = titleImageCheckbox.checked;
     if (!gradedData[currentIndex]) gradedData[currentIndex] = {};
-    gradedData[currentIndex].isTitleImage = checked;
+
     if (checked) {
+      // Clear old title image marking
+      if (titleImageIndex >= 0 && titleImageIndex !== currentIndex) {
+        if (gradedData[titleImageIndex]) gradedData[titleImageIndex].isTitleImage = false;
+      }
+      gradedData[currentIndex].isTitleImage = true;
       titleImageIndex = currentIndex;
+      // Tell app.js that grading now owns the title (clears any direct upload)
+      if (typeof window.clearTitleUpload === 'function') window.clearTitleUpload();
       syncTitleCanvas();
-    } else if (titleImageIndex === currentIndex) {
-      titleImageIndex = -1;
+    } else {
+      gradedData[currentIndex].isTitleImage = false;
+      if (titleImageIndex === currentIndex) {
+        titleImageIndex = -1;
+        // Clear title from Tab 1
+        if (typeof window.syncTitleFromGrade === 'function') window.syncTitleFromGrade(null);
+      }
     }
   }
 
@@ -376,6 +388,17 @@ if (!gradeCanvas) {
     setSliders(bb, cc, ss, kk);
   }
 
+  // ---- Bridge: app.js can clear our title marking when user uploads directly ----
+  window.clearGradingTitleMark = function() {
+    if (titleImageIndex >= 0) {
+      if (gradedData[titleImageIndex]) gradedData[titleImageIndex].isTitleImage = false;
+      titleImageIndex = -1;
+    }
+    // Uncheck checkbox if visible
+    if (titleImageCheckbox) titleImageCheckbox.checked = false;
+    if (gradedData[currentIndex]) gradedData[currentIndex].isTitleImage = false;
+  };
+
   // ---- Event listeners (each button wired exactly ONCE) ----
   if (gradeUpload)       gradeUpload.addEventListener("change", loadImages);
   if (prevImgBtn)        prevImgBtn.addEventListener("click", prevImage);
@@ -415,6 +438,8 @@ if (!gradeCanvas) {
       scaleMult = 1; offX = 0; offY = 0;
       isInteracting = false;
       if (hideGridTimer) clearTimeout(hideGridTimer);
+      // Clear title sync in Tab 1
+      if (typeof window.syncTitleFromGrade === 'function') window.syncTitleFromGrade(null);
       render();
     });
   }

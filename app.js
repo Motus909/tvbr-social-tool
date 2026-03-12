@@ -72,8 +72,9 @@ canvas.addEventListener("touchend",   (e) => e.preventDefault(), { passive: fals
 imageUpload.addEventListener("change", (e) => {
   const f = e.target.files?.[0];
   if (!f) return;
-  // User uploaded their own image: clear any grading title sync
+  // User uploaded their own image: clear grading title sync AND grading markings
   window.titleImageData = null;
+  if (typeof window.clearGradingTitleMark === 'function') window.clearGradingTitleMark();
   const reader = new FileReader();
   reader.onload = (ev) => { img.src = ev.target.result; };
   reader.readAsDataURL(f);
@@ -220,8 +221,14 @@ function draw() {
   }
 
   if (hasTitleSync) {
-    // Draw graded+framed image from grading tab directly (1080×1350 → 1080×1350)
-    ctx.drawImage(window.titleImageData, 0, 0, cw, ch);
+    // Draw graded image with current pan/zoom transform (user can reframe in Tab 1)
+    const sw = window.titleImageData.width  || cw;
+    const sh = window.titleImageData.height || ch;
+    const fgScale = scale === 1 ? 1 : scale;
+    const fw = sw * fgScale, fh = sh * fgScale;
+    const fx = scale === 1 ? 0 : tx;
+    const fy = scale === 1 ? 0 : ty;
+    ctx.drawImage(window.titleImageData, fx, fy, fw, fh);
   } else {
     // Normal Tab-1 flow: blurred bg + framed foreground
     const iw = img.width, ih = img.height;
@@ -400,7 +407,23 @@ function clamp(v, lo, hi) {
 // ---- Grade-to-Title bridge ----
 // Called by grade.js after every render when titleImageIndex === currentIndex
 window.syncTitleFromGrade = function(gradeCanvasEl) {
-  window.titleImageData = gradeCanvasEl;
-  hasImage = false; // let titleImageData take over
+  window.titleImageData = gradeCanvasEl; // null = clear
+  if (gradeCanvasEl) {
+    hasImage = false; // titleImageData takes over as source
+  }
   draw();
 };
+
+// Called by grade.js when grading takes ownership of title
+// Clears direct upload so grading image is the only source
+window.clearTitleUpload = function() {
+  hasImage = false;
+  img.src = "";
+  imageUpload.value = "";
+  scale = 1; tx = 0; ty = 0;
+};
+
+// Called by app.js upload — tells grade.js to clear its title marking
+// grade.js sets this function on window during init
+// (it's set in grade.js, just declared here for clarity)
+// window.clearGradingTitleMark = function() { ... } — defined in grade.js
