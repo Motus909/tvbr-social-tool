@@ -24,17 +24,10 @@ body {
   --radius:   16px;
   --topbar-h: 72px;
 
-  /*
-    Canvas height: at most 700px, or viewport minus header+padding.
-    Canvas width:  exactly height * 4/5  →  guaranteed undistorted 4:5.
-    These values are used directly in grid-template-columns so both tabs
-    always get the IDENTICAL canvas column width.
-  */
-  --cv-h: min(calc(100vh - var(--topbar-h) - 36px), 700px);
-  --cv-w: calc(var(--cv-h) * 4 / 5);
-
-  /* Controls panel max width */
-  --ctrl-w: 340px;
+  --cv-h:    min(calc(100vh - var(--topbar-h) - 36px), 700px);
+  --cv-w:    calc(var(--cv-h) * 4 / 5);
+  --ctrl-w:  340px;
+  --thumb-w: 90px;
 }
 
 
@@ -84,43 +77,34 @@ body {
 /* ============================================================
    PAGE LAYOUT
 
-   Titelbild desktop:  [--cv-w]  [--ctrl-w]
-   Grading desktop:    [90px]  [--cv-w]  [--ctrl-w]
-   Mobile:             single column, stacked
-
-   --cv-w is derived from --cv-h via aspect-ratio math,
-   so the canvas column is ALWAYS exactly 4:5 — no distortion.
+   Both tabs use flex + justify-content:center.
+   Thumbnail column uses display:none when empty → zero width
+   → canvas+controls automatically stay centered.
    ============================================================ */
+
 .main {
   max-width: 1600px;
   margin: 0 auto;
   padding: 18px 16px 28px;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 18px;
-  align-items: start;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: stretch;
 }
 
 @media (min-width: 1100px) {
-  .main--generator {
-    grid-template-columns: var(--cv-w) var(--ctrl-w);
-    gap: 24px;
-  }
-  .main--grading {
-    grid-template-columns: 90px var(--cv-w) var(--ctrl-w);
+  .main {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: center;
     gap: 16px;
   }
 }
 
 
-/* ============================================================
-   CANVAS WRAP
-   Width = grid column = --cv-w (already 4:5 of --cv-h).
-   Height = --cv-h.  → perfect ratio, never distorted.
-   Mobile uses aspect-ratio fallback (no fixed height).
-   ============================================================ */
+/* ---- Canvas wrap ---- */
 .canvas-wrap {
-  /* mobile: full column width, height via aspect-ratio */
+  flex-shrink: 0;
   width: 100%;
   aspect-ratio: 4 / 5;
   border-radius: var(--radius);
@@ -132,7 +116,7 @@ body {
 
 @media (min-width: 1100px) {
   .canvas-wrap {
-    width: 100%;         /* = grid column = --cv-w */
+    width: var(--cv-w);
     height: var(--cv-h);
     aspect-ratio: unset;
   }
@@ -147,23 +131,48 @@ canvas {
 }
 
 
-/* ============================================================
-   THUMBNAIL STRIP
-   ============================================================ */
-.thumbnail-container {
+/* ---- Controls panel ---- */
+.controls {
+  flex-shrink: 0;
+  width: 100%;
+  padding: 12px;
   display: flex;
   flex-direction: column;
+  gap: 14px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  align-self: flex-start;
+}
+
+@media (min-width: 1100px) {
+  .controls { width: var(--ctrl-w); }
+}
+
+
+/* ============================================================
+   THUMBNAIL STRIP
+   When empty → display:none → zero width in flex row
+   → canvas stays centered just like the Titelbild tab
+   ============================================================ */
+.thumbnail-container {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 6px;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 @media (min-width: 1100px) {
   .thumbnail-container {
+    width: var(--thumb-w);
     height: var(--cv-h);
   }
 }
 
-/* Empty: no space at all */
 .thumbnail-container:empty { display: none; }
 
 .thumbnail-container img {
@@ -177,57 +186,24 @@ canvas {
   transition: border-color 0.12s;
 }
 .thumbnail-container img:hover { border-color: rgba(120,150,210,0.5); }
-/* Active state set via JS inline style — CSS selector covers both approaches */
-.thumbnail-container img.active,
-.thumbnail-container img[style*="solid #007bff"] { border-color: #007bff; }
 
 
 /* ============================================================
    MOBILE  (< 1100px)
    ============================================================ */
 @media (max-width: 1099px) {
-  .canvas-wrap {
-    width: 100%;
-    height: auto;
-    aspect-ratio: 4 / 5;
-  }
-
-  .main--grading {
-    grid-template-columns: 1fr;
-  }
-  .main--grading .canvas-wrap         { order: 1; }
-  .main--grading .thumbnail-container { order: 2; }
-  .main--grading .controls            { order: 3; }
-
   .thumbnail-container {
     flex-direction: row;
+    order: 2;
     width: 100%;
+    height: auto;
+    max-height: 92px;
     overflow-x: auto;
     overflow-y: hidden;
-    max-height: 92px;
-    display: flex;
   }
-  .thumbnail-container:empty { display: none; }
+  .canvas-wrap { order: 1; }
+  .controls    { order: 3; }
 }
-
-
-/* ============================================================
-   CONTROLS PANEL
-   ============================================================ */
-.controls {
-  width: 100%;
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  align-self: start;
-}
-
-/* On desktop controls column is already var(--ctrl-w) wide via grid */
 
 
 /* ============================================================
@@ -268,10 +244,11 @@ select.control             { padding: 11px 12px; }
    BUTTONS
    ============================================================ */
 .row      { display: flex; gap: 12px; }
-.row .btn { flex: 1; }
+.row .btn { flex: 1; width: auto; }
 
 .btn {
   appearance: none;
+  width: 100%;
   padding: 12px 14px;
   border: 1px solid rgba(255,255,255,0.12);
   border-radius: 14px;
@@ -334,35 +311,6 @@ select.control             { padding: 11px 12px; }
   background: transparent;
   border: none;
   box-shadow: none;
-}
-
-
-/* ============================================================
-   MISC
-   ============================================================ */
-.note {
-  padding: 12px;
-  border: 1px dashed rgba(255,255,255,0.14);
-  border-radius: 14px;
-  background: rgba(255,255,255,0.02);
-}
-.note-title { font-size: 13px; font-weight: 900; margin-bottom: 6px; }
-.note-text  { font-size: 13px; line-height: 1.35; color: var(--textDim); }
-
-.preview-footer {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 10px;
-  justify-content: center;
-}
-.pill {
-  font-size: 12px;
-  padding: 7px 10px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: rgba(255,255,255,0.03);
-  color: rgba(232,238,252,0.78);
 }
 
 

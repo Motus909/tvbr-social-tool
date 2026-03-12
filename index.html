@@ -5,10 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="color-scheme" content="dark">
   <title>TV Bad Ragaz – Social Tool</title>
+
+  <!-- Anton Font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="styles.css">
+  <!-- <style>
+
+  </style> -->
 </head>
 <body>
 
@@ -18,6 +24,7 @@
       <div class="brand-title">TV Bad Ragaz</div>
       <div class="brand-sub">Social Tool</div>
     </div>
+
     <nav class="tabs">
       <button class="tabbtn active" data-tab="generator">Titelbild</button>
       <button class="tabbtn" data-tab="grading">Grading</button>
@@ -25,12 +32,9 @@
   </div>
 </header>
 
-<!-- ================================================
-     TAB 1: Titelbild
-     ================================================ -->
+<!-- TAB 1: Generator -->
 <section id="tab-generator" class="tabcontent active">
   <main class="main main--generator">
-
     <div class="canvas-wrap">
       <canvas id="canvas" width="1080" height="1350"></canvas>
     </div>
@@ -40,8 +44,7 @@
       <input class="control" type="file" id="imageUpload" accept="image/*" />
 
       <label class="label">Titel</label>
-      <input class="control" type="text" id="titleInput"
-             placeholder="z.B. Dr schnellscht Ragazer" maxlength="60"/>
+      <input class="control" type="text" id="titleInput" placeholder="z.B. Dr schnellscht Ragazer" maxlength="60"/>
 
       <label class="label">Kategorie</label>
       <select class="control" id="categorySelect">
@@ -58,25 +61,18 @@
 
       <button class="btn primary" id="downloadBtn" type="button">PNG herunterladen</button>
     </section>
-
   </main>
 </section>
 
-<!-- ================================================
-     TAB 2: Grading
-     ================================================ -->
+<!-- TAB 2: Grading -->
 <section id="tab-grading" class="tabcontent">
   <main class="main main--grading">
-
-    <!-- Spalte 1: Thumbnails -->
     <div class="thumbnail-container" id="thumbnailContainer"></div>
 
-    <!-- Spalte 2: Canvas -->
     <div class="canvas-wrap">
       <canvas id="gradeCanvas" width="1080" height="1350"></canvas>
     </div>
 
-    <!-- Spalte 3: Controls -->
     <section class="controls">
       <label class="label">Fotos (mehrere möglich)</label>
       <input class="control" type="file" id="gradeUpload" accept="image/*" multiple>
@@ -86,15 +82,14 @@
         <button class="btn secondary" id="resetGradeBtn" type="button">Reset All</button>
       </div>
 
-      <!-- Preset -->
       <label class="label">Preset</label>
-      <select class="control" id="category-select">
+      <select id="category-select" class="control">
         <option value="drinnen">Drinnen</option>
         <option value="draussen">Draußen</option>
         <option value="sport">Sport</option>
         <option value="portraits">Portraits</option>
       </select>
-      <button class="btn" id="auto-grade-button" type="button">Preset anwenden</button>
+      <button id="auto-grade-button" class="btn">Preset anwenden</button>
 
       <div class="form-group">
         <input type="checkbox" id="titleImageCheckbox">
@@ -102,13 +97,13 @@
       </div>
 
       <div class="row">
-        <button class="btn" id="prevImgBtn" type="button">◀ Vorheriges</button>
-        <button class="btn" id="nextImgBtn" type="button">Nächstes ▶</button>
+        <button class="btn" id="prevImgBtn" type="button">Vorheriges Bild</button>
+        <button class="btn" id="nextImgBtn" type="button">Nächstes Bild</button>
       </div>
 
       <div class="row">
-        <button class="btn primary" id="downloadGradeBtn" type="button">Herunterladen</button>
-        <button class="btn primary" id="downloadAllBtn" type="button">Alle laden</button>
+        <button class="btn primary" id="downloadGradeBtn" type="button">Bild herunterladen</button>
+        <button class="btn primary" id="downloadAllBtn" type="button">Alle Bilder herunterladen</button>
       </div>
 
       <div class="sliderBlock">
@@ -148,10 +143,11 @@
 </section>
 
 <script>
+  // Tabs
   const btns = document.querySelectorAll(".tabbtn");
   const tabs = {
     generator: document.getElementById("tab-generator"),
-    grading:   document.getElementById("tab-grading"),
+    grading: document.getElementById("tab-grading"),
   };
   btns.forEach(b => b.addEventListener("click", () => {
     btns.forEach(x => x.classList.remove("active"));
