@@ -26,13 +26,15 @@
 </header>
 
 <!-- ================================================
-     TAB 1: Titelbild  →  canvas | controls
+     TAB 1: Titelbild
      ================================================ -->
 <section id="tab-generator" class="tabcontent active">
   <main class="main main--generator">
 
-    <div class="canvas-wrap">
-      <canvas id="canvas" width="1080" height="1350"></canvas>
+    <div class="canvas-col">
+      <div class="canvas-wrap">
+        <canvas id="canvas" width="1080" height="1350"></canvas>
+      </div>
     </div>
 
     <section class="controls">
@@ -63,17 +65,19 @@
 </section>
 
 <!-- ================================================
-     TAB 2: Grading  →  thumbnails | canvas | controls
+     TAB 2: Grading — thumbnails | canvas | controls
      ================================================ -->
 <section id="tab-grading" class="tabcontent">
   <main class="main main--grading">
 
-    <!-- Spalte 1: Thumbnail-Streifen -->
+    <!-- Spalte 1: Thumbnails -->
     <div class="thumbnail-container" id="thumbnailContainer"></div>
 
     <!-- Spalte 2: Canvas -->
-    <div class="canvas-wrap">
-      <canvas id="gradeCanvas" width="1080" height="1350"></canvas>
+    <div class="canvas-col">
+      <div class="canvas-wrap">
+        <canvas id="gradeCanvas" width="1080" height="1350"></canvas>
+      </div>
     </div>
 
     <!-- Spalte 3: Controls -->
