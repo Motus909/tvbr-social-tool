@@ -26,15 +26,13 @@
 </header>
 
 <!-- ================================================
-     TAB 1: Titelbild
+     TAB 1: Titelbild  →  [canvas-wrap] [controls]
      ================================================ -->
 <section id="tab-generator" class="tabcontent active">
   <main class="main main--generator">
 
-    <div class="canvas-col">
-      <div class="canvas-wrap">
-        <canvas id="canvas" width="1080" height="1350"></canvas>
-      </div>
+    <div class="canvas-wrap">
+      <canvas id="canvas" width="1080" height="1350"></canvas>
     </div>
 
     <section class="controls">
@@ -65,22 +63,17 @@
 </section>
 
 <!-- ================================================
-     TAB 2: Grading — thumbnails | canvas | controls
+     TAB 2: Grading  →  [thumbnails] [canvas-wrap] [controls]
      ================================================ -->
 <section id="tab-grading" class="tabcontent">
   <main class="main main--grading">
 
-    <!-- Spalte 1: Thumbnails -->
     <div class="thumbnail-container" id="thumbnailContainer"></div>
 
-    <!-- Spalte 2: Canvas -->
-    <div class="canvas-col">
-      <div class="canvas-wrap">
-        <canvas id="gradeCanvas" width="1080" height="1350"></canvas>
-      </div>
+    <div class="canvas-wrap">
+      <canvas id="gradeCanvas" width="1080" height="1350"></canvas>
     </div>
 
-    <!-- Spalte 3: Controls -->
     <section class="controls">
       <label class="label">Fotos (mehrere möglich)</label>
       <input class="control" type="file" id="gradeUpload" accept="image/*" multiple>
@@ -125,7 +118,7 @@
         <div class="sliderLabel">Sättigung</div>
         <div class="sliderLine">
           <input class="control" type="range" id="sSlider" min="-40" max="40" value="0">
-          <button class="iconbtn" id="sReset" type="button" title="Reset">↻</button>
+          <button class="iconbtn" id="kReset" type="button" title="Reset">↻</button>
         </div>
       </div>
 
@@ -133,7 +126,7 @@
         <div class="sliderLabel">Klarheit (Micro-Kontrast)</div>
         <div class="sliderLine">
           <input class="control" type="range" id="kSlider" min="0" max="30" value="0">
-          <button class="iconbtn" id="kReset" type="button" title="Reset">↻</button>
+          <button class="iconbtn" id="sReset" type="button" title="Reset">↻</button>
         </div>
       </div>
 

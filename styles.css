@@ -50,7 +50,7 @@ body {
 .brand-title { font-weight: 900; font-size: 18px; letter-spacing: 0.2px; }
 .brand-sub   { font-size: 13px; color: var(--textDim); }
 
-.tabs   { display: flex; gap: 10px; }
+.tabs { display: flex; gap: 10px; }
 .tabbtn {
   appearance: none;
   padding: 10px 14px;
@@ -71,7 +71,20 @@ body {
 
 /* ============================================================
    PAGE LAYOUT
+   
+   Strategie: Canvas-Wrap bekommt eine explizite Höhe (px),
+   Breite ergibt sich aus aspect-ratio: 4/5.
+   Canvas füllt den Wrap 100%×100% — kein Verzerren möglich
+   weil der Wrap selbst perfektes 4:5 hat.
    ============================================================ */
+
+/* Gemeinsame Canvas-Höhe als CSS-Variable */
+:root {
+  --cv-h: min(calc(100vh - var(--topbar-h) - 36px), 860px);
+  /* Breite ergibt sich zwingend: height * 4/5 */
+  --cv-w: calc(var(--cv-h) * 4 / 5);
+}
+
 .main {
   max-width: 1600px;
   margin: 0 auto;
@@ -82,32 +95,32 @@ body {
   align-items: start;
 }
 
+/* ---- Desktop: Titelbild — canvas links zentriert, controls rechts ---- */
 @media (min-width: 1100px) {
-  /* Titelbild: canvas nimmt nötigen Platz, controls den Rest */
   .main--generator {
-    grid-template-columns: auto 1fr;
+    /* Canvas-Spalte: exakt berechnete Breite. Controls: Rest. */
+    grid-template-columns: var(--cv-w) 1fr;
     gap: 28px;
   }
-  /* Grading: thumbnails fix | canvas auto | controls Rest */
+}
+
+/* ---- Desktop: Grading — thumbnails | canvas | controls ---- */
+@media (min-width: 1100px) {
   .main--grading {
-    grid-template-columns: 90px auto 1fr;
+    grid-template-columns: 90px var(--cv-w) 1fr;
     gap: 16px;
   }
 }
 
 
 /* ============================================================
-   CANVAS WRAP + CANVAS
-   
-   Kernprinzip: canvas bekommt NUR width:100%.
-   Die Höhe kommt ausschliesslich von aspect-ratio auf .canvas-wrap.
-   Niemals width UND height gleichzeitig auf canvas setzen —
-   das führt zur Verzerrung wenn der Container nicht exakt 4:5 ist.
+   CANVAS WRAP
+   Höhe explizit gesetzt. Breite = Spaltenbreite (= --cv-w).
+   aspect-ratio stellt sicher dass bei Abweichungen kein Stretch entsteht.
    ============================================================ */
 .canvas-wrap {
-  /* Breite: volle Spaltenbreite */
+  /* Mobile: volle Breite, Höhe via aspect-ratio */
   width: 100%;
-  /* Höhe: immer exakt 4:5 zur Breite */
   aspect-ratio: 4 / 5;
   border-radius: var(--radius);
   overflow: hidden;
@@ -116,21 +129,20 @@ body {
   box-shadow: var(--shadow);
 }
 
-/* Desktop: Höhe begrenzen, Breite folgt aspect-ratio */
 @media (min-width: 1100px) {
   .canvas-wrap {
-    width: auto;                              /* Breite von aspect-ratio berechnet */
-    height: calc(100vh - var(--topbar-h) - 36px);
-    max-height: 860px;
-    aspect-ratio: 4 / 5;                     /* Breite = Höhe * 4/5 */
+    /* Desktop: Höhe fest, Breite = --cv-w aus Grid-Spalte */
+    width: 100%;
+    height: var(--cv-h);
+    aspect-ratio: unset;  /* Grid-Spalte gibt die Breite vor, Höhe ist fix */
   }
 }
 
-/* Canvas: NUR Breite setzen. Höhe ergibt sich automatisch. */
+/* Canvas füllt Wrap immer komplett */
 canvas {
   display: block;
   width: 100%;
-  height: auto;
+  height: 100%;
   touch-action: none;
   user-select: none;
 }
@@ -148,8 +160,7 @@ canvas {
 
 @media (min-width: 1100px) {
   .thumbnail-container {
-    height: calc(100vh - var(--topbar-h) - 36px);
-    max-height: 860px;
+    height: var(--cv-h);  /* gleiche Höhe wie Canvas */
   }
 }
 
@@ -174,22 +185,22 @@ canvas {
    MOBILE (< 1100px)
    ============================================================ */
 @media (max-width: 1099px) {
+  /* Canvas: volle Breite, Höhe via aspect-ratio */
   .canvas-wrap {
     width: 100%;
     height: auto;
-    max-height: none;
     aspect-ratio: 4 / 5;
   }
 
-  canvas {
-    width: 100%;
-    height: auto;
+  /* Grading: Reihenfolge canvas → thumbnails → controls */
+  .main--grading {
+    grid-template-columns: 1fr;
   }
-
-  .main--grading .canvas-col          { order: 1; }
+  .main--grading .canvas-wrap         { order: 1; }
   .main--grading .thumbnail-container { order: 2; }
   .main--grading .controls            { order: 3; }
 
+  /* Thumbnails horizontal */
   .thumbnail-container {
     flex-direction: row;
     width: 100%;
