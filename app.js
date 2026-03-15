@@ -238,14 +238,18 @@ function draw() {
     ctx.fillRect(0, 0, cw, ch);
     ctx.restore();
 
-    // Framed foreground (exact position from grading)
-    ctx.drawImage(src, d.fgX, d.fgY, d.fgW, d.fgH);
+    // Framed foreground: grading position + user pan/zoom offset from Tab 1
+    const fgX = d.fgX + tx;
+    const fgY = d.fgY + ty;
+    const fgW = d.fgW * scale;
+    const fgH = d.fgH * scale;
+    ctx.drawImage(src, fgX, fgY, fgW, fgH);
 
-    // Edge gradients (same as normal Tab-1 flow)
-    const topGap    = d.fgY;
-    const bottomGap = ch - (d.fgY + d.fgH);
-    const leftGap   = d.fgX;
-    const rightGap  = cw - (d.fgX + d.fgW);
+    // Edge gradients
+    const topGap    = fgY;
+    const bottomGap = ch - (fgY + fgH);
+    const leftGap   = fgX;
+    const rightGap  = cw - (fgX + fgW);
     if (topGap > 1) {
       const gt = ctx.createLinearGradient(0, 0, 0, Math.min(160, topGap));
       gt.addColorStop(0, "rgba(0,0,0,0.35)"); gt.addColorStop(1, "rgba(0,0,0,0)");
@@ -443,9 +447,13 @@ function clamp(v, lo, hi) {
 
 // ---- Grade-to-Title bridge ----
 window.syncTitleFromGrade = function(data) {
-  // data = { img, fgX, fgY, fgW, fgH } or null to clear
+  const isNew = data && window.titleImageData?.img !== data?.img;
   window.titleImageData = data;
-  if (data) hasImage = false;
+  if (data) {
+    hasImage = false;
+    // Reset pan/zoom offset when a new image is synced from grading
+    if (isNew) { tx = 0; ty = 0; scale = 1; }
+  }
   draw();
 };
 
