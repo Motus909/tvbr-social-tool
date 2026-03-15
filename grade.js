@@ -265,16 +265,29 @@ if (!gradeCanvas) {
   }
 
   function downloadAllImages() {
+    // Sequential download with delay so canvas renders each image before capture
+    let chain = Promise.resolve();
     files.forEach((file, index) => {
-      currentIndex = index;
-      loadCurrentImage();
-      setTimeout(() => {
-        const a = document.createElement("a");
-        const name = file.name.replace(/\.[^.]+$/, "");
-        a.download = gradedData[index]?.isTitleImage ? `${name}_title.png` : `${name}_graded.png`;
-        a.href = gradeCanvas.toDataURL("image/png");
-        a.click();
-      }, 500 * (index + 1));
+      chain = chain.then(() => new Promise(resolve => {
+        saveCurrentGrading();
+        currentIndex = index;
+        loadCurrentImage();
+        setTimeout(() => {
+          const a = document.createElement("a");
+          const name = file.name.replace(/\.[^.]+$/, "");
+          if (gradedData[index]?.isTitleImage) {
+            // Download the Tab-1 canvas (includes overlay + grading)
+            const titleCanvas = document.getElementById('canvas');
+            a.download = `${name}_title.png`;
+            a.href = titleCanvas ? titleCanvas.toDataURL("image/png") : gradeCanvas.toDataURL("image/png");
+          } else {
+            a.download = `${name}_graded.png`;
+            a.href = gradeCanvas.toDataURL("image/png");
+          }
+          a.click();
+          resolve();
+        }, 600);
+      }));
     });
   }
 
@@ -417,14 +430,7 @@ if (!gradeCanvas) {
   if (downloadAllBtn)    downloadAllBtn.addEventListener("click", downloadAllImages);
   if (titleImageCheckbox) titleImageCheckbox.addEventListener("change", setAsTitleImage);
 
-  if (autoGradeBtn) {
-    autoGradeBtn.addEventListener("click", () => {
-      if (!srcImg.src) return;
-      render();
-      runAutoGrade();
-      render();
-    });
-  }
+
 
   if (applyPresetBtn && categorySelect) {
     applyPresetBtn.addEventListener('click', () => {

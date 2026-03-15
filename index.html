@@ -34,10 +34,12 @@
 
 <!-- TAB 1: Generator -->
 <section id="tab-generator" class="tabcontent active">
-  <main class="main main--generator">
-    <div class="canvas-wrap">
-      <canvas id="canvas" width="1080" height="1350"></canvas>
-    </div>
+  <main class="main">
+    <section class="preview">
+      <div class="canvas-wrap">
+        <canvas id="canvas" width="1080" height="1350"></canvas>
+      </div>
+    </section>
 
     <section class="controls">
       <label class="label">Bild</label>
@@ -66,30 +68,32 @@
 
 <!-- TAB 2: Grading -->
 <section id="tab-grading" class="tabcontent">
-  <main class="main main--grading">
-    <div class="thumbnail-container" id="thumbnailContainer"></div>
-
-    <div class="canvas-wrap">
-      <canvas id="gradeCanvas" width="1080" height="1350"></canvas>
-    </div>
+  <main class="main">
+    <section class="preview">
+      
+      <div class="canvas-wrap">
+        <canvas id="gradeCanvas" width="1080" height="1350"></canvas>
+      </div>
+      <div class="thumbnail-container" id="thumbnailContainer"></div>
+    </section>
 
     <section class="controls">
       <label class="label">Fotos (mehrere möglich)</label>
       <input class="control" type="file" id="gradeUpload" accept="image/*" multiple>
 
-      <div class="row">
-        <button class="btn" id="autoGradeBtn" type="button">Auto-Grade</button>
-        <button class="btn secondary" id="resetGradeBtn" type="button">Reset All</button>
+      <button class="btn secondary" id="resetGradeBtn" type="button">Reset All</button>
+
+      <div class="form-group">
+        <label for="category-select">Kategorie:</label>
+        <select id="category-select" class="form-control">
+          <option value="drinnen">Drinnen</option>
+          <option value="draussen">Draußen</option>
+          <option value="sport">Sport</option>
+          <option value="portraits">Portraits</option>
+        </select>
       </div>
 
-      <label class="label">Preset</label>
-      <select id="category-select" class="control">
-        <option value="drinnen">Drinnen</option>
-        <option value="draussen">Draußen</option>
-        <option value="sport">Sport</option>
-        <option value="portraits">Portraits</option>
-      </select>
-      <button id="auto-grade-button" class="btn">Preset anwenden</button>
+      <button id="auto-grade-button" class="button btn">Preset anwenden</button>
 
       <div class="form-group">
         <input type="checkbox" id="titleImageCheckbox">
