@@ -1,11 +1,11 @@
 /* =========================
    TV Bad Ragaz – Social Tool
-   styles.css
+   styles.css (FULL)
    ========================= */
 
-*, *::before, *::after { box-sizing: border-box; }
+/* ---- Reset / Base ---- */
+* { box-sizing: border-box; }
 html, body { height: 100%; }
-
 body {
   margin: 0;
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
@@ -14,97 +14,118 @@ body {
   overflow-x: hidden;
 }
 
+/* ---- Theme Vars ---- */
 :root {
-  --navy:     #1A355B;
-  --accent:   #e67e22;
-  --border:   rgba(255, 255, 255, 0.10);
-  --panel:    rgba(255, 255, 255, 0.035);
-  --textDim:  rgba(232, 238, 252, 0.72);
-  --shadow:   0 12px 30px rgba(0, 0, 0, 0.30);
-  --radius:   16px;
-  --topbar-h: 72px;
-
-  --cv-h:    min(calc(100vh - var(--topbar-h) - 36px), 700px);
-  --cv-w:    calc(var(--cv-h) * 4 / 5);
-  --ctrl-w:  340px;
-  --thumb-w: 90px;
+  --navy: #1A355B;
+  --accent: #e67e22;
+  --border: rgba(255, 255, 255, 0.10);
+  --panel: rgba(255, 255, 255, 0.035);
+  --panel2: rgba(255, 255, 255, 0.055);
+  --textDim: rgba(232, 238, 252, 0.72);
+  --shadow: 0 12px 30px rgba(0, 0, 0, 0.30);
+  --radius: 16px;
 }
 
-
-/* ============================================================
-   TOPBAR
-   ============================================================ */
+/* ---- Topbar (Header + Tabs in one line) ---- */
 .topbar {
-  height: var(--topbar-h);
-  padding: 0 16px;
+  padding: 14px 16px;
   border-bottom: 1px solid var(--border);
-  background: linear-gradient(180deg, rgba(255,255,255,0.03), transparent);
-  display: flex;
-  align-items: center;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0));
 }
+
 .topbar-inner {
-  width: 100%;
-  max-width: 1600px;
+  max-width: 1280px;
   margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
 }
-.brand       { display: flex; flex-direction: column; gap: 2px; }
-.brand-title { font-weight: 900; font-size: 18px; letter-spacing: 0.2px; }
-.brand-sub   { font-size: 13px; color: var(--textDim); }
 
-.tabs { display: flex; gap: 10px; }
-.tabbtn {
-  appearance: none;
-  padding: 10px 14px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: rgba(255,255,255,0.03);
-  color: rgba(232,238,252,0.92);
-  font-weight: 800;
-  cursor: pointer;
-  transition: transform 0.12s, background 0.12s, border-color 0.12s;
-}
-.tabbtn:hover  { transform: translateY(-1px); background: rgba(255,255,255,0.05); }
-.tabbtn.active { background: rgba(26,53,91,0.55); border-color: rgba(120,150,210,0.35); }
-
-.tabcontent        { display: none; }
-.tabcontent.active { display: block; }
-
-
-/* ============================================================
-   PAGE LAYOUT
-
-   Both tabs use flex + justify-content:center.
-   Thumbnail column uses display:none when empty → zero width
-   → canvas+controls automatically stay centered.
-   ============================================================ */
-
-.main {
-  max-width: 1600px;
-  margin: 0 auto;
-  padding: 18px 16px 28px;
+.brand {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  align-items: stretch;
+  gap: 2px;
+  min-width: 220px;
+}
+
+.brand-title {
+  font-weight: 900;
+  letter-spacing: 0.2px;
+  font-size: 18px;
+}
+
+.brand-sub {
+  font-size: 13px;
+  color: var(--textDim);
+}
+
+/* ---- Tabs ---- */
+.tabs {
+  display: flex;
+  gap: 10px;
+  flex-wrap: nowrap;
+}
+
+.tabbtn {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(232, 238, 252, 0.92);
+  padding: 10px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 800;
+  transition: transform 0.12s ease, background 0.12s ease, border-color 0.12s ease;
+}
+
+.tabbtn:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.tabbtn.active {
+  background: rgba(26, 53, 91, 0.55);
+  border-color: rgba(120, 150, 210, 0.35);
+}
+
+/* ---- Tabs Content ---- */
+.tabcontent {
+  display: none;
+}
+
+.tabcontent.active {
+  display: block;
+}
+
+/* ---- Main Layout (shared for both tabs) ---- */
+.main {
+  width: min(1280px, 100%);
+  margin: 0 auto;
+  padding: 18px 16px 28px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+  align-items: start;
 }
 
 @media (min-width: 1100px) {
   .main {
-    flex-direction: row;
-    align-items: flex-start;
-    justify-content: center;
-    gap: 16px;
+    grid-template-columns: 640px 1fr;
+    gap: 28px;
   }
 }
 
+/* ---- Preview (Canvas area) ---- */
+.preview {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+}
 
-/* ---- Canvas wrap ---- */
 .canvas-wrap {
-  flex-shrink: 0;
   width: 100%;
   aspect-ratio: 4 / 5;
   border-radius: var(--radius);
@@ -112,199 +133,168 @@ body {
   background: #000;
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
+  flex-grow: 1;
 }
 
-@media (min-width: 1100px) {
-  .canvas-wrap {
-    width: var(--cv-w);
-    height: var(--cv-h);
-    aspect-ratio: unset;
-  }
-}
-
+/* Canvas renders inside wrap */
 canvas {
-  display: block;
   width: 100%;
   height: 100%;
+  display: block;
   touch-action: none;
   user-select: none;
 }
 
+/* Desktop: try to fit everything without scroll */
+@media (min-width: 1100px) {
+  .canvas-wrap {
+    height: calc(100vh - 170px);
+    max-height: 900px;
+    aspect-ratio: auto;
+  }
+}
 
-/* ---- Controls panel ---- */
-.controls {
-  flex-shrink: 0;
-  width: 100%;
-  padding: 12px;
+/* Preview footer pills */
+.preview-footer {
   display: flex;
-  flex-direction: column;
-  gap: 14px;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+  justify-content: center;
+}
+
+.pill {
+  font-size: 12px;
+  color: rgba(232, 238, 252, 0.78);
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 7px 10px;
+  border-radius: 999px;
+}
+
+/* ---- Controls Panel ---- */
+.controls {
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: var(--radius);
+  padding: 12px;
   box-shadow: var(--shadow);
-  align-self: flex-start;
-}
-
-@media (min-width: 1100px) {
-  .controls { width: var(--ctrl-w); }
-}
-
-
-/* ============================================================
-   THUMBNAIL STRIP
-   When empty → display:none → zero width in flex row
-   → canvas stays centered just like the Titelbild tab
-   ============================================================ */
-.thumbnail-container {
-  flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  overflow-y: auto;
-  overflow-x: hidden;
+  gap: 14px;
 }
 
 @media (min-width: 1100px) {
-  .thumbnail-container {
-    width: var(--thumb-w);
-    height: var(--cv-h);
+  .controls {
+    margin: 0;
+    align-self: start;
   }
 }
 
-.thumbnail-container:empty { display: none; }
-
-.thumbnail-container img {
-  width: 80px;
-  height: 80px;
-  object-fit: cover;
-  cursor: pointer;
-  border: 2px solid transparent;
-  border-radius: 6px;
-  flex-shrink: 0;
-  transition: border-color 0.12s;
-}
-.thumbnail-container img:hover { border-color: rgba(120,150,210,0.5); }
-
-
-/* ============================================================
-   MOBILE  (< 1100px)
-   ============================================================ */
-@media (max-width: 1099px) {
-  .thumbnail-container {
-    flex-direction: row;
-    order: 2;
-    width: 100%;
-    height: auto;
-    max-height: 92px;
-    overflow-x: auto;
-    overflow-y: hidden;
-  }
-  .canvas-wrap { order: 1; }
-  .controls    { order: 3; }
-}
-
-
-/* ============================================================
-   FORM ELEMENTS
-   ============================================================ */
+/* ---- Form Elements ---- */
 .label {
   font-size: 13px;
   font-weight: 800;
-  color: rgba(232,238,252,0.75);
-  margin-top: 4px;
+  color: rgba(232, 238, 252, 0.75);
+  margin-top: 6px;
 }
+
 .control {
   width: 100%;
-  padding: 11px 12px;
-  border: 1px solid rgba(255,255,255,0.10);
   border-radius: 12px;
-  background: rgba(255,255,255,0.03);
-  color: rgba(232,238,252,0.92);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(232, 238, 252, 0.92);
+  padding: 11px 12px;
   outline: none;
 }
+
 .control:focus {
-  border-color: rgba(120,150,210,0.45);
-  box-shadow: 0 0 0 3px rgba(26,53,91,0.35);
+  border-color: rgba(120, 150, 210, 0.45);
+  box-shadow: 0 0 0 3px rgba(26, 53, 91, 0.35);
 }
-input[type="file"].control { padding: 10px; }
-select.control             { padding: 11px 12px; }
 
-.form-group {
+/* file input looks ugly by default; keep minimal */
+input[type="file"].control {
+  padding: 10px;
+}
+
+/* select */
+select.control {
+  padding: 11px 12px;
+}
+
+/* ---- Buttons ---- */
+.row {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: var(--textDim);
+  gap: 12px;
 }
-
-
-/* ============================================================
-   BUTTONS
-   ============================================================ */
-.row      { display: flex; gap: 12px; }
-.row .btn { flex: 1; width: auto; }
 
 .btn {
   appearance: none;
-  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(232, 238, 252, 0.92);
   padding: 12px 14px;
-  border: 1px solid rgba(255,255,255,0.12);
   border-radius: 14px;
-  background: rgba(255,255,255,0.04);
-  color: rgba(232,238,252,0.92);
-  font-weight: 900;
   cursor: pointer;
-  text-align: center;
-  transition: transform 0.12s, background 0.12s, border-color 0.12s;
-}
-.btn:hover  { transform: translateY(-1px); background: rgba(255,255,255,0.06); }
-.btn:active { transform: translateY(0); }
-
-.btn.primary       { background: rgba(26,53,91,0.65); border-color: rgba(120,150,210,0.35); }
-.btn.primary:hover { background: rgba(26,53,91,0.78); }
-.btn.secondary     { background: rgba(255,255,255,0.02); }
-
-.iconbtn {
-  width: 44px;
-  height: 44px;
-  flex-shrink: 0;
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 14px;
-  background: rgba(255,255,255,0.04);
-  color: rgba(232,238,252,0.92);
-  font-size: 18px;
   font-weight: 900;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.12s, background 0.12s;
+  transition: transform 0.12s ease, background 0.12s ease, border-color 0.12s ease;
 }
-.iconbtn:hover { transform: translateY(-1px); background: rgba(255,255,255,0.06); }
 
+.btn:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.06);
+}
 
-/* ============================================================
-   SLIDER BLOCKS
-   ============================================================ */
+.btn:active {
+  transform: translateY(0px);
+}
+
+.btn.primary {
+  background: rgba(26, 53, 91, 0.65);
+  border-color: rgba(120, 150, 210, 0.35);
+}
+
+.btn.primary:hover {
+  background: rgba(26, 53, 91, 0.78);
+}
+
+.btn.secondary {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* Make row buttons split equally */
+.row .btn {
+  flex: 1;
+}
+
+/* ---- Slider Blocks (label above, slider + reset) ---- */
 .sliderBlock {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding-top: 4px;
+  padding-top: 6px;
 }
+
 .sliderLabel {
-  font-size: 14px;
   font-weight: 900;
-  color: rgba(232,238,252,0.82);
+  color: rgba(232, 238, 252, 0.82);
+  font-size: 14px;
 }
+
+/* slider line: range + reset button */
 .sliderLine {
   display: grid;
   grid-template-columns: 1fr 44px;
   gap: 12px;
   align-items: center;
 }
+
+/* range input */
 .sliderLine input[type="range"].control {
   padding: 0;
   height: 40px;
@@ -313,14 +303,169 @@ select.control             { padding: 11px 12px; }
   box-shadow: none;
 }
 
+/* reset icon button */
+.iconbtn {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(232, 238, 252, 0.92);
+  font-size: 18px;
+  font-weight: 900;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.12s ease, background 0.12s ease;
+}
+
+.iconbtn:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* ---- Note / Workflow box ---- */
+.note {
+  border: 1px dashed rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 14px;
+  padding: 12px;
+}
+
+.note-title {
+  font-weight: 900;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.note-text {
+  color: rgba(232, 238, 252, 0.72);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+/* ---- Small screens ---- */
+@media (max-width: 520px) {
+  .topbar-inner {
+    gap: 10px;
+  }
+
+  .brand {
+    min-width: 0;
+  }
+
+  .brand-title {
+    font-size: 16px;
+  }
+
+  .tabbtn {
+    padding: 9px 12px;
+    border-radius: 12px;
+  }
+
+  .row {
+    flex-direction: column;
+  }
+
+  .row .btn {
+    flex: unset;
+    width: 100%;
+  }
+}
+
+/* ---- Thumbnail Container ---- */
+.thumbnail-container {
+  display: flex;
+  flex-direction: column;
+  width: 100px;
+  margin-right: 10px;
+  gap: 5px;
+  overflow-y: auto;
+  max-height: 600px;
+}
+
+.thumbnail-container img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  margin: 5px 0;
+  cursor: pointer;
+  border: 2px solid transparent;
+  border-radius: 4px;
+}
+
+.thumbnail-container img.active {
+  border: 2px solid #007bff;
+}
+
+/* Desktop: try to fit everything without scroll */
+@media (min-width: 1100px) {
+  .canvas-wrap {
+    height: calc(100vh - 170px);
+    max-height: 900px;
+    aspect-ratio: auto;
+  }
+  .preview {
+    flex-direction: row;
+  }
+  .thumbnail-container {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 1100px) {
+  .preview {
+    flex-direction: column;
+  }
+
+  .thumbnail-container {
+    flex-direction: row;
+    width: 100%;
+    max-height: none;
+    overflow-x: auto;
+  }
+}
 
 /* ============================================================
-   SMALL SCREENS  (≤ 520px)
+   ACCORDION
    ============================================================ */
-@media (max-width: 520px) {
-  .topbar      { height: auto; padding: 12px 16px; }
-  .brand-title { font-size: 16px; }
-  .tabbtn      { padding: 9px 12px; }
-  .row         { flex-direction: column; }
-  .row .btn    { flex: unset; width: 100%; }
+.accordion {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.accordion-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: rgba(255,255,255,0.04);
+  border: none;
+  color: rgba(232,238,252,0.92);
+  font-weight: 900;
+  font-size: 14px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.12s;
+}
+.accordion-toggle:hover { background: rgba(255,255,255,0.07); }
+.accordion-toggle[aria-expanded="true"] { background: rgba(26,53,91,0.35); }
+
+.accordion-arrow { font-size: 12px; flex-shrink: 0; }
+
+.accordion-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 12px;
+}
+
+.accordion-toggle[aria-expanded="true"] + .accordion-body {
+  padding: 12px;
 }
