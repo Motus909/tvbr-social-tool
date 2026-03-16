@@ -5,16 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="color-scheme" content="dark">
   <title>TV Bad Ragaz – Social Tool</title>
-
-  <!-- Anton Font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
-
   <link rel="stylesheet" href="styles.css">
-  <!-- <style>
-
-  </style> -->
 </head>
 <body>
 
@@ -24,7 +18,6 @@
       <div class="brand-title">TV Bad Ragaz</div>
       <div class="brand-sub">Social Tool</div>
     </div>
-
     <nav class="tabs">
       <button class="tabbtn active" data-tab="generator">Titelbild</button>
       <button class="tabbtn" data-tab="grading">Grading</button>
@@ -32,9 +25,10 @@
   </div>
 </header>
 
-<!-- TAB 1: Generator -->
+<!-- TAB 1: Titelbild -->
 <section id="tab-generator" class="tabcontent active">
   <main class="main main--generator">
+
     <div class="canvas-wrap">
       <canvas id="canvas" width="1080" height="1350"></canvas>
     </div>
@@ -61,12 +55,14 @@
 
       <button class="btn primary" id="downloadBtn" type="button">PNG herunterladen</button>
     </section>
+
   </main>
 </section>
 
 <!-- TAB 2: Grading -->
 <section id="tab-grading" class="tabcontent">
   <main class="main main--grading">
+
     <div class="thumbnail-container" id="thumbnailContainer"></div>
 
     <div class="canvas-wrap">
@@ -77,22 +73,16 @@
       <label class="label">Fotos (mehrere möglich)</label>
       <input class="control" type="file" id="gradeUpload" accept="image/*" multiple>
 
-      <div class="row">
-        <button class="btn" id="autoGradeBtn" type="button">Auto-Grade</button>
-        <button class="btn secondary" id="resetGradeBtn" type="button">Reset All</button>
-      </div>
+      <button class="btn secondary" id="resetGradeBtn" type="button">Reset All</button>
 
-      <div class="form-group">
-        <label for="category-select">Kategorie:</label>
-        <select id="category-select" class="form-control">
-          <option value="drinnen">Drinnen</option>
-          <option value="draussen">Draußen</option>
-          <option value="sport">Sport</option>
-          <option value="portraits">Portraits</option>
-        </select>
-      </div>
-
-      <button id="auto-grade-button" class="button btn">Preset anwenden</button>
+      <label class="label">Preset</label>
+      <select id="category-select" class="control">
+        <option value="drinnen">Drinnen</option>
+        <option value="draussen">Draußen</option>
+        <option value="sport">Sport</option>
+        <option value="portraits">Portraits</option>
+      </select>
+      <button id="auto-grade-button" class="btn">Preset anwenden</button>
 
       <div class="form-group">
         <input type="checkbox" id="titleImageCheckbox">
@@ -100,44 +90,48 @@
       </div>
 
       <div class="row">
-        <button class="btn" id="prevImgBtn" type="button">Vorheriges Bild</button>
-        <button class="btn" id="nextImgBtn" type="button">Nächstes Bild</button>
+        <button class="btn" id="prevImgBtn" type="button">◀ Vorheriges</button>
+        <button class="btn" id="nextImgBtn" type="button">Nächstes ▶</button>
       </div>
 
       <div class="row">
-        <button class="btn primary" id="downloadGradeBtn" type="button">Bild herunterladen</button>
-        <button class="btn primary" id="downloadAllBtn" type="button">Alle Bilder herunterladen</button>
+        <button class="btn primary" id="downloadGradeBtn" type="button">Herunterladen</button>
+        <button class="btn primary" id="downloadAllBtn" type="button">Alle laden</button>
       </div>
 
-      <div class="sliderBlock">
-        <div class="sliderLabel">Helligkeit</div>
-        <div class="sliderLine">
-          <input class="control" type="range" id="bSlider" min="-40" max="40" value="0">
-          <button class="iconbtn" id="bReset" type="button" title="Reset">↻</button>
-        </div>
-      </div>
-
-      <div class="sliderBlock">
-        <div class="sliderLabel">Kontrast</div>
-        <div class="sliderLine">
-          <input class="control" type="range" id="cSlider" min="-40" max="40" value="0">
-          <button class="iconbtn" id="cReset" type="button" title="Reset">↻</button>
-        </div>
-      </div>
-
-      <div class="sliderBlock">
-        <div class="sliderLabel">Sättigung</div>
-        <div class="sliderLine">
-          <input class="control" type="range" id="sSlider" min="-40" max="40" value="0">
-          <button class="iconbtn" id="sReset" type="button" title="Reset">↻</button>
-        </div>
-      </div>
-
-      <div class="sliderBlock">
-        <div class="sliderLabel">Klarheit (Micro-Kontrast)</div>
-        <div class="sliderLine">
-          <input class="control" type="range" id="kSlider" min="0" max="30" value="0">
-          <button class="iconbtn" id="kReset" type="button" title="Reset">↻</button>
+      <div class="accordion">
+        <button class="accordion-toggle" type="button" aria-expanded="false">
+          Farbkorrektur <span class="accordion-arrow">▸</span>
+        </button>
+        <div class="accordion-body">
+          <div class="sliderBlock">
+            <div class="sliderLabel">Helligkeit</div>
+            <div class="sliderLine">
+              <input class="control" type="range" id="bSlider" min="-40" max="40" value="0">
+              <button class="iconbtn" id="bReset" type="button" title="Reset">↻</button>
+            </div>
+          </div>
+          <div class="sliderBlock">
+            <div class="sliderLabel">Kontrast</div>
+            <div class="sliderLine">
+              <input class="control" type="range" id="cSlider" min="-40" max="40" value="0">
+              <button class="iconbtn" id="cReset" type="button" title="Reset">↻</button>
+            </div>
+          </div>
+          <div class="sliderBlock">
+            <div class="sliderLabel">Sättigung</div>
+            <div class="sliderLine">
+              <input class="control" type="range" id="sSlider" min="-40" max="40" value="0">
+              <button class="iconbtn" id="sReset" type="button" title="Reset">↻</button>
+            </div>
+          </div>
+          <div class="sliderBlock">
+            <div class="sliderLabel">Klarheit (Micro-Kontrast)</div>
+            <div class="sliderLine">
+              <input class="control" type="range" id="kSlider" min="0" max="30" value="0">
+              <button class="iconbtn" id="kReset" type="button" title="Reset">↻</button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -146,11 +140,22 @@
 </section>
 
 <script>
+  // Accordion
+  document.querySelectorAll('.accordion-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const expanded = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!expanded));
+      btn.querySelector('.accordion-arrow').textContent = expanded ? '▸' : '▾';
+      const body = btn.nextElementSibling;
+      body.style.maxHeight = expanded ? '0' : body.scrollHeight + 'px';
+    });
+  });
+
   // Tabs
   const btns = document.querySelectorAll(".tabbtn");
   const tabs = {
     generator: document.getElementById("tab-generator"),
-    grading: document.getElementById("tab-grading"),
+    grading:   document.getElementById("tab-grading"),
   };
   btns.forEach(b => b.addEventListener("click", () => {
     btns.forEach(x => x.classList.remove("active"));
