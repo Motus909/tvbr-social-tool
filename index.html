@@ -69,6 +69,31 @@
       <canvas id="gradeCanvas" width="1080" height="1350"></canvas>
     </div>
 
+    <!-- Mobile: Slider-Bar direkt unter Canvas -->
+    <div class="mobile-sliders">
+      <div class="mobile-slider-btns">
+        <button class="mslider-btn active" data-slider="b" type="button">
+          <span class="mslider-icon">☀</span>
+          <span class="mslider-label">Helligkeit</span>
+        </button>
+        <button class="mslider-btn" data-slider="c" type="button">
+          <span class="mslider-icon">◑</span>
+          <span class="mslider-label">Kontrast</span>
+        </button>
+        <button class="mslider-btn" data-slider="s" type="button">
+          <span class="mslider-icon">❋</span>
+          <span class="mslider-label">Sättigung</span>
+        </button>
+        <button class="mslider-btn" data-slider="k" type="button">
+          <span class="mslider-icon">⬡</span>
+          <span class="mslider-label">Klarheit</span>
+        </button>
+      </div>
+      <div class="mobile-slider-track">
+        <input class="mobile-slider-range" id="mSlider" type="range" min="-40" max="40" value="0">
+      </div>
+    </div>
+
     <section class="controls">
       <label class="label">Fotos (mehrere möglich)</label>
       <input class="control" type="file" id="gradeUpload" accept="image/*" multiple>
@@ -148,6 +173,52 @@
       btn.querySelector('.accordion-arrow').textContent = expanded ? '▸' : '▾';
       const body = btn.nextElementSibling;
       body.style.maxHeight = expanded ? '0' : body.scrollHeight + 'px';
+    });
+  });
+
+  // Mobile slider bar
+  const MSLIDER_CONFIG = {
+    b: { min: -40, max: 40, id: 'bSlider' },
+    c: { min: -40, max: 40, id: 'cSlider' },
+    s: { min: -40, max: 40, id: 'sSlider' },
+    k: { min:   0, max: 30, id: 'kSlider' },
+  };
+  let mSliderActive = 'b';
+  const mSlider = document.getElementById('mSlider');
+  const mBtns   = document.querySelectorAll('.mslider-btn');
+
+  function syncMSlider() {
+    const cfg = MSLIDER_CONFIG[mSliderActive];
+    const src = document.getElementById(cfg.id);
+    mSlider.min   = cfg.min;
+    mSlider.max   = cfg.max;
+    mSlider.value = src ? src.value : 0;
+  }
+
+  mBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      mBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      mSliderActive = btn.dataset.slider;
+      syncMSlider();
+    });
+  });
+
+  mSlider?.addEventListener('input', () => {
+    const target = document.getElementById(MSLIDER_CONFIG[mSliderActive].id);
+    if (target) {
+      target.value = mSlider.value;
+      target.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+  });
+
+  // Keep mobile slider in sync when desktop sliders change
+  ['bSlider','cSlider','sSlider','kSlider'].forEach(id => {
+    document.getElementById(id)?.addEventListener('input', () => {
+      const key = id[0]; // b, c, s, k
+      if (key === mSliderActive && mSlider) {
+        mSlider.value = document.getElementById(id).value;
+      }
     });
   });
 
