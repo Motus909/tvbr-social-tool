@@ -243,7 +243,16 @@ function draw() {
     const fgY = d.fgY + ty;
     const fgW = d.fgW * scale;
     const fgH = d.fgH * scale;
-    ctx.drawImage(src, fgX, fgY, fgW, fgH);
+
+    if (d.rotDeg && d.rotDeg !== 0) {
+      ctx.save();
+      ctx.translate(cw / 2, ch / 2);
+      ctx.rotate(d.rotDeg * Math.PI / 180);
+      ctx.drawImage(src, fgX - cw/2, fgY - ch/2, fgW, fgH);
+      ctx.restore();
+    } else {
+      ctx.drawImage(src, fgX, fgY, fgW, fgH);
+    }
 
     // Edge gradients
     const topGap    = fgY;
