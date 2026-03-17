@@ -221,64 +221,8 @@ function draw() {
   }
 
   if (hasTitleSync) {
-    // Render graded image with blur background — same technique as Grading tab
-    const d   = window.titleImageData;
-    const src = d.img;
-    const iw  = src.naturalWidth, ih = src.naturalHeight;
-
-    // Blurred cover background
-    const bgScale = Math.max(cw / iw, ch / ih);
-    const bgW = iw * bgScale, bgH = ih * bgScale;
-    const bgX = (cw - bgW) / 2,  bgY = (ch - bgH) / 2;
-    ctx.save();
-    ctx.filter = "blur(24px)";
-    ctx.drawImage(src, bgX, bgY, bgW, bgH);
-    ctx.filter = "none";
-    ctx.fillStyle = "rgba(0,0,0,0.18)";
-    ctx.fillRect(0, 0, cw, ch);
-    ctx.restore();
-
-    // Framed foreground: grading position + user pan/zoom offset from Tab 1
-    const fgX = d.fgX + tx;
-    const fgY = d.fgY + ty;
-    const fgW = d.fgW * scale;
-    const fgH = d.fgH * scale;
-
-    if (d.rotDeg && d.rotDeg !== 0) {
-      ctx.save();
-      ctx.translate(cw / 2, ch / 2);
-      ctx.rotate(d.rotDeg * Math.PI / 180);
-      ctx.drawImage(src, fgX - cw/2, fgY - ch/2, fgW, fgH);
-      ctx.restore();
-    } else {
-      ctx.drawImage(src, fgX, fgY, fgW, fgH);
-    }
-
-    // Edge gradients
-    const topGap    = fgY;
-    const bottomGap = ch - (fgY + fgH);
-    const leftGap   = fgX;
-    const rightGap  = cw - (fgX + fgW);
-    if (topGap > 1) {
-      const gt = ctx.createLinearGradient(0, 0, 0, Math.min(160, topGap));
-      gt.addColorStop(0, "rgba(0,0,0,0.35)"); gt.addColorStop(1, "rgba(0,0,0,0)");
-      ctx.fillStyle = gt; ctx.fillRect(0, 0, cw, Math.min(160, topGap));
-    }
-    if (bottomGap > 1) {
-      const gb = ctx.createLinearGradient(0, ch - Math.min(220, bottomGap), 0, ch);
-      gb.addColorStop(0, "rgba(0,0,0,0)"); gb.addColorStop(1, "rgba(0,0,0,0.45)");
-      ctx.fillStyle = gb; ctx.fillRect(0, ch - Math.min(220, bottomGap), cw, Math.min(220, bottomGap));
-    }
-    if (leftGap > 1) {
-      const gl = ctx.createLinearGradient(0, 0, Math.min(140, leftGap), 0);
-      gl.addColorStop(0, "rgba(0,0,0,0.25)"); gl.addColorStop(1, "rgba(0,0,0,0)");
-      ctx.fillStyle = gl; ctx.fillRect(0, 0, Math.min(140, leftGap), ch);
-    }
-    if (rightGap > 1) {
-      const gr = ctx.createLinearGradient(cw - Math.min(140, rightGap), 0, cw, 0);
-      gr.addColorStop(0, "rgba(0,0,0,0)"); gr.addColorStop(1, "rgba(0,0,0,0.25)");
-      ctx.fillStyle = gr; ctx.fillRect(cw - Math.min(140, rightGap), 0, Math.min(140, rightGap), ch);
-    }
+    // gradeCanvas passed directly — 1:1 copy includes all grading, framing, rotation
+    ctx.drawImage(window.titleImageData, 0, 0, cw, ch);
   } else {
     // Normal Tab-1 flow: blurred bg + framed foreground
     const iw = img.width, ih = img.height;
@@ -455,14 +399,9 @@ function clamp(v, lo, hi) {
 }
 
 // ---- Grade-to-Title bridge ----
-window.syncTitleFromGrade = function(data) {
-  const isNew = data && window.titleImageData?.img !== data?.img;
-  window.titleImageData = data;
-  if (data) {
-    hasImage = false;
-    // Reset pan/zoom offset when a new image is synced from grading
-    if (isNew) { tx = 0; ty = 0; scale = 1; }
-  }
+window.syncTitleFromGrade = function(gradeCanvasEl) {
+  window.titleImageData = gradeCanvasEl;
+  if (gradeCanvasEl) { hasImage = false; }
   draw();
 };
 

@@ -36,6 +36,10 @@ body {
   background: linear-gradient(180deg, rgba(255,255,255,0.03), transparent);
   display: flex;
   align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(8px);
 }
 .topbar-inner {
   width: 100%;
@@ -110,6 +114,8 @@ body {
     width: var(--cv-w);
     height: var(--cv-h);
     aspect-ratio: unset;
+    position: sticky;
+    top: calc(var(--topbar-h) + 18px);
   }
 }
 
@@ -159,6 +165,8 @@ canvas {
   .thumbnail-container {
     width: var(--thumb-w);
     height: var(--cv-h);
+    position: sticky;
+    top: calc(var(--topbar-h) + 18px);
   }
 }
 
@@ -344,98 +352,4 @@ select.control             { padding: 11px 12px; }
   .tabbtn      { padding: 9px 12px; }
   .row         { flex-direction: column; }
   .row .btn    { flex: unset; width: 100%; }
-}
-
-/* ============================================================
-   MOBILE SLIDER BAR (Grading Tab, < 1100px)
-   ============================================================ */
-.mobile-sliders { display: none; }
-
-@media (max-width: 1099px) {
-  .mobile-sliders {
-    display: flex;
-    flex-direction: column;
-    order: 2;
-    width: 100%;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-  }
-
-  .mobile-slider-btns {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-  }
-
-  .mslider-btn {
-    appearance: none;
-    border: none;
-    border-right: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-    background: transparent;
-    color: rgba(232,238,252,0.6);
-    padding: 7px 2px;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 3px;
-    transition: background 0.12s, color 0.12s;
-  }
-  .mslider-btn:nth-child(6),
-  .mslider-btn:nth-child(11) { border-right: none; }
-  .mslider-btn:nth-child(n+7) { border-bottom: none; }
-  .mslider-btn:hover  { background: rgba(255,255,255,0.05); color: rgba(232,238,252,0.9); }
-  .mslider-btn.active {
-    background: rgba(26,53,91,0.45);
-    color: rgba(232,238,252,0.95);
-    box-shadow: inset 0 -2px 0 rgba(120,150,210,0.7);
-  }
-
-  .mslider-icon  { font-size: 15px; line-height: 1; }
-  .mslider-label { font-size: 8px; font-weight: 700; letter-spacing: 0.2px; }
-
-  .mobile-slider-track {
-    padding: 12px 16px;
-    background: rgba(0,0,0,0.2);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    min-height: 68px;
-  }
-
-  .mobile-slider-range {
-    flex: 1;
-    -webkit-appearance: auto;
-    appearance: auto;
-    height: 44px;
-    cursor: pointer;
-    accent-color: #4a7fd4;
-  }
-
-  .mobile-reset-btn {
-    flex-shrink: 0;
-    width: 44px;
-    height: 44px;
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 12px;
-    background: rgba(255,255,255,0.04);
-    color: rgba(232,238,252,0.92);
-    font-size: 18px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.12s;
-  }
-  .mobile-reset-btn:hover { background: rgba(255,255,255,0.08); }
-
-  /* Hide desktop accordion on mobile */
-  #tab-grading .accordion { display: none; }
-
-  #tab-grading .canvas-wrap         { order: 1; }
-  #tab-grading .mobile-sliders      { order: 2; }
-  #tab-grading .thumbnail-container { order: 3; }
-  #tab-grading .controls            { order: 4; }
 }

@@ -19,28 +19,14 @@ if (!gradeCanvas) {
   const titleImageCheckbox = $("titleImageCheckbox");
   const categorySelect    = $("category-select");
   const applyPresetBtn    = $("auto-grade-button");
-  const bSlider    = $("bSlider");
-  const cSlider    = $("cSlider");
-  const hlSlider   = $("hlSlider");
-  const shSlider   = $("shSlider");
-  const sSlider    = $("sSlider");
-  const kSlider    = $("kSlider");
-  const tmpSlider  = $("tmpSlider");
-  const tintSlider = $("tintSlider");
-  const vigSlider  = $("vigSlider");
-  const shrpSlider = $("shrpSlider");
-  const rotSlider  = $("rotSlider");
-  const bReset     = $("bReset");
-  const cReset     = $("cReset");
-  const hlReset    = $("hlReset");
-  const shReset    = $("shReset");
-  const sReset     = $("sReset");
-  const kReset     = $("kReset");
-  const tmpReset   = $("tmpReset");
-  const tintReset  = $("tintReset");
-  const vigReset   = $("vigReset");
-  const shrpReset  = $("shrpReset");
-  const rotReset   = $("rotReset");
+  const bSlider = $("bSlider");
+  const cSlider = $("cSlider");
+  const sSlider = $("sSlider");
+  const kSlider = $("kSlider");
+  const bReset  = $("bReset");
+  const cReset  = $("cReset");
+  const sReset  = $("sReset");
+  const kReset  = $("kReset");
   const gradeWrap = gradeCanvas.closest(".canvas-wrap");
 
   // ---- State ----
@@ -55,7 +41,6 @@ if (!gradeCanvas) {
   let scaleMult  = 1;
   let offX       = 0;
   let offY       = 0;
-  let rotDeg     = 0;
 
   // Interaction
   let isInteracting  = false;
@@ -71,52 +56,36 @@ if (!gradeCanvas) {
 
   // Presets
   const PRESETS = {
-    //              b    c   hl   sh    s    k  tmp tint  vig shrp rot
-    drinnen:   { b:  5, c:  8, hl: -5, sh: 10, s: -5, k:  4, tmp:  8, tint:  2, vig:  8, shrp:  5, rot: 0 },
-    draussen:  { b:  0, c:  5, hl: -8, sh:  5, s:  8, k:  6, tmp: -5, tint:  0, vig:  5, shrp:  8, rot: 0 },
-    sport:     { b:  3, c: 12, hl:-10, sh:  8, s: 10, k:  8, tmp:  0, tint:  0, vig: 12, shrp: 12, rot: 0 },
-    portraits: { b:  4, c:  6, hl: -6, sh: 12, s:  2, k:  2, tmp:  6, tint:  3, vig: 10, shrp:  4, rot: 0 },
+    drinnen:   { b:  5, c:  8, s: -5, k:  4 },
+    draussen:  { b:  0, c:  5, s:  8, k:  6 },
+    sport:     { b:  3, c: 12, s: 10, k:  8 },
+    portraits: { b:  4, c:  6, s:  2, k:  2 },
   };
 
   // ---- Helpers ----
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
-  function setSliders(b, c, hl, sh, s, k, tmp, tint, vig, shrp, rot) {
-    if (bSlider)    bSlider.value    = b    ?? 0;
-    if (cSlider)    cSlider.value    = c    ?? 0;
-    if (hlSlider)   hlSlider.value   = hl   ?? 0;
-    if (shSlider)   shSlider.value   = sh   ?? 0;
-    if (sSlider)    sSlider.value    = s    ?? 0;
-    if (kSlider)    kSlider.value    = k    ?? 0;
-    if (tmpSlider)  tmpSlider.value  = tmp  ?? 0;
-    if (tintSlider) tintSlider.value = tint ?? 0;
-    if (vigSlider)  vigSlider.value  = vig  ?? 0;
-    if (shrpSlider) shrpSlider.value = shrp ?? 0;
-    if (rotSlider)  rotSlider.value  = rot  ?? 0;
-    rotDeg = rot ?? 0;
+  function setSliders(b, c, s, k) {
+    if (bSlider) bSlider.value = b;
+    if (cSlider) cSlider.value = c;
+    if (sSlider) sSlider.value = s;
+    if (kSlider) kSlider.value = k;
   }
 
   function getSliders() {
     return {
-      b:    bSlider    ? parseInt(bSlider.value,    10) : 0,
-      c:    cSlider    ? parseInt(cSlider.value,    10) : 0,
-      hl:   hlSlider   ? parseInt(hlSlider.value,   10) : 0,
-      sh:   shSlider   ? parseInt(shSlider.value,   10) : 0,
-      s:    sSlider    ? parseInt(sSlider.value,    10) : 0,
-      k:    kSlider    ? parseInt(kSlider.value,    10) : 0,
-      tmp:  tmpSlider  ? parseInt(tmpSlider.value,  10) : 0,
-      tint: tintSlider ? parseInt(tintSlider.value, 10) : 0,
-      vig:  vigSlider  ? parseInt(vigSlider.value,  10) : 0,
-      shrp: shrpSlider ? parseInt(shrpSlider.value, 10) : 0,
-      rot:  rotSlider  ? parseFloat(rotSlider.value)    : 0,
+      b: bSlider ? parseInt(bSlider.value, 10) : 0,
+      c: cSlider ? parseInt(cSlider.value, 10) : 0,
+      s: sSlider ? parseInt(sSlider.value, 10) : 0,
+      k: kSlider ? parseInt(kSlider.value, 10) : 0,
     };
   }
 
   function saveCurrentGrading() {
     if (files.length === 0) return;
-    const vals = getSliders();
+    const { b, c, s, k } = getSliders();
     if (!gradedData[currentIndex]) gradedData[currentIndex] = {};
-    Object.assign(gradedData[currentIndex], { ...vals, scaleMult, offX, offY });
+    Object.assign(gradedData[currentIndex], { b, c, s, k, scaleMult, offX, offY });
   }
 
   function startInteracting() {
@@ -178,16 +147,19 @@ if (!gradeCanvas) {
   const srcImg = new Image();
 
   srcImg.onload = () => {
+    // Restore saved framing, or reset to defaults for new images
     const saved = gradedData[currentIndex];
     if (saved && saved.scaleMult !== undefined) {
       scaleMult = saved.scaleMult;
       offX      = saved.offX;
       offY      = saved.offY;
-      rotDeg    = saved.rot ?? 0;
     } else {
-      scaleMult = 1; offX = 0; offY = 0; rotDeg = 0;
+      scaleMult = 1;
+      offX = 0;
+      offY = 0;
     }
     render();
+    // If this is the title image, sync Tab 1 canvas live
     if (gradedData[currentIndex]?.isTitleImage) syncTitleCanvas();
   };
 
@@ -198,10 +170,10 @@ if (!gradeCanvas) {
       // Restore saved sliders or reset to 0
       const saved = gradedData[currentIndex];
       if (saved) {
-        setSliders(saved.b??0, saved.c??0, saved.hl??0, saved.sh??0, saved.s??0, saved.k??0, saved.tmp??0, saved.tint??0, saved.vig??0, saved.shrp??0, saved.rot??0);
+        setSliders(saved.b ?? 0, saved.c ?? 0, saved.s ?? 0, saved.k ?? 0);
       } else {
-        setSliders(0,0,0,0,0,0,0,0,0,0,0);
-        gradedData[currentIndex] = { b:0,c:0,hl:0,sh:0,s:0,k:0,tmp:0,tint:0,vig:0,shrp:0,rot:0 };
+        setSliders(0, 0, 0, 0);
+        gradedData[currentIndex] = { b: 0, c: 0, s: 0, k: 0 };
       }
       // Update checkbox
       if (titleImageCheckbox) {
@@ -268,18 +240,8 @@ if (!gradeCanvas) {
   function syncTitleCanvas() {
     if (titleImageIndex < 0 || currentIndex !== titleImageIndex) return;
     if (typeof window.syncTitleFromGrade === 'function') {
-      const iw = srcImg.naturalWidth, ih = srcImg.naturalHeight;
-      const cw = gradeCanvas.width,   ch = gradeCanvas.height;
-      baseScale = Math.min(cw / iw, ch / ih);
-      const fgScale = baseScale * scaleMult;
-      window.syncTitleFromGrade({
-        img:    srcImg,
-        fgX:    (cw - iw * fgScale) / 2 + offX,
-        fgY:    (ch - ih * fgScale) / 2 + offY,
-        fgW:    iw * fgScale,
-        fgH:    ih * fgScale,
-        rotDeg: rotDeg,
-      });
+      // Pass the fully rendered gradeCanvas — grading + framing + rotation all included
+      window.syncTitleFromGrade(gradeCanvas);
     }
   }
 
@@ -354,92 +316,43 @@ if (!gradeCanvas) {
     gctx.fillRect(0, 0, cw, ch);
     gctx.restore();
 
-    // Foreground (contain + user offset/zoom + rotation)
+    // Foreground (contain + user offset/zoom)
     baseScale = Math.min(cw / iw, ch / ih);
     const fgScale = baseScale * scaleMult;
     const fgW = iw * fgScale, fgH = ih * fgScale;
     const fgX = (cw - fgW) / 2 + offX;
     const fgY = (ch - fgH) / 2 + offY;
-
-    if (rotDeg !== 0) {
-      const rad = rotDeg * Math.PI / 180;
-      gctx.save();
-      gctx.translate(cw / 2, ch / 2);
-      gctx.rotate(rad);
-      gctx.drawImage(srcImg, fgX - cw/2, fgY - ch/2, fgW, fgH);
-      gctx.restore();
-    } else {
-      gctx.drawImage(srcImg, fgX, fgY, fgW, fgH);
-    }
+    gctx.drawImage(srcImg, fgX, fgY, fgW, fgH);
 
     baseImageData = gctx.getImageData(0, 0, cw, ch);
     if (isInteracting) drawThirds(gctx);
   }
 
-  function applyAdjustments(b, c, hl, sh, s, k, tmp, tint, vig, shrp) {
+  function applyAdjustments(b, c, s, k) {
     if (!baseImageData) return;
     const out = new ImageData(
       new Uint8ClampedArray(baseImageData.data),
-      baseImageData.width, baseImageData.height
+      baseImageData.width,
+      baseImageData.height
     );
-    const d = out.data;
-    const bOff  = b * 2.0;
-    const cFac  = (259 * (c + 255)) / (255 * (259 - c));
-    const sFac  = 1 + (s / 60);
-    const kFac  = 1 + (k / 120);
-    const hlStr = hl / 200;
-    const shStr = sh / 200;
-    const tmpR  = tmp * 0.8;
-    const tmpB  = tmp * -0.8;
-    const tintG = tint * -0.5;
+    const d   = out.data;
+    const bOff = b * 2.0;
+    const cFac = (259 * (c + 255)) / (255 * (259 - c));
+    const sFac = 1 + (s / 60);
+    const kFac = 1 + (k / 120);
 
     for (let i = 0; i < d.length; i += 4) {
-      let r = d[i], g = d[i+1], bl = d[i+2];
-      r += bOff; g += bOff; bl += bOff;
-      r = cFac*(r-128)+128; g = cFac*(g-128)+128; bl = cFac*(bl-128)+128;
-      const luma  = 0.2126*r + 0.7152*g + 0.0722*bl;
-      const hMask = Math.max(0, (luma - 128) / 127);
-      const sMask = Math.max(0, (128 - luma) / 128);
-      const adj   = hlStr * hMask * 255 + shStr * sMask * 255;
-      r += adj; g += adj; bl += adj;
-      const gray = 0.2126*r + 0.7152*g + 0.0722*bl;
-      r  = gray + (r  - gray) * sFac;
-      g  = gray + (g  - gray) * sFac;
-      bl = gray + (bl - gray) * sFac;
-      r  = 128 + (r  - 128) * kFac;
-      g  = 128 + (g  - 128) * kFac;
-      bl = 128 + (bl - 128) * kFac;
-      r  += tmpR; bl += tmpB; g += tintG;
+      let r = d[i], g = d[i+1], bb = d[i+2];
+      r += bOff; g += bOff; bb += bOff;
+      r = cFac*(r-128)+128; g = cFac*(g-128)+128; bb = cFac*(bb-128)+128;
+      const gray = 0.2126*r + 0.7152*g + 0.0722*bb;
+      r = gray+(r-gray)*sFac; g = gray+(g-gray)*sFac; bb = gray+(bb-gray)*sFac;
+      r = 128+(r-128)*kFac;   g = 128+(g-128)*kFac;   bb = 128+(bb-128)*kFac;
       d[i]   = clamp(r,  0, 255);
       d[i+1] = clamp(g,  0, 255);
-      d[i+2] = clamp(bl, 0, 255);
+      d[i+2] = clamp(bb, 0, 255);
     }
     gctx.putImageData(out, 0, 0);
-
-    // Vignette
-    if (vig > 0) {
-      const cw = gradeCanvas.width, ch = gradeCanvas.height;
-      const vg = gctx.createRadialGradient(cw/2, ch/2, Math.sqrt(cw*cw+ch*ch)*(1-vig/60), cw/2, ch/2, Math.sqrt(cw*cw+ch*ch));
-      vg.addColorStop(0, 'rgba(0,0,0,0)');
-      vg.addColorStop(1, `rgba(0,0,0,${vig/80})`);
-      gctx.fillStyle = vg;
-      gctx.fillRect(0, 0, cw, ch);
-    }
-
-    // Sharpness (unsharp mask)
-    if (shrp > 0) {
-      const cw = gradeCanvas.width, ch = gradeCanvas.height;
-      const oc = document.createElement('canvas');
-      oc.width = cw; oc.height = ch;
-      const ox = oc.getContext('2d');
-      ox.filter = `blur(${1 + shrp/15}px)`;
-      ox.drawImage(gradeCanvas, 0, 0);
-      gctx.save();
-      gctx.globalCompositeOperation = 'overlay';
-      gctx.globalAlpha = (shrp / 30) * 0.4;
-      gctx.drawImage(oc, 0, 0);
-      gctx.restore();
-    }
   }
 
   function render() {
@@ -456,8 +369,8 @@ if (!gradeCanvas) {
       return;
     }
     drawBase();
-    const { b, c, hl, sh, s, k, tmp, tint, vig, shrp } = getSliders();
-    applyAdjustments(b, c, hl, sh, s, k, tmp, tint, vig, shrp);
+    const { b, c, s, k } = getSliders();
+    applyAdjustments(b, c, s, k);
     // Live sync to Tab 1 if this is the title image
     if (currentIndex === titleImageIndex) syncTitleCanvas();
   }
@@ -513,10 +426,7 @@ if (!gradeCanvas) {
   if (applyPresetBtn && categorySelect) {
     applyPresetBtn.addEventListener('click', () => {
       const preset = PRESETS[categorySelect.value];
-      if (preset) {
-        setSliders(preset.b, preset.c, preset.hl, preset.sh, preset.s, preset.k, preset.tmp, preset.tint, preset.vig, preset.shrp, preset.rot ?? 0);
-        saveCurrentGrading(); render();
-      }
+      if (preset) { setSliders(preset.b, preset.c, preset.s, preset.k); saveCurrentGrading(); render(); }
     });
   }
 
@@ -531,8 +441,7 @@ if (!gradeCanvas) {
       baseImageData = null;
       autoActive = false;
       autoApplied = { b: 0, c: 0, s: 0, k: 0 };
-      setSliders(0,0,0,0,0,0,0,0,0,0,0);
-      rotDeg = 0;
+      setSliders(0, 0, 0, 0);
       scaleMult = 1; offX = 0; offY = 0;
       isInteracting = false;
       if (hideGridTimer) clearTimeout(hideGridTimer);
@@ -542,27 +451,14 @@ if (!gradeCanvas) {
     });
   }
 
-  [bSlider, cSlider, hlSlider, shSlider, sSlider, kSlider, tmpSlider, tintSlider, vigSlider, shrpSlider].forEach(slider => {
+  [bSlider, cSlider, sSlider, kSlider].forEach(slider => {
     if (slider) slider.addEventListener('input', () => { saveCurrentGrading(); render(); });
   });
 
-  // Rotation slider updates rotDeg directly
-  if (rotSlider) rotSlider.addEventListener('input', () => {
-    rotDeg = parseFloat(rotSlider.value);
-    saveCurrentGrading(); render();
-  });
-
-  if (bReset)    bReset.addEventListener("click",    () => { bSlider.value    = 0; render(); });
-  if (cReset)    cReset.addEventListener("click",    () => { cSlider.value    = 0; render(); });
-  if (hlReset)   hlReset.addEventListener("click",   () => { hlSlider.value   = 0; render(); });
-  if (shReset)   shReset.addEventListener("click",   () => { shSlider.value   = 0; render(); });
-  if (sReset)    sReset.addEventListener("click",    () => { sSlider.value    = 0; render(); });
-  if (kReset)    kReset.addEventListener("click",    () => { kSlider.value    = 0; render(); });
-  if (tmpReset)  tmpReset.addEventListener("click",  () => { tmpSlider.value  = 0; render(); });
-  if (tintReset) tintReset.addEventListener("click", () => { tintSlider.value = 0; render(); });
-  if (vigReset)  vigReset.addEventListener("click",  () => { vigSlider.value  = 0; render(); });
-  if (shrpReset) shrpReset.addEventListener("click", () => { shrpSlider.value = 0; render(); });
-  if (rotReset)  rotReset.addEventListener("click",  () => { rotSlider.value  = 0; rotDeg = 0; render(); });
+  if (bReset) bReset.addEventListener("click", () => { bSlider.value = autoActive ? autoApplied.b : 0; render(); });
+  if (cReset) cReset.addEventListener("click", () => { cSlider.value = autoActive ? autoApplied.c : 0; render(); });
+  if (sReset) sReset.addEventListener("click", () => { sSlider.value = autoActive ? autoApplied.s : 0; render(); });
+  if (kReset) kReset.addEventListener("click", () => { kSlider.value = autoActive ? autoApplied.k : 0; render(); });
 
   // ---- Touch / Mouse / Wheel ----
   gradeCanvas.addEventListener("touchstart", (e) => e.preventDefault(), { passive: false });
