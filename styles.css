@@ -36,6 +36,9 @@ body {
   background: linear-gradient(180deg, rgba(255,255,255,0.03), transparent);
   display: flex;
   align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 .topbar-inner {
   width: 100%;
@@ -69,9 +72,6 @@ body {
 
 /* ============================================================
    MAIN LAYOUT
-   Both tabs: flex row, centered, gap between elements.
-   Thumbnail col uses display:none when empty → zero width
-   → canvas stays centered identical to Titelbild tab.
    ============================================================ */
 .main {
   max-width: 1600px;
@@ -93,6 +93,7 @@ body {
 
 /* ============================================================
    CANVAS WRAP — always 4:5
+   Sticky on desktop so it stays visible while scrolling controls
    ============================================================ */
 .canvas-wrap {
   flex-shrink: 0;
@@ -110,6 +111,8 @@ body {
     width: var(--cv-w);
     height: var(--cv-h);
     aspect-ratio: unset;
+    position: sticky;
+    top: calc(var(--topbar-h) + 18px);
   }
 }
 
@@ -159,10 +162,11 @@ canvas {
   .thumbnail-container {
     width: var(--thumb-w);
     height: var(--cv-h);
+    position: sticky;
+    top: calc(var(--topbar-h) + 18px);
   }
 }
 
-/* Empty = gone → canvas centers automatically */
 .thumbnail-container:empty { display: none; }
 
 .thumbnail-container img {
@@ -336,28 +340,8 @@ select.control             { padding: 11px 12px; }
 }
 
 /* ============================================================
-   SMALL SCREENS
-   ============================================================ */
-@media (max-width: 520px) {
-  .topbar      { height: auto; padding: 12px 16px; }
-  .brand-title { font-size: 16px; }
-  .tabbtn      { padding: 9px 12px; }
-  .row         { flex-direction: column; }
-  .row .btn    { flex: unset; width: 100%; }
-}
-
-/* ============================================================
-   CANVAS STICKY — Desktop: bleibt beim Scrollen sichtbar
-   ============================================================ */
-@media (min-width: 1100px) {
-  .canvas-wrap {
-    position: sticky;
-    top: calc(var(--topbar-h) + 18px);
-  }
-}
-
-/* ============================================================
    MOBILE SLIDER BAR (Grading Tab, < 1100px)
+   Direkt unter Canvas, immer sichtbar
    ============================================================ */
 .mobile-sliders { display: none; }
 
@@ -396,65 +380,52 @@ select.control             { padding: 11px 12px; }
   .mslider-btn:nth-child(5),
   .mslider-btn:nth-child(10) { border-right: none; }
   .mslider-btn:nth-child(n+6) { border-bottom: none; }
-  .mslider-btn:hover  { background: rgba(255,255,255,0.05); color: rgba(232,238,252,0.9); }
+
+  .mslider-btn:hover { background: rgba(255,255,255,0.05); color: rgba(232,238,252,0.9); }
   .mslider-btn.active {
     background: rgba(26,53,91,0.45);
     color: rgba(232,238,252,0.95);
     box-shadow: inset 0 -2px 0 rgba(120,150,210,0.7);
   }
+
   .mslider-icon  { font-size: 16px; line-height: 1; }
   .mslider-label { font-size: 9px; font-weight: 700; letter-spacing: 0.2px; }
 
-  /* Slider track — explicit height so it's visible */
   .mobile-slider-track {
-    padding: 12px 16px;
-    background: rgba(255,255,255,0.02);
+    padding: 14px 20px;
+    background: rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    min-height: 68px;
   }
+
+  /* Native slider — always visible, no appearance:none */
   .mobile-slider-range {
-    display: block;
+    -webkit-appearance: auto;
+    appearance: auto;
     width: 100%;
     height: 44px;
-    -webkit-appearance: none;
-    appearance: none;
-    background: transparent;
-    outline: none;
     cursor: pointer;
-  }
-  .mobile-slider-range::-webkit-slider-runnable-track {
-    height: 4px;
-    border-radius: 2px;
-    background: rgba(255,255,255,0.2);
-  }
-  .mobile-slider-range::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background: rgba(120,150,210,0.9);
-    border: 2px solid rgba(255,255,255,0.3);
-    margin-top: -12px;
-    cursor: pointer;
-  }
-  .mobile-slider-range::-moz-range-track {
-    height: 4px;
-    border-radius: 2px;
-    background: rgba(255,255,255,0.2);
-  }
-  .mobile-slider-range::-moz-range-thumb {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background: rgba(120,150,210,0.9);
-    border: 2px solid rgba(255,255,255,0.3);
-    cursor: pointer;
+    accent-color: #4a7fd4;
   }
 
   /* Hide desktop accordion sliders on mobile */
   #tab-grading .accordion { display: none; }
 
-  /* Order: canvas → sliders → thumbnails → controls */
+  /* Order: canvas(1) → mobile-sliders(2) → thumbnails(3) → controls(4) */
   #tab-grading .canvas-wrap         { order: 1; }
   #tab-grading .mobile-sliders      { order: 2; }
   #tab-grading .thumbnail-container { order: 3; }
   #tab-grading .controls            { order: 4; }
+}
+
+/* ============================================================
+   SMALL SCREENS
+   ============================================================ */
+@media (max-width: 520px) {
+  .topbar      { height: auto; padding: 12px 16px; }
+  .brand-title { font-size: 16px; }
+  .tabbtn      { padding: 9px 12px; }
+  .row         { flex-direction: column; }
+  .row .btn    { flex: unset; width: 100%; }
 }
