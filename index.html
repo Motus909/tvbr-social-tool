@@ -72,22 +72,16 @@
     <!-- Mobile: Slider-Bar direkt unter Canvas -->
     <div class="mobile-sliders">
       <div class="mobile-slider-btns">
-        <button class="mslider-btn active" data-slider="b" type="button">
-          <span class="mslider-icon">☀</span>
-          <span class="mslider-label">Helligkeit</span>
-        </button>
-        <button class="mslider-btn" data-slider="c" type="button">
-          <span class="mslider-icon">◑</span>
-          <span class="mslider-label">Kontrast</span>
-        </button>
-        <button class="mslider-btn" data-slider="s" type="button">
-          <span class="mslider-icon">❋</span>
-          <span class="mslider-label">Sättigung</span>
-        </button>
-        <button class="mslider-btn" data-slider="k" type="button">
-          <span class="mslider-icon">⬡</span>
-          <span class="mslider-label">Klarheit</span>
-        </button>
+        <button class="mslider-btn active" data-slider="b"    data-min="-40" data-max="40" type="button"><span class="mslider-icon">☀</span><span class="mslider-label">Helligkeit</span></button>
+        <button class="mslider-btn"        data-slider="c"    data-min="-40" data-max="40" type="button"><span class="mslider-icon">◑</span><span class="mslider-label">Kontrast</span></button>
+        <button class="mslider-btn"        data-slider="hl"   data-min="-40" data-max="40" type="button"><span class="mslider-icon">△</span><span class="mslider-label">Highlights</span></button>
+        <button class="mslider-btn"        data-slider="sh"   data-min="-40" data-max="40" type="button"><span class="mslider-icon">▽</span><span class="mslider-label">Schatten</span></button>
+        <button class="mslider-btn"        data-slider="s"    data-min="-40" data-max="40" type="button"><span class="mslider-icon">❋</span><span class="mslider-label">Sättigung</span></button>
+        <button class="mslider-btn"        data-slider="k"    data-min="0"   data-max="30" type="button"><span class="mslider-icon">⬡</span><span class="mslider-label">Klarheit</span></button>
+        <button class="mslider-btn"        data-slider="tmp"  data-min="-40" data-max="40" type="button"><span class="mslider-icon">🌡</span><span class="mslider-label">Temperatur</span></button>
+        <button class="mslider-btn"        data-slider="tint" data-min="-40" data-max="40" type="button"><span class="mslider-icon">🎨</span><span class="mslider-label">Tint</span></button>
+        <button class="mslider-btn"        data-slider="vig"  data-min="0"   data-max="40" type="button"><span class="mslider-icon">◎</span><span class="mslider-label">Vignette</span></button>
+        <button class="mslider-btn"        data-slider="shrp" data-min="0"   data-max="30" type="button"><span class="mslider-icon">◈</span><span class="mslider-label">Schärfe</span></button>
       </div>
       <div class="mobile-slider-track">
         <input class="mobile-slider-range" id="mSlider" type="range" min="-40" max="40" value="0">
@@ -144,6 +138,20 @@
             </div>
           </div>
           <div class="sliderBlock">
+            <div class="sliderLabel">Highlights</div>
+            <div class="sliderLine">
+              <input class="control" type="range" id="hlSlider" min="-40" max="40" value="0">
+              <button class="iconbtn" id="hlReset" type="button" title="Reset">↻</button>
+            </div>
+          </div>
+          <div class="sliderBlock">
+            <div class="sliderLabel">Schatten</div>
+            <div class="sliderLine">
+              <input class="control" type="range" id="shSlider" min="-40" max="40" value="0">
+              <button class="iconbtn" id="shReset" type="button" title="Reset">↻</button>
+            </div>
+          </div>
+          <div class="sliderBlock">
             <div class="sliderLabel">Sättigung</div>
             <div class="sliderLine">
               <input class="control" type="range" id="sSlider" min="-40" max="40" value="0">
@@ -157,6 +165,34 @@
               <button class="iconbtn" id="kReset" type="button" title="Reset">↻</button>
             </div>
           </div>
+          <div class="sliderBlock">
+            <div class="sliderLabel">Temperatur</div>
+            <div class="sliderLine">
+              <input class="control" type="range" id="tmpSlider" min="-40" max="40" value="0">
+              <button class="iconbtn" id="tmpReset" type="button" title="Reset">↻</button>
+            </div>
+          </div>
+          <div class="sliderBlock">
+            <div class="sliderLabel">Tint</div>
+            <div class="sliderLine">
+              <input class="control" type="range" id="tintSlider" min="-40" max="40" value="0">
+              <button class="iconbtn" id="tintReset" type="button" title="Reset">↻</button>
+            </div>
+          </div>
+          <div class="sliderBlock">
+            <div class="sliderLabel">Vignette</div>
+            <div class="sliderLine">
+              <input class="control" type="range" id="vigSlider" min="0" max="40" value="0">
+              <button class="iconbtn" id="vigReset" type="button" title="Reset">↻</button>
+            </div>
+          </div>
+          <div class="sliderBlock">
+            <div class="sliderLabel">Schärfe</div>
+            <div class="sliderLine">
+              <input class="control" type="range" id="shrpSlider" min="0" max="30" value="0">
+              <button class="iconbtn" id="shrpReset" type="button" title="Reset">↻</button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -165,33 +201,22 @@
 </section>
 
 <script>
-  // Accordion
-  document.querySelectorAll('.accordion-toggle').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const expanded = btn.getAttribute('aria-expanded') === 'true';
-      btn.setAttribute('aria-expanded', String(!expanded));
-      btn.querySelector('.accordion-arrow').textContent = expanded ? '▸' : '▾';
-      const body = btn.nextElementSibling;
-      body.style.maxHeight = expanded ? '0' : body.scrollHeight + 'px';
-    });
-  });
-
-  // Mobile slider bar
-  const MSLIDER_CONFIG = {
-    b: { min: -40, max: 40, id: 'bSlider' },
-    c: { min: -40, max: 40, id: 'cSlider' },
-    s: { min: -40, max: 40, id: 'sSlider' },
-    k: { min:   0, max: 30, id: 'kSlider' },
+  // Mobile slider bar — reads min/max from data attributes
+  const SLIDER_ID_MAP = {
+    b: 'bSlider', c: 'cSlider', hl: 'hlSlider', sh: 'shSlider',
+    s: 'sSlider', k: 'kSlider', tmp: 'tmpSlider', tint: 'tintSlider',
+    vig: 'vigSlider', shrp: 'shrpSlider'
   };
   let mSliderActive = 'b';
   const mSlider = document.getElementById('mSlider');
   const mBtns   = document.querySelectorAll('.mslider-btn');
 
   function syncMSlider() {
-    const cfg = MSLIDER_CONFIG[mSliderActive];
-    const src = document.getElementById(cfg.id);
-    mSlider.min   = cfg.min;
-    mSlider.max   = cfg.max;
+    const activeBtn = document.querySelector(`.mslider-btn[data-slider="${mSliderActive}"]`);
+    if (!mSlider || !activeBtn) return;
+    mSlider.min   = activeBtn.dataset.min;
+    mSlider.max   = activeBtn.dataset.max;
+    const src = document.getElementById(SLIDER_ID_MAP[mSliderActive]);
     mSlider.value = src ? src.value : 0;
   }
 
@@ -205,20 +230,30 @@
   });
 
   mSlider?.addEventListener('input', () => {
-    const target = document.getElementById(MSLIDER_CONFIG[mSliderActive].id);
+    const target = document.getElementById(SLIDER_ID_MAP[mSliderActive]);
     if (target) {
       target.value = mSlider.value;
       target.dispatchEvent(new Event('input', { bubbles: true }));
     }
   });
 
-  // Keep mobile slider in sync when desktop sliders change
-  ['bSlider','cSlider','sSlider','kSlider'].forEach(id => {
+  // Keep mobile in sync when desktop sliders change (e.g. preset applied)
+  Object.entries(SLIDER_ID_MAP).forEach(([key, id]) => {
     document.getElementById(id)?.addEventListener('input', () => {
-      const key = id[0]; // b, c, s, k
       if (key === mSliderActive && mSlider) {
         mSlider.value = document.getElementById(id).value;
       }
+    });
+  });
+
+  // Accordion
+  document.querySelectorAll('.accordion-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const expanded = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!expanded));
+      btn.querySelector('.accordion-arrow').textContent = expanded ? '▸' : '▾';
+      const body = btn.nextElementSibling;
+      body.style.maxHeight = expanded ? '0' : body.scrollHeight + 'px';
     });
   });
 

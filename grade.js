@@ -19,14 +19,26 @@ if (!gradeCanvas) {
   const titleImageCheckbox = $("titleImageCheckbox");
   const categorySelect    = $("category-select");
   const applyPresetBtn    = $("auto-grade-button");
-  const bSlider = $("bSlider");
-  const cSlider = $("cSlider");
-  const sSlider = $("sSlider");
-  const kSlider = $("kSlider");
-  const bReset  = $("bReset");
-  const cReset  = $("cReset");
-  const sReset  = $("sReset");
-  const kReset  = $("kReset");
+  const bSlider    = $("bSlider");
+  const cSlider    = $("cSlider");
+  const hlSlider   = $("hlSlider");
+  const shSlider   = $("shSlider");
+  const sSlider    = $("sSlider");
+  const kSlider    = $("kSlider");
+  const tmpSlider  = $("tmpSlider");
+  const tintSlider = $("tintSlider");
+  const vigSlider  = $("vigSlider");
+  const shrpSlider = $("shrpSlider");
+  const bReset     = $("bReset");
+  const cReset     = $("cReset");
+  const hlReset    = $("hlReset");
+  const shReset    = $("shReset");
+  const sReset     = $("sReset");
+  const kReset     = $("kReset");
+  const tmpReset   = $("tmpReset");
+  const tintReset  = $("tintReset");
+  const vigReset   = $("vigReset");
+  const shrpReset  = $("shrpReset");
   const gradeWrap = gradeCanvas.closest(".canvas-wrap");
 
   // ---- State ----
@@ -56,36 +68,49 @@ if (!gradeCanvas) {
 
   // Presets
   const PRESETS = {
-    drinnen:   { b:  5, c:  8, s: -5, k:  4 },
-    draussen:  { b:  0, c:  5, s:  8, k:  6 },
-    sport:     { b:  3, c: 12, s: 10, k:  8 },
-    portraits: { b:  4, c:  6, s:  2, k:  2 },
+    //                  b    c   hl   sh    s    k  tmp tint  vig shrp
+    drinnen:   { b:  5, c:  8, hl: -5, sh: 10, s: -5, k:  4, tmp:  8, tint:  2, vig:  8, shrp:  5 },
+    draussen:  { b:  0, c:  5, hl: -8, sh:  5, s:  8, k:  6, tmp: -5, tint:  0, vig:  5, shrp:  8 },
+    sport:     { b:  3, c: 12, hl:-10, sh:  8, s: 10, k:  8, tmp:  0, tint:  0, vig: 12, shrp: 12 },
+    portraits: { b:  4, c:  6, hl: -6, sh: 12, s:  2, k:  2, tmp:  6, tint:  3, vig: 10, shrp:  4 },
   };
 
   // ---- Helpers ----
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
-  function setSliders(b, c, s, k) {
-    if (bSlider) bSlider.value = b;
-    if (cSlider) cSlider.value = c;
-    if (sSlider) sSlider.value = s;
-    if (kSlider) kSlider.value = k;
+  function setSliders(b, c, hl, sh, s, k, tmp, tint, vig, shrp) {
+    if (bSlider)    bSlider.value    = b    ?? 0;
+    if (cSlider)    cSlider.value    = c    ?? 0;
+    if (hlSlider)   hlSlider.value   = hl   ?? 0;
+    if (shSlider)   shSlider.value   = sh   ?? 0;
+    if (sSlider)    sSlider.value    = s    ?? 0;
+    if (kSlider)    kSlider.value    = k    ?? 0;
+    if (tmpSlider)  tmpSlider.value  = tmp  ?? 0;
+    if (tintSlider) tintSlider.value = tint ?? 0;
+    if (vigSlider)  vigSlider.value  = vig  ?? 0;
+    if (shrpSlider) shrpSlider.value = shrp ?? 0;
   }
 
   function getSliders() {
     return {
-      b: bSlider ? parseInt(bSlider.value, 10) : 0,
-      c: cSlider ? parseInt(cSlider.value, 10) : 0,
-      s: sSlider ? parseInt(sSlider.value, 10) : 0,
-      k: kSlider ? parseInt(kSlider.value, 10) : 0,
+      b:    bSlider    ? parseInt(bSlider.value,    10) : 0,
+      c:    cSlider    ? parseInt(cSlider.value,    10) : 0,
+      hl:   hlSlider   ? parseInt(hlSlider.value,   10) : 0,
+      sh:   shSlider   ? parseInt(shSlider.value,   10) : 0,
+      s:    sSlider    ? parseInt(sSlider.value,    10) : 0,
+      k:    kSlider    ? parseInt(kSlider.value,    10) : 0,
+      tmp:  tmpSlider  ? parseInt(tmpSlider.value,  10) : 0,
+      tint: tintSlider ? parseInt(tintSlider.value, 10) : 0,
+      vig:  vigSlider  ? parseInt(vigSlider.value,  10) : 0,
+      shrp: shrpSlider ? parseInt(shrpSlider.value, 10) : 0,
     };
   }
 
   function saveCurrentGrading() {
     if (files.length === 0) return;
-    const { b, c, s, k } = getSliders();
+    const vals = getSliders();
     if (!gradedData[currentIndex]) gradedData[currentIndex] = {};
-    Object.assign(gradedData[currentIndex], { b, c, s, k, scaleMult, offX, offY });
+    Object.assign(gradedData[currentIndex], { ...vals, scaleMult, offX, offY });
   }
 
   function startInteracting() {
@@ -170,10 +195,10 @@ if (!gradeCanvas) {
       // Restore saved sliders or reset to 0
       const saved = gradedData[currentIndex];
       if (saved) {
-        setSliders(saved.b ?? 0, saved.c ?? 0, saved.s ?? 0, saved.k ?? 0);
+        setSliders(saved.b??0, saved.c??0, saved.hl??0, saved.sh??0, saved.s??0, saved.k??0, saved.tmp??0, saved.tint??0, saved.vig??0, saved.shrp??0);
       } else {
-        setSliders(0, 0, 0, 0);
-        gradedData[currentIndex] = { b: 0, c: 0, s: 0, k: 0 };
+        setSliders(0,0,0,0,0,0,0,0,0,0);
+        gradedData[currentIndex] = { b:0,c:0,hl:0,sh:0,s:0,k:0,tmp:0,tint:0,vig:0,shrp:0 };
       }
       // Update checkbox
       if (titleImageCheckbox) {
@@ -337,31 +362,99 @@ if (!gradeCanvas) {
     if (isInteracting) drawThirds(gctx);
   }
 
-  function applyAdjustments(b, c, s, k) {
+  function applyAdjustments(b, c, hl, sh, s, k, tmp, tint, vig, shrp) {
     if (!baseImageData) return;
     const out = new ImageData(
       new Uint8ClampedArray(baseImageData.data),
       baseImageData.width,
       baseImageData.height
     );
-    const d   = out.data;
-    const bOff = b * 2.0;
-    const cFac = (259 * (c + 255)) / (255 * (259 - c));
-    const sFac = 1 + (s / 60);
-    const kFac = 1 + (k / 120);
+    const d = out.data;
+
+    // Pre-compute factors
+    const bOff  = b    * 2.0;
+    const cFac  = (259 * (c + 255)) / (255 * (259 - c));
+    const sFac  = 1 + (s / 60);
+    const kFac  = 1 + (k / 120);
+    // Highlights: darken bright pixels; Shadows: brighten dark pixels
+    const hlStr = hl / 200;   // negative = pull highlights down
+    const shStr = sh / 200;   // positive = lift shadows up
+    // Temperature: warm = +R -B, cool = -R +B
+    const tmpR  = tmp * 0.8;
+    const tmpB  = tmp * -0.8;
+    // Tint: green↔magenta on G channel
+    const tintG = tint * -0.5;
 
     for (let i = 0; i < d.length; i += 4) {
-      let r = d[i], g = d[i+1], bb = d[i+2];
-      r += bOff; g += bOff; bb += bOff;
-      r = cFac*(r-128)+128; g = cFac*(g-128)+128; bb = cFac*(bb-128)+128;
-      const gray = 0.2126*r + 0.7152*g + 0.0722*bb;
-      r = gray+(r-gray)*sFac; g = gray+(g-gray)*sFac; bb = gray+(bb-gray)*sFac;
-      r = 128+(r-128)*kFac;   g = 128+(g-128)*kFac;   bb = 128+(bb-128)*kFac;
+      let r = d[i], g = d[i+1], bl = d[i+2];
+
+      // 1. Brightness
+      r += bOff; g += bOff; bl += bOff;
+
+      // 2. Contrast
+      r = cFac*(r-128)+128; g = cFac*(g-128)+128; bl = cFac*(bl-128)+128;
+
+      // 3. Highlights & Shadows (luma-based)
+      const luma = 0.2126*r + 0.7152*g + 0.0722*bl;
+      const hMask = Math.max(0, (luma - 128) / 127);  // 0 at mid, 1 at white
+      const sMask = Math.max(0, (128 - luma) / 128);  // 0 at mid, 1 at black
+      const hlAdj = hlStr * hMask * 255;
+      const shAdj = shStr * sMask * 255;
+      r  += hlAdj + shAdj;
+      g  += hlAdj + shAdj;
+      bl += hlAdj + shAdj;
+
+      // 4. Saturation
+      const gray = 0.2126*r + 0.7152*g + 0.0722*bl;
+      r  = gray + (r  - gray) * sFac;
+      g  = gray + (g  - gray) * sFac;
+      bl = gray + (bl - gray) * sFac;
+
+      // 5. Clarity (micro-contrast via luma boost)
+      r  = 128 + (r  - 128) * kFac;
+      g  = 128 + (g  - 128) * kFac;
+      bl = 128 + (bl - 128) * kFac;
+
+      // 6. Temperature
+      r  += tmpR;
+      bl += tmpB;
+
+      // 7. Tint
+      g += tintG;
+
       d[i]   = clamp(r,  0, 255);
       d[i+1] = clamp(g,  0, 255);
-      d[i+2] = clamp(bb, 0, 255);
+      d[i+2] = clamp(bl, 0, 255);
     }
     gctx.putImageData(out, 0, 0);
+
+    // 8. Vignette (drawn on top via canvas gradient)
+    if (vig > 0) {
+      const cw = gradeCanvas.width, ch = gradeCanvas.height;
+      const cx = cw / 2, cy = ch / 2;
+      const radius = Math.sqrt(cx*cx + cy*cy);
+      const vigGrad = gctx.createRadialGradient(cx, cy, radius * (1 - vig/60), cx, cy, radius);
+      vigGrad.addColorStop(0, 'rgba(0,0,0,0)');
+      vigGrad.addColorStop(1, `rgba(0,0,0,${vig/80})`);
+      gctx.fillStyle = vigGrad;
+      gctx.fillRect(0, 0, cw, ch);
+    }
+
+    // 9. Sharpness (unsharp mask via canvas filter trick)
+    if (shrp > 0) {
+      const cw = gradeCanvas.width, ch = gradeCanvas.height;
+      const amount = shrp / 30;
+      const offscreen = document.createElement('canvas');
+      offscreen.width = cw; offscreen.height = ch;
+      const octx = offscreen.getContext('2d');
+      octx.filter = `blur(${1 + shrp/15}px)`;
+      octx.drawImage(gradeCanvas, 0, 0);
+      gctx.save();
+      gctx.globalCompositeOperation = 'overlay';
+      gctx.globalAlpha = amount * 0.4;
+      gctx.drawImage(offscreen, 0, 0);
+      gctx.restore();
+    }
   }
 
   function render() {
@@ -378,8 +471,8 @@ if (!gradeCanvas) {
       return;
     }
     drawBase();
-    const { b, c, s, k } = getSliders();
-    applyAdjustments(b, c, s, k);
+    const { b, c, hl, sh, s, k, tmp, tint, vig, shrp } = getSliders();
+    applyAdjustments(b, c, hl, sh, s, k, tmp, tint, vig, shrp);
     // Live sync to Tab 1 if this is the title image
     if (currentIndex === titleImageIndex) syncTitleCanvas();
   }
@@ -435,7 +528,10 @@ if (!gradeCanvas) {
   if (applyPresetBtn && categorySelect) {
     applyPresetBtn.addEventListener('click', () => {
       const preset = PRESETS[categorySelect.value];
-      if (preset) { setSliders(preset.b, preset.c, preset.s, preset.k); saveCurrentGrading(); render(); }
+      if (preset) {
+        setSliders(preset.b, preset.c, preset.hl, preset.sh, preset.s, preset.k, preset.tmp, preset.tint, preset.vig, preset.shrp);
+        saveCurrentGrading(); render();
+      }
     });
   }
 
@@ -450,7 +546,7 @@ if (!gradeCanvas) {
       baseImageData = null;
       autoActive = false;
       autoApplied = { b: 0, c: 0, s: 0, k: 0 };
-      setSliders(0, 0, 0, 0);
+      setSliders(0,0,0,0,0,0,0,0,0,0);
       scaleMult = 1; offX = 0; offY = 0;
       isInteracting = false;
       if (hideGridTimer) clearTimeout(hideGridTimer);
@@ -460,14 +556,20 @@ if (!gradeCanvas) {
     });
   }
 
-  [bSlider, cSlider, sSlider, kSlider].forEach(slider => {
+  [bSlider, cSlider, hlSlider, shSlider, sSlider, kSlider, tmpSlider, tintSlider, vigSlider, shrpSlider].forEach(slider => {
     if (slider) slider.addEventListener('input', () => { saveCurrentGrading(); render(); });
   });
 
-  if (bReset) bReset.addEventListener("click", () => { bSlider.value = autoActive ? autoApplied.b : 0; render(); });
-  if (cReset) cReset.addEventListener("click", () => { cSlider.value = autoActive ? autoApplied.c : 0; render(); });
-  if (sReset) sReset.addEventListener("click", () => { sSlider.value = autoActive ? autoApplied.s : 0; render(); });
-  if (kReset) kReset.addEventListener("click", () => { kSlider.value = autoActive ? autoApplied.k : 0; render(); });
+  if (bReset)    bReset.addEventListener("click",    () => { bSlider.value    = 0; render(); });
+  if (cReset)    cReset.addEventListener("click",    () => { cSlider.value    = 0; render(); });
+  if (hlReset)   hlReset.addEventListener("click",   () => { hlSlider.value   = 0; render(); });
+  if (shReset)   shReset.addEventListener("click",   () => { shSlider.value   = 0; render(); });
+  if (sReset)    sReset.addEventListener("click",    () => { sSlider.value    = 0; render(); });
+  if (kReset)    kReset.addEventListener("click",    () => { kSlider.value    = 0; render(); });
+  if (tmpReset)  tmpReset.addEventListener("click",  () => { tmpSlider.value  = 0; render(); });
+  if (tintReset) tintReset.addEventListener("click", () => { tintSlider.value = 0; render(); });
+  if (vigReset)  vigReset.addEventListener("click",  () => { vigSlider.value  = 0; render(); });
+  if (shrpReset) shrpReset.addEventListener("click", () => { shrpSlider.value = 0; render(); });
 
   // ---- Touch / Mouse / Wheel ----
   gradeCanvas.addEventListener("touchstart", (e) => e.preventDefault(), { passive: false });
