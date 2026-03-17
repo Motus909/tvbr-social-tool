@@ -240,7 +240,6 @@ if (!gradeCanvas) {
   function syncTitleCanvas() {
     if (titleImageIndex < 0 || currentIndex !== titleImageIndex) return;
     if (typeof window.syncTitleFromGrade === 'function') {
-      // Pass the fully rendered gradeCanvas — grading + framing + rotation all included
       window.syncTitleFromGrade(gradeCanvas);
     }
   }

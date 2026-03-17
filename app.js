@@ -221,7 +221,7 @@ function draw() {
   }
 
   if (hasTitleSync) {
-    // gradeCanvas passed directly — 1:1 copy includes all grading, framing, rotation
+    // Draw gradeCanvas directly — all grading, framing, rotation included
     ctx.drawImage(window.titleImageData, 0, 0, cw, ch);
   } else {
     // Normal Tab-1 flow: blurred bg + framed foreground
@@ -400,8 +400,8 @@ function clamp(v, lo, hi) {
 
 // ---- Grade-to-Title bridge ----
 window.syncTitleFromGrade = function(gradeCanvasEl) {
-  window.titleImageData = gradeCanvasEl;
-  if (gradeCanvasEl) { hasImage = false; }
+  window.titleImageData = gradeCanvasEl; // canvas element or null
+  if (gradeCanvasEl) hasImage = false;
   draw();
 };
 
