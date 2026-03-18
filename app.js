@@ -222,37 +222,28 @@ function draw() {
 
   if (hasTitleSync) {
     const d = window.titleImageData;
-    const gc = d.gradedCanvas; // fertig gerenderter gradeCanvas (Grading + Rotation)
+    const gc = d.gradedCanvas; // clipped graded image, transparent background
     const src = d.img;
+    const iw = src.naturalWidth, ih = src.naturalHeight;
 
-    // Blur-Hintergrund: aus dem gegradetem Canvas (enthält Grading + Rotation)
+    // Blur background from raw image (no grading artifacts in bg)
+    const bgScale = Math.max(cw / iw, ch / ih);
+    const bgW = iw * bgScale, bgH = ih * bgScale;
     ctx.save();
     ctx.filter = "blur(24px)";
-    ctx.drawImage(gc, 0, 0, cw, ch);
+    ctx.drawImage(src, (cw - bgW) / 2, (ch - bgH) / 2, bgW, bgH);
     ctx.filter = "none";
     ctx.fillStyle = "rgba(0,0,0,0.18)";
     ctx.fillRect(0, 0, cw, ch);
     ctx.restore();
 
-    // Vordergrund: gegradedet + skaliert + verschoben via tx/ty
-    // Wir zeichnen gradeCanvas skaliert um den Mittelpunkt
-    const fgX = d.fgX + tx, fgY = d.fgY + ty;
-    const fgW = d.fgW * scale, fgH = d.fgH * scale;
-
-    // Verhältnis gradeCanvas → Vordergrund-Ausschnitt
-    const gcW = gc.width, gcH = gc.height;
-    const scaleX = fgW / d.fgW, scaleY = fgH / d.fgH;
-
-    if (d.rotDeg) {
-      ctx.save();
-      ctx.translate(cw / 2, ch / 2);
-      ctx.rotate(d.rotDeg * Math.PI / 180);
-      // Zeichne den gesamten gegradeeten Canvas skaliert (enthält Rotation bereits)
-      ctx.drawImage(gc, fgX - cw/2, fgY - ch/2, gcW * scaleX, gcH * scaleY);
-      ctx.restore();
-    } else {
-      ctx.drawImage(gc, fgX, fgY, gcW * scaleX, gcH * scaleY);
-    }
+    // Graded foreground: draw clipped canvas with user tx/ty pan offset
+    // gradedCanvas is 1080×1350, already positioned correctly — just offset by tx/ty
+    ctx.save();
+    ctx.translate(tx, ty);
+    ctx.scale(scale, scale);
+    ctx.drawImage(gc, 0, 0, cw, ch);
+    ctx.restore();
   } else {
     // Normal Tab-1 flow: blurred bg + framed foreground
     const iw = img.width, ih = img.height;

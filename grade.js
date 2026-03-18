@@ -276,15 +276,55 @@ if (!gradeCanvas) {
       const cw = gradeCanvas.width,   ch = gradeCanvas.height;
       const bs = Math.min(cw / iw, ch / ih);
       const fgScale = bs * scaleMult;
-      window.syncTitleFromGrade({
-        img:          srcImg,
-        gradedCanvas: gradeCanvas,  // fertig gerenderter Canvas mit Grading + Rotation
-        fgX:    (cw - iw * fgScale) / 2 + offX,
-        fgY:    (ch - ih * fgScale) / 2 + offY,
-        fgW:    iw * fgScale,
-        fgH:    ih * fgScale,
-        rotDeg: rotDeg,
-      });
+      const fgX = (cw - iw * fgScale) / 2 + offX;
+      const fgY = (ch - ih * fgScale) / 2 + offY;
+      const fgW = iw * fgScale;
+      const fgH = ih * fgScale;
+
+      // Build an offscreen canvas: only the graded image pixels, transparent bg
+      // We copy just the foreground region from gradeCanvas (after grading applied)
+      const oc = document.createElement('canvas');
+      oc.width = cw; oc.height = ch;
+      const octx = oc.getContext('2d');
+
+      if (rotDeg !== 0) {
+        octx.save();
+        octx.translate(cw / 2, ch / 2);
+        octx.rotate(rotDeg * Math.PI / 180);
+        // Draw gradeCanvas clipped to the image shape (no bg)
+        // Use destination-over trick: draw raw image first, then composite graded pixels
+        octx.drawImage(srcImg, fgX - cw/2, fgY - ch/2, fgW, fgH);
+        octx.restore();
+        // Now multiply with graded colors: draw gradeCanvas on top with 'source-atop'
+        // so only where srcImg was drawn gets the graded version
+        const oc2 = document.createElement('canvas');
+        oc2.width = cw; oc2.height = ch;
+        const octx2 = oc2.getContext('2d');
+        octx2.save();
+        octx2.translate(cw / 2, ch / 2);
+        octx2.rotate(rotDeg * Math.PI / 180);
+        octx2.drawImage(srcImg, fgX - cw/2, fgY - ch/2, fgW, fgH);
+        octx2.restore();
+        octx2.globalCompositeOperation = 'source-in';
+        octx2.drawImage(gradeCanvas, 0, 0);
+        window.syncTitleFromGrade({
+          img:          srcImg,
+          gradedCanvas: oc2,
+          fgX, fgY, fgW, fgH,
+          rotDeg,
+        });
+      } else {
+        // No rotation: clip gradeCanvas to image rectangle
+        octx.drawImage(srcImg, fgX, fgY, fgW, fgH);
+        octx.globalCompositeOperation = 'source-in';
+        octx.drawImage(gradeCanvas, 0, 0);
+        window.syncTitleFromGrade({
+          img:          srcImg,
+          gradedCanvas: oc,
+          fgX, fgY, fgW, fgH,
+          rotDeg,
+        });
+      }
     }
   }
 
