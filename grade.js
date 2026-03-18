@@ -277,7 +277,8 @@ if (!gradeCanvas) {
       const bs = Math.min(cw / iw, ch / ih);
       const fgScale = bs * scaleMult;
       window.syncTitleFromGrade({
-        img:    srcImg,
+        img:          srcImg,
+        gradedCanvas: gradeCanvas,  // fertig gerenderter Canvas mit Grading + Rotation
         fgX:    (cw - iw * fgScale) / 2 + offX,
         fgY:    (ch - ih * fgScale) / 2 + offY,
         fgW:    iw * fgScale,
