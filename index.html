@@ -19,14 +19,14 @@
       <div class="brand-sub">Social Tool</div>
     </div>
     <nav class="tabs">
-      <button class="tabbtn active" data-tab="generator">Titelbild</button>
-      <button class="tabbtn" data-tab="grading">Grading</button>
+      <button class="tabbtn active" data-tab="grading">Grading</button>
+      <button class="tabbtn" data-tab="generator">Titelbild</button>
     </nav>
   </div>
 </header>
 
 <!-- TAB 1: Titelbild -->
-<section id="tab-generator" class="tabcontent active">
+<section id="tab-generator" class="tabcontent">
   <main class="main main--generator">
 
     <div class="canvas-wrap">
@@ -60,7 +60,7 @@
 </section>
 
 <!-- TAB 2: Grading -->
-<section id="tab-grading" class="tabcontent">
+<section id="tab-grading" class="tabcontent active">
   <main class="main main--grading">
 
     <div class="thumbnail-container" id="thumbnailContainer"></div>
@@ -103,7 +103,10 @@
         <option value="sport">Sport</option>
         <option value="portraits">Portraits</option>
       </select>
-      <button id="auto-grade-button" class="btn">Preset anwenden</button>
+      <div class="row">
+        <button id="auto-grade-button" class="btn">Preset anwenden</button>
+        <button id="gradeAutoFitBtn" class="btn secondary">Auto-Fit</button>
+      </div>
 
       <div class="form-group">
         <input type="checkbox" id="titleImageCheckbox">
@@ -196,6 +199,11 @@
       if (key === mSliderActive && mSlider)
         mSlider.value = document.getElementById(id).value;
     });
+  });
+
+  // Grading Auto-Fit
+  document.getElementById('gradeAutoFitBtn')?.addEventListener('click', () => {
+    if (typeof window.gradeAutoFit === 'function') window.gradeAutoFit();
   });
 
   // Accordion

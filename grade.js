@@ -517,6 +517,21 @@ if (!gradeCanvas) {
   }
 
   // ---- Bridge: app.js can clear our title marking when user uploads directly ----
+  // ---- Auto-Fit: scale image to cover full canvas, centered ----
+  window.gradeAutoFit = function() {
+    if (!srcImg.naturalWidth) return;
+    const cw = gradeCanvas.width, ch = gradeCanvas.height;
+    const iw = srcImg.naturalWidth, ih = srcImg.naturalHeight;
+    const bs = Math.min(cw / iw, ch / ih); // base contain scale
+    // Cover scale: image fills canvas completely
+    const coverScale = Math.max(cw / iw, ch / ih);
+    scaleMult = coverScale / bs; // scaleMult is relative to baseScale
+    offX = 0;
+    offY = 0;
+    saveCurrentGrading();
+    render();
+  };
+
   window.clearGradingTitleMark = function() {
     if (titleImageIndex >= 0) {
       if (gradedData[titleImageIndex]) gradedData[titleImageIndex].isTitleImage = false;
