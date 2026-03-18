@@ -438,12 +438,17 @@ select.control             { padding: 11px 12px; }
   }
   .mobile-reset-btn:hover { background: rgba(255,255,255,0.08); }
 
-  /* Hide desktop accordion on mobile */
+  /* Accordion (desktop sliders) verstecken auf Mobile */
   #tab-grading .accordion { display: none; }
 
-  /* Order: canvas(1) → sliders(2) → thumbnails(3) → controls(4) */
+  /* Reihenfolge: canvas(1) → mobile-sliders(2) → thumbnails(3) → controls(4) */
   #tab-grading .canvas-wrap         { order: 1; }
   #tab-grading .mobile-sliders      { order: 2; }
   #tab-grading .thumbnail-container { order: 3; }
   #tab-grading .controls            { order: 4; }
+}
+
+/* Mobile-Slider-Bar auf Desktop verstecken */
+@media (min-width: 1100px) {
+  .mobile-sliders { display: none !important; }
 }
