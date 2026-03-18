@@ -414,13 +414,21 @@ function drawThirds() {
 }
 
 function autoFit() {
+  const cw = canvas.width, ch = canvas.height;
+
   if (window.titleImageData) {
-    // Reset pan/zoom for the synced grading image
-    tx = 0; ty = 0; scale = 1;
+    const d = window.titleImageData;
+    // Cover: image fills canvas completely, no blur visible
+    const scaleX = cw / d.fgW;
+    const scaleY = ch / d.fgH;
+    scale = Math.max(scaleX, scaleY);
+    // Center: d.fgX + tx + d.fgW*scale/2 = cw/2
+    tx = cw / 2 - d.fgX - d.fgW * scale / 2;
+    ty = ch / 2 - d.fgY - d.fgH * scale / 2;
     return;
   }
+
   if (!hasImage) return;
-  const cw = canvas.width, ch = canvas.height;
   scale = Math.max(cw / img.width, ch / img.height);
   tx = (cw - img.width  * scale) / 2;
   ty = (ch - img.height * scale) / 2;
