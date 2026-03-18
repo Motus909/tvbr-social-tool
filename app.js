@@ -222,28 +222,38 @@ function draw() {
 
   if (hasTitleSync) {
     const d = window.titleImageData;
-    const gc = d.gradedCanvas; // clipped graded image, transparent background
-    const src = d.img;
-    const iw = src.naturalWidth, ih = src.naturalHeight;
+    const gi = d.gradedImg; // full-size graded image, no bg
 
-    // Blur background from raw image (no grading artifacts in bg)
-    const bgScale = Math.max(cw / iw, ch / ih);
-    const bgW = iw * bgScale, bgH = ih * bgScale;
+    // Blur background from graded image
     ctx.save();
     ctx.filter = "blur(24px)";
-    ctx.drawImage(src, (cw - bgW) / 2, (ch - bgH) / 2, bgW, bgH);
+    // Scale to cover canvas
+    const bgScale = Math.max(cw / gi.width, ch / gi.height);
+    const bgW = gi.width * bgScale, bgH = gi.height * bgScale;
+    ctx.drawImage(gi, (cw - bgW) / 2, (ch - bgH) / 2, bgW, bgH);
     ctx.filter = "none";
     ctx.fillStyle = "rgba(0,0,0,0.18)";
     ctx.fillRect(0, 0, cw, ch);
     ctx.restore();
 
-    // Graded foreground: draw clipped canvas with user tx/ty pan offset
-    // gradedCanvas is 1080×1350, already positioned correctly — just offset by tx/ty
-    ctx.save();
-    ctx.translate(tx, ty);
-    ctx.scale(scale, scale);
-    ctx.drawImage(gc, 0, 0, cw, ch);
-    ctx.restore();
+    // Foreground: graded image at correct position + user pan/zoom
+    const fgX = d.fgX + tx;
+    const fgY = d.fgY + ty;
+    const fgW = d.fgW * scale;
+    const fgH = d.fgH * scale;
+
+    if (d.rotDeg) {
+      ctx.save();
+      // Rotate around the center of where the image sits on canvas
+      const cx = fgX + fgW / 2;
+      const cy = fgY + fgH / 2;
+      ctx.translate(cx, cy);
+      ctx.rotate(d.rotDeg * Math.PI / 180);
+      ctx.drawImage(gi, -fgW / 2, -fgH / 2, fgW, fgH);
+      ctx.restore();
+    } else {
+      ctx.drawImage(gi, fgX, fgY, fgW, fgH);
+    }
   } else {
     // Normal Tab-1 flow: blurred bg + framed foreground
     const iw = img.width, ih = img.height;

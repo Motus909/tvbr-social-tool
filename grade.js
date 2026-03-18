@@ -276,55 +276,52 @@ if (!gradeCanvas) {
       const cw = gradeCanvas.width,   ch = gradeCanvas.height;
       const bs = Math.min(cw / iw, ch / ih);
       const fgScale = bs * scaleMult;
-      const fgX = (cw - iw * fgScale) / 2 + offX;
-      const fgY = (ch - ih * fgScale) / 2 + offY;
-      const fgW = iw * fgScale;
-      const fgH = ih * fgScale;
+      const fgW = iw * fgScale, fgH = ih * fgScale;
+      const fgX = (cw - fgW) / 2 + offX;
+      const fgY = (ch - fgH) / 2 + offY;
 
-      // Build an offscreen canvas: only the graded image pixels, transparent bg
-      // We copy just the foreground region from gradeCanvas (after grading applied)
+      // Create offscreen canvas at natural image size, apply grading to it
       const oc = document.createElement('canvas');
-      oc.width = cw; oc.height = ch;
+      oc.width = iw; oc.height = ih;
       const octx = oc.getContext('2d');
 
-      if (rotDeg !== 0) {
-        octx.save();
-        octx.translate(cw / 2, ch / 2);
-        octx.rotate(rotDeg * Math.PI / 180);
-        // Draw gradeCanvas clipped to the image shape (no bg)
-        // Use destination-over trick: draw raw image first, then composite graded pixels
-        octx.drawImage(srcImg, fgX - cw/2, fgY - ch/2, fgW, fgH);
-        octx.restore();
-        // Now multiply with graded colors: draw gradeCanvas on top with 'source-atop'
-        // so only where srcImg was drawn gets the graded version
-        const oc2 = document.createElement('canvas');
-        oc2.width = cw; oc2.height = ch;
-        const octx2 = oc2.getContext('2d');
-        octx2.save();
-        octx2.translate(cw / 2, ch / 2);
-        octx2.rotate(rotDeg * Math.PI / 180);
-        octx2.drawImage(srcImg, fgX - cw/2, fgY - ch/2, fgW, fgH);
-        octx2.restore();
-        octx2.globalCompositeOperation = 'source-in';
-        octx2.drawImage(gradeCanvas, 0, 0);
-        window.syncTitleFromGrade({
-          img:          srcImg,
-          gradedCanvas: oc2,
-          fgX, fgY, fgW, fgH,
-          rotDeg,
-        });
-      } else {
-        // No rotation: clip gradeCanvas to image rectangle
-        octx.drawImage(srcImg, fgX, fgY, fgW, fgH);
-        octx.globalCompositeOperation = 'source-in';
-        octx.drawImage(gradeCanvas, 0, 0);
-        window.syncTitleFromGrade({
-          img:          srcImg,
-          gradedCanvas: oc,
-          fgX, fgY, fgW, fgH,
-          rotDeg,
-        });
+      // Draw raw image at full native resolution
+      octx.drawImage(srcImg, 0, 0, iw, ih);
+
+      // Apply same pixel adjustments as applyAdjustments() but on native-size image
+      const { b, c, s, k, hl, sh, tmp, tint } = getSliders();
+      const imgData = octx.getImageData(0, 0, iw, ih);
+      const d = imgData.data;
+      const bOff  = b * 2.0;
+      const cFac  = (259 * (c + 255)) / (255 * (259 - c));
+      const sFac  = 1 + (s / 60);
+      const kFac  = 1 + (k / 120);
+      const hlStr = (hl ?? 0) / 200;
+      const shStr = (sh ?? 0) / 200;
+      const tmpR  = (tmp  ?? 0) * 0.8;
+      const tmpB  = (tmp  ?? 0) * -0.8;
+      const tintG = (tint ?? 0) * -0.5;
+      for (let i = 0; i < d.length; i += 4) {
+        let r = d[i], g = d[i+1], bl = d[i+2];
+        r += bOff; g += bOff; bl += bOff;
+        r = cFac*(r-128)+128; g = cFac*(g-128)+128; bl = cFac*(bl-128)+128;
+        const luma = 0.2126*r + 0.7152*g + 0.0722*bl;
+        const adj  = hlStr * Math.max(0,(luma-128)/127) * 255 + shStr * Math.max(0,(128-luma)/128) * 255;
+        r += adj; g += adj; bl += adj;
+        const gray = 0.2126*r + 0.7152*g + 0.0722*bl;
+        r = gray+(r-gray)*sFac; g = gray+(g-gray)*sFac; bl = gray+(bl-gray)*sFac;
+        r = 128+(r-128)*kFac;   g = 128+(g-128)*kFac;   bl = 128+(bl-128)*kFac;
+        r += tmpR; bl += tmpB; g += tintG;
+        d[i] = clamp(r,0,255); d[i+1] = clamp(g,0,255); d[i+2] = clamp(bl,0,255);
       }
+      octx.putImageData(imgData, 0, 0);
+
+      window.syncTitleFromGrade({
+        gradedImg: oc,   // graded image at native resolution, no bg, no rotation
+        fgX, fgY, fgW, fgH,
+        rotDeg,
+        naturalW: iw, naturalH: ih,
+      });
     }
   }
 
