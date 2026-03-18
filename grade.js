@@ -27,7 +27,6 @@ if (!gradeCanvas) {
   const cReset  = $("cReset");
   const sReset  = $("sReset");
   const kReset  = $("kReset");
-  // New sliders
   const hlSlider   = $("hlSlider");
   const shSlider   = $("shSlider");
   const tmpSlider  = $("tmpSlider");
@@ -190,8 +189,6 @@ if (!gradeCanvas) {
       scaleMult = 1;
       offX = 0;
       offY = 0;
-      rotDeg = 0;
-      if (rotSlider) rotSlider.value = 0;
     }
     render();
     // If this is the title image, sync Tab 1 canvas live
@@ -275,7 +272,18 @@ if (!gradeCanvas) {
   function syncTitleCanvas() {
     if (titleImageIndex < 0 || currentIndex !== titleImageIndex) return;
     if (typeof window.syncTitleFromGrade === 'function') {
-      window.syncTitleFromGrade(gradeCanvas);
+      const iw = srcImg.naturalWidth, ih = srcImg.naturalHeight;
+      const cw = gradeCanvas.width,   ch = gradeCanvas.height;
+      const bs = Math.min(cw / iw, ch / ih);
+      const fgScale = bs * scaleMult;
+      window.syncTitleFromGrade({
+        img:    srcImg,
+        fgX:    (cw - iw * fgScale) / 2 + offX,
+        fgY:    (ch - ih * fgScale) / 2 + offY,
+        fgW:    iw * fgScale,
+        fgH:    ih * fgScale,
+        rotDeg: rotDeg,
+      });
     }
   }
 
@@ -358,11 +366,8 @@ if (!gradeCanvas) {
     const fgY = (ch - fgH) / 2 + offY;
     gctx.drawImage(srcImg, fgX, fgY, fgW, fgH);
 
-    // Rotation around canvas centre
     if (rotDeg !== 0) {
-      // Re-draw with rotation (overwrite the straight draw above)
       gctx.clearRect(0, 0, cw, ch);
-      // Redraw blurred bg first
       gctx.save();
       gctx.filter = "blur(24px)";
       gctx.drawImage(srcImg, bgX, bgY, bgW, bgH);
@@ -370,7 +375,6 @@ if (!gradeCanvas) {
       gctx.fillStyle = "rgba(0,0,0,0.18)";
       gctx.fillRect(0, 0, cw, ch);
       gctx.restore();
-      // Rotated foreground
       gctx.save();
       gctx.translate(cw / 2, ch / 2);
       gctx.rotate(rotDeg * Math.PI / 180);
@@ -384,12 +388,8 @@ if (!gradeCanvas) {
 
   function applyAdjustments(b, c, s, k, hl, sh, tmp, tint, vig, shrp) {
     if (!baseImageData) return;
-    const out = new ImageData(
-      new Uint8ClampedArray(baseImageData.data),
-      baseImageData.width,
-      baseImageData.height
-    );
-    const d   = out.data;
+    const out = new ImageData(new Uint8ClampedArray(baseImageData.data), baseImageData.width, baseImageData.height);
+    const d = out.data;
     const bOff  = b * 2.0;
     const cFac  = (259 * (c + 255)) / (255 * (259 - c));
     const sFac  = 1 + (s / 60);
@@ -399,60 +399,34 @@ if (!gradeCanvas) {
     const tmpR  = (tmp  ?? 0) * 0.8;
     const tmpB  = (tmp  ?? 0) * -0.8;
     const tintG = (tint ?? 0) * -0.5;
-
     for (let i = 0; i < d.length; i += 4) {
       let r = d[i], g = d[i+1], bb = d[i+2];
-      // Brightness
       r += bOff; g += bOff; bb += bOff;
-      // Contrast
       r = cFac*(r-128)+128; g = cFac*(g-128)+128; bb = cFac*(bb-128)+128;
-      // Highlights & Shadows
       const luma  = 0.2126*r + 0.7152*g + 0.0722*bb;
-      const hMask = Math.max(0, (luma - 128) / 127);
-      const sMask = Math.max(0, (128 - luma) / 128);
-      const adj   = hlStr * hMask * 255 + shStr * sMask * 255;
+      const adj   = hlStr * Math.max(0,(luma-128)/127) * 255 + shStr * Math.max(0,(128-luma)/128) * 255;
       r += adj; g += adj; bb += adj;
-      // Saturation
       const gray = 0.2126*r + 0.7152*g + 0.0722*bb;
-      r  = gray + (r  - gray) * sFac;
-      g  = gray + (g  - gray) * sFac;
-      bb = gray + (bb - gray) * sFac;
-      // Clarity
-      r  = 128 + (r  - 128) * kFac;
-      g  = 128 + (g  - 128) * kFac;
-      bb = 128 + (bb - 128) * kFac;
-      // Temperature & Tint
-      r  += tmpR; bb += tmpB; g += tintG;
-      d[i]   = clamp(r,  0, 255);
-      d[i+1] = clamp(g,  0, 255);
-      d[i+2] = clamp(bb, 0, 255);
+      r = gray+(r-gray)*sFac; g = gray+(g-gray)*sFac; bb = gray+(bb-gray)*sFac;
+      r = 128+(r-128)*kFac;   g = 128+(g-128)*kFac;   bb = 128+(bb-128)*kFac;
+      r += tmpR; bb += tmpB; g += tintG;
+      d[i] = clamp(r,0,255); d[i+1] = clamp(g,0,255); d[i+2] = clamp(bb,0,255);
     }
     gctx.putImageData(out, 0, 0);
-
-    // Vignette (canvas gradient on top)
     if (vig > 0) {
       const cw = gradeCanvas.width, ch = gradeCanvas.height;
-      const radius = Math.sqrt(cw*cw + ch*ch) / 2;
-      const vg = gctx.createRadialGradient(cw/2, ch/2, radius*(1-vig/60), cw/2, ch/2, radius);
-      vg.addColorStop(0, 'rgba(0,0,0,0)');
-      vg.addColorStop(1, `rgba(0,0,0,${vig/80})`);
-      gctx.fillStyle = vg;
-      gctx.fillRect(0, 0, cw, ch);
+      const rad = Math.sqrt(cw*cw+ch*ch)/2;
+      const vg = gctx.createRadialGradient(cw/2,ch/2,rad*(1-vig/60),cw/2,ch/2,rad);
+      vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,`rgba(0,0,0,${vig/80})`);
+      gctx.fillStyle = vg; gctx.fillRect(0,0,cw,ch);
     }
-
-    // Sharpness (unsharp mask)
     if (shrp > 0) {
       const cw = gradeCanvas.width, ch = gradeCanvas.height;
-      const oc = document.createElement('canvas');
-      oc.width = cw; oc.height = ch;
+      const oc = document.createElement('canvas'); oc.width=cw; oc.height=ch;
       const ox = oc.getContext('2d');
-      ox.filter = `blur(${1 + shrp/15}px)`;
-      ox.drawImage(gradeCanvas, 0, 0);
-      gctx.save();
-      gctx.globalCompositeOperation = 'overlay';
-      gctx.globalAlpha = (shrp / 30) * 0.4;
-      gctx.drawImage(oc, 0, 0);
-      gctx.restore();
+      ox.filter = `blur(${1+shrp/15}px)`; ox.drawImage(gradeCanvas,0,0);
+      gctx.save(); gctx.globalCompositeOperation='overlay'; gctx.globalAlpha=(shrp/30)*0.4;
+      gctx.drawImage(oc,0,0); gctx.restore();
     }
   }
 
@@ -560,14 +534,10 @@ if (!gradeCanvas) {
   if (cReset) cReset.addEventListener("click", () => { cSlider.value = autoActive ? autoApplied.c : 0; render(); });
   if (sReset) sReset.addEventListener("click", () => { sSlider.value = autoActive ? autoApplied.s : 0; render(); });
   if (kReset) kReset.addEventListener("click", () => { kSlider.value = autoActive ? autoApplied.k : 0; render(); });
-
-  // New sliders — event listeners
   [hlSlider, shSlider, tmpSlider, tintSlider, vigSlider, shrpSlider].forEach(sl => {
     if (sl) sl.addEventListener('input', () => { saveCurrentGrading(); render(); });
   });
-  if (rotSlider) rotSlider.addEventListener('input', () => {
-    rotDeg = parseFloat(rotSlider.value); saveCurrentGrading(); render();
-  });
+  if (rotSlider) rotSlider.addEventListener('input', () => { rotDeg = parseFloat(rotSlider.value); saveCurrentGrading(); render(); });
   if (hlReset)   hlReset.addEventListener("click",   () => { hlSlider.value   = 0; render(); });
   if (shReset)   shReset.addEventListener("click",   () => { shSlider.value   = 0; render(); });
   if (tmpReset)  tmpReset.addEventListener("click",  () => { tmpSlider.value  = 0; render(); });

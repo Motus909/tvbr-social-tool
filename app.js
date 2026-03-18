@@ -221,8 +221,31 @@ function draw() {
   }
 
   if (hasTitleSync) {
-    // Draw gradeCanvas directly — all grading, framing, rotation included
-    ctx.drawImage(window.titleImageData, 0, 0, cw, ch);
+    const d = window.titleImageData;
+    const src = d.img;
+    const iw = src.naturalWidth, ih = src.naturalHeight;
+    // Blurred bg
+    const bgScale = Math.max(cw/iw, ch/ih);
+    const bgW = iw*bgScale, bgH = ih*bgScale;
+    ctx.save();
+    ctx.filter = "blur(24px)";
+    ctx.drawImage(src, (cw-bgW)/2, (ch-bgH)/2, bgW, bgH);
+    ctx.filter = "none";
+    ctx.fillStyle = "rgba(0,0,0,0.18)";
+    ctx.fillRect(0, 0, cw, ch);
+    ctx.restore();
+    // Framed foreground with user pan/zoom + rotation from grading
+    const fgX = d.fgX + tx, fgY = d.fgY + ty;
+    const fgW = d.fgW * scale, fgH = d.fgH * scale;
+    if (d.rotDeg) {
+      ctx.save();
+      ctx.translate(cw/2, ch/2);
+      ctx.rotate(d.rotDeg * Math.PI / 180);
+      ctx.drawImage(src, fgX - cw/2, fgY - ch/2, fgW, fgH);
+      ctx.restore();
+    } else {
+      ctx.drawImage(src, fgX, fgY, fgW, fgH);
+    }
   } else {
     // Normal Tab-1 flow: blurred bg + framed foreground
     const iw = img.width, ih = img.height;
@@ -399,9 +422,13 @@ function clamp(v, lo, hi) {
 }
 
 // ---- Grade-to-Title bridge ----
-window.syncTitleFromGrade = function(gradeCanvasEl) {
-  window.titleImageData = gradeCanvasEl; // canvas element or null
-  if (gradeCanvasEl) hasImage = false;
+window.syncTitleFromGrade = function(data) {
+  const isNew = data && window.titleImageData?.img !== data?.img;
+  window.titleImageData = data;
+  if (data) {
+    hasImage = false;
+    if (isNew) { tx = 0; ty = 0; scale = 1; }
+  }
   draw();
 };
 
