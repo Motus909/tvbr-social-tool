@@ -385,9 +385,11 @@ if (!gradeCanvas) {
     gctx.clearRect(0, 0, cw, ch);
 
     // Blurred background (cover) — with rotation if set
-    const bgScale = Math.max(cw / iw, ch / ih);
+    // bgScale muss den Canvas immer vollständig füllen — bei Rotation die Diagonale abdecken
+    const diagonal = Math.sqrt(cw * cw + ch * ch);
+    const bgScaleBase = Math.max(cw / iw, ch / ih);
+    const bgScale = rotDeg !== 0 ? Math.max(bgScaleBase, diagonal / Math.min(iw, ih)) : bgScaleBase;
     const bgW = iw * bgScale, bgH = ih * bgScale;
-    const bgX = (cw - bgW) / 2, bgY = (ch - bgH) / 2;
     gctx.save();
     gctx.filter = "blur(24px)";
     if (rotDeg !== 0) {
@@ -395,7 +397,7 @@ if (!gradeCanvas) {
       gctx.rotate(rotDeg * Math.PI / 180);
       gctx.drawImage(srcImg, -bgW / 2, -bgH / 2, bgW, bgH);
     } else {
-      gctx.drawImage(srcImg, bgX, bgY, bgW, bgH);
+      gctx.drawImage(srcImg, (cw - bgW) / 2, (ch - bgH) / 2, bgW, bgH);
     }
     gctx.filter = "none";
     gctx.restore();

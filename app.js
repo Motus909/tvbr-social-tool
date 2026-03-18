@@ -224,10 +224,12 @@ function draw() {
     const d = window.titleImageData;
     const gi = d.gradedImg; // full-size graded image, no bg
 
-    // Blur background from graded image — with rotation
+    // Blur background — diagonal scaling ensures no black corners when rotated
     ctx.save();
     ctx.filter = "blur(24px)";
-    const bgScale = Math.max(cw / gi.width, ch / gi.height);
+    const diagonal = Math.sqrt(cw * cw + ch * ch);
+    const bgScaleBase = Math.max(cw / gi.width, ch / gi.height);
+    const bgScale = d.rotDeg ? Math.max(bgScaleBase, diagonal / Math.min(gi.width, gi.height)) : bgScaleBase;
     const bgW = gi.width * bgScale, bgH = gi.height * bgScale;
     if (d.rotDeg) {
       ctx.translate(cw / 2, ch / 2);
@@ -412,6 +414,11 @@ function drawThirds() {
 }
 
 function autoFit() {
+  if (window.titleImageData) {
+    // Reset pan/zoom for the synced grading image
+    tx = 0; ty = 0; scale = 1;
+    return;
+  }
   if (!hasImage) return;
   const cw = canvas.width, ch = canvas.height;
   scale = Math.max(cw / img.width, ch / img.height);
