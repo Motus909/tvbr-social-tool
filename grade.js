@@ -384,17 +384,23 @@ if (!gradeCanvas) {
 
     gctx.clearRect(0, 0, cw, ch);
 
-    // Blurred background (cover)
+    // Blurred background (cover) — with rotation if set
     const bgScale = Math.max(cw / iw, ch / ih);
     const bgW = iw * bgScale, bgH = ih * bgScale;
     const bgX = (cw - bgW) / 2, bgY = (ch - bgH) / 2;
     gctx.save();
     gctx.filter = "blur(24px)";
-    gctx.drawImage(srcImg, bgX, bgY, bgW, bgH);
+    if (rotDeg !== 0) {
+      gctx.translate(cw / 2, ch / 2);
+      gctx.rotate(rotDeg * Math.PI / 180);
+      gctx.drawImage(srcImg, -bgW / 2, -bgH / 2, bgW, bgH);
+    } else {
+      gctx.drawImage(srcImg, bgX, bgY, bgW, bgH);
+    }
     gctx.filter = "none";
+    gctx.restore();
     gctx.fillStyle = "rgba(0,0,0,0.18)";
     gctx.fillRect(0, 0, cw, ch);
-    gctx.restore();
 
     // Foreground (contain + user offset/zoom)
     baseScale = Math.min(cw / iw, ch / ih);
@@ -402,22 +408,15 @@ if (!gradeCanvas) {
     const fgW = iw * fgScale, fgH = ih * fgScale;
     const fgX = (cw - fgW) / 2 + offX;
     const fgY = (ch - fgH) / 2 + offY;
-    gctx.drawImage(srcImg, fgX, fgY, fgW, fgH);
 
     if (rotDeg !== 0) {
-      gctx.clearRect(0, 0, cw, ch);
-      gctx.save();
-      gctx.filter = "blur(24px)";
-      gctx.drawImage(srcImg, bgX, bgY, bgW, bgH);
-      gctx.filter = "none";
-      gctx.fillStyle = "rgba(0,0,0,0.18)";
-      gctx.fillRect(0, 0, cw, ch);
-      gctx.restore();
       gctx.save();
       gctx.translate(cw / 2, ch / 2);
       gctx.rotate(rotDeg * Math.PI / 180);
       gctx.drawImage(srcImg, fgX - cw / 2, fgY - ch / 2, fgW, fgH);
       gctx.restore();
+    } else {
+      gctx.drawImage(srcImg, fgX, fgY, fgW, fgH);
     }
 
     baseImageData = gctx.getImageData(0, 0, cw, ch);

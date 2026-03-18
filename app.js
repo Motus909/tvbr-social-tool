@@ -224,17 +224,22 @@ function draw() {
     const d = window.titleImageData;
     const gi = d.gradedImg; // full-size graded image, no bg
 
-    // Blur background from graded image
+    // Blur background from graded image — with rotation
     ctx.save();
     ctx.filter = "blur(24px)";
-    // Scale to cover canvas
     const bgScale = Math.max(cw / gi.width, ch / gi.height);
     const bgW = gi.width * bgScale, bgH = gi.height * bgScale;
-    ctx.drawImage(gi, (cw - bgW) / 2, (ch - bgH) / 2, bgW, bgH);
+    if (d.rotDeg) {
+      ctx.translate(cw / 2, ch / 2);
+      ctx.rotate(d.rotDeg * Math.PI / 180);
+      ctx.drawImage(gi, -bgW / 2, -bgH / 2, bgW, bgH);
+    } else {
+      ctx.drawImage(gi, (cw - bgW) / 2, (ch - bgH) / 2, bgW, bgH);
+    }
     ctx.filter = "none";
+    ctx.restore();
     ctx.fillStyle = "rgba(0,0,0,0.18)";
     ctx.fillRect(0, 0, cw, ch);
-    ctx.restore();
 
     // Foreground: graded image at correct position + user pan/zoom
     const fgX = d.fgX + tx;
