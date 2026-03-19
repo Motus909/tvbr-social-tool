@@ -153,6 +153,8 @@
   </main>
 </section>
 
+<script src="app.js"></script>
+<script src="grade.js"></script>
 <script>
   // Mobile slider bar
   const SLIDER_ID_MAP = {
@@ -225,22 +227,24 @@
     gesellschaft: []
   };
 
-  const stufeSelect  = document.getElementById('stufeSelect');
+  const stufeSelect    = document.getElementById('stufeSelect');
   const categorySelect = document.getElementById('categorySelect');
-  const riegeLabel   = document.getElementById('riegeLabel');
+  const riegeLabel     = document.getElementById('riegeLabel');
 
-  function updateRiegen() {
-    const stufe = stufeSelect.value;
+  function updateRiegen(triggerDraw) {
+    const stufe  = stufeSelect.value;
     const riegen = RIEGEN[stufe] || [];
     categorySelect.innerHTML = '';
     if (riegen.length === 0) {
-      // Gesellschaft: no riege needed, set value directly
       categorySelect.style.display = 'none';
-      riegeLabel.style.display = 'none';
-      categorySelect.innerHTML = '<option value="gesellschaft">TV Bad Ragaz</option>';
+      riegeLabel.style.display     = 'none';
+      const opt = document.createElement('option');
+      opt.value = 'gesellschaft';
+      opt.textContent = 'TV Bad Ragaz';
+      categorySelect.appendChild(opt);
     } else {
       categorySelect.style.display = '';
-      riegeLabel.style.display = '';
+      riegeLabel.style.display     = '';
       riegen.forEach(r => {
         const opt = document.createElement('option');
         opt.value = r.value;
@@ -248,13 +252,13 @@
         categorySelect.appendChild(opt);
       });
     }
-    categorySelect.dispatchEvent(new Event('change'));
+    if (triggerDraw && typeof draw === 'function') draw();
   }
 
-  stufeSelect.addEventListener('change', updateRiegen);
-  updateRiegen(); // init
+  stufeSelect.addEventListener('change', () => updateRiegen(true));
+  updateRiegen(true); // init with draw
 
-
+  // Grading Auto-Fit
   document.getElementById('gradeAutoFitBtn')?.addEventListener('click', () => {
     if (typeof window.gradeAutoFit === 'function') window.gradeAutoFit();
   });
@@ -283,8 +287,5 @@
     tabs[b.dataset.tab].classList.add("active");
   }));
 </script>
-
-<script src="app.js"></script>
-<script src="grade.js"></script>
 </body>
 </html>
