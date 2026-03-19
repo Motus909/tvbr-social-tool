@@ -348,7 +348,8 @@ function draw() {
   const subH = OVERLAY.subBarHeight;
 
   const hasLogo = (typeof clubLogo !== "undefined") && clubLogo.complete && clubLogo.naturalWidth > 0;
-  const labelText = subLabel(categorySelect.value);
+  const catVal  = categorySelect.value || "aktiv-la";
+  const labelText = subLabel(catVal);
   const clubFont  = `34px 'Anton', sans-serif`;
 
   let subW = OVERLAY.subPadLeft;
@@ -362,7 +363,7 @@ function draw() {
 
   const subX = OVERLAY.leftX;
 
-  ctx.fillStyle = UNDER[categorySelect.value] || "#fff";
+  ctx.fillStyle = UNDER[catVal] || "#fff";
   ctx.fillRect(subX, subY, subW, subH);
 
   let cursorX = subX + OVERLAY.subPadLeft;
@@ -482,3 +483,6 @@ window.clearTitleUpload = function() {
 // grade.js sets this function on window during init
 // (it's set in grade.js, just declared here for clarity)
 // window.clearGradingTitleMark = function() { ... } — defined in grade.js
+
+// Initial render — shows "Bild laden …" immediately on page load
+draw();
