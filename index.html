@@ -153,8 +153,6 @@
   </main>
 </section>
 
-<script src="app.js"></script>
-<script src="grade.js"></script>
 <script>
   // Mobile slider bar
   const SLIDER_ID_MAP = {
@@ -212,13 +210,13 @@
 
   // Stufe → Riege dynamic update
   const RIEGEN = {
-    aktiv: [
+    aktiv:        [
       { value: "aktiv-la",        label: "LA" },
       { value: "aktiv-getu",      label: "Getu" },
       { value: "aktiv-gym",       label: "Gym" },
       { value: "aktiv-athletics", label: "Ragaz Athletics" },
     ],
-    jugi: [
+    jugi:         [
       { value: "jugi-la",         label: "LA" },
       { value: "jugi-getu",       label: "Getu" },
       { value: "jugi-gym",        label: "Gym" },
@@ -226,36 +224,32 @@
     ],
     gesellschaft: []
   };
-
-  const stufeSelect    = document.getElementById('stufeSelect');
-  const riegeLabel     = document.getElementById('riegeLabel');
-
-  function updateRiegen(triggerDraw) {
-    const stufe  = stufeSelect.value;
-    const riegen = RIEGEN[stufe] || [];
-    categorySelect.innerHTML = '';
+  const stufeSelect  = document.getElementById('stufeSelect');
+  const catSelect    = document.getElementById('categorySelect');
+  const riegeLabel   = document.getElementById('riegeLabel');
+  function updateRiegen() {
+    const riegen = RIEGEN[stufeSelect.value] || [];
+    catSelect.innerHTML = '';
     if (riegen.length === 0) {
-      categorySelect.style.display = 'none';
-      riegeLabel.style.display     = 'none';
-      const opt = document.createElement('option');
-      opt.value = 'gesellschaft';
-      opt.textContent = 'TV Bad Ragaz';
-      categorySelect.appendChild(opt);
+      catSelect.style.display = 'none';
+      riegeLabel.style.display = 'none';
+      const o = document.createElement('option');
+      o.value = 'gesellschaft'; o.textContent = 'TV Bad Ragaz';
+      catSelect.appendChild(o);
     } else {
-      categorySelect.style.display = '';
-      riegeLabel.style.display     = '';
+      catSelect.style.display = '';
+      riegeLabel.style.display = '';
       riegen.forEach(r => {
-        const opt = document.createElement('option');
-        opt.value = r.value;
-        opt.textContent = r.label;
-        categorySelect.appendChild(opt);
+        const o = document.createElement('option');
+        o.value = r.value; o.textContent = r.label;
+        catSelect.appendChild(o);
       });
     }
-    if (triggerDraw && typeof draw === 'function') draw();
+    // Notify app.js draw() if available
+    if (typeof draw === 'function') draw();
   }
-
-  stufeSelect.addEventListener('change', () => updateRiegen(true));
-  updateRiegen(true); // init with draw
+  stufeSelect.addEventListener('change', updateRiegen);
+  // Will be called once after app.js loads (see bottom of page)
 
   // Grading Auto-Fit
   document.getElementById('gradeAutoFitBtn')?.addEventListener('click', () => {
@@ -286,5 +280,9 @@
     tabs[b.dataset.tab].classList.add("active");
   }));
 </script>
+
+<script src="app.js"></script>
+<script src="grade.js"></script>
+<script>updateRiegen();</script>
 </body>
 </html>

@@ -100,9 +100,9 @@ categorySelect.addEventListener("change", draw);
 fitBtn.addEventListener("click",  () => { autoFit(); draw(); });
 resetBtn.addEventListener("click", () => {
   titleInput.value      = "";
-  const stufeSelectEl = document.getElementById('stufeSelect');
-  if (stufeSelectEl) { stufeSelectEl.value = 'aktiv'; stufeSelectEl.dispatchEvent(new Event('change')); }
   categorySelect.value  = "aktiv-la";
+  const stufeEl = document.getElementById('stufeSelect');
+  if (stufeEl) { stufeEl.value = 'aktiv'; if (typeof updateRiegen === 'function') updateRiegen(); }
   imageUpload.value     = "";
   hasImage              = false;
   img.src               = "";
@@ -344,12 +344,11 @@ function draw() {
   ctx.restore();
 
   const accentY = navyY + navyH;
-  const subY = accentY + OVERLAY.gapAfterAccent;
+  const subY = accentY + (OVERLAY.gapAfterAccent || 0);
   const subH = OVERLAY.subBarHeight;
 
   const hasLogo = (typeof clubLogo !== "undefined") && clubLogo.complete && clubLogo.naturalWidth > 0;
-  const catVal  = categorySelect.value || "aktiv-la";
-  const labelText = subLabel(catVal);
+  const labelText = subLabel(categorySelect.value);
   const clubFont  = `34px 'Anton', sans-serif`;
 
   let subW = OVERLAY.subPadLeft;
@@ -363,7 +362,7 @@ function draw() {
 
   const subX = OVERLAY.leftX;
 
-  ctx.fillStyle = UNDER[catVal] || "#fff";
+  ctx.fillStyle = UNDER[categorySelect.value] || "#fff";
   ctx.fillRect(subX, subY, subW, subH);
 
   let cursorX = subX + OVERLAY.subPadLeft;
