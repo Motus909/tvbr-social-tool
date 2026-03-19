@@ -483,6 +483,3 @@ window.clearTitleUpload = function() {
 // grade.js sets this function on window during init
 // (it's set in grade.js, just declared here for clarity)
 // window.clearGradingTitleMark = function() { ... } — defined in grade.js
-
-// Initial render — shows "Bild laden …" immediately on page load
-draw();
