@@ -21,10 +21,15 @@ if (document.fonts?.load) {
 }
 
 const UNDER = {
-  aktiv:        "#ffffff",
-  jugi:         "#A6CAEC",
-  leistung:     "#ffffff",
-  gesellschaft: "#CDCCCC"
+  "aktiv-la":         "#ffffff",
+  "aktiv-getu":       "#ffffff",
+  "aktiv-gym":        "#ffffff",
+  "aktiv-athletics":  "#ffffff",
+  "jugi-la":          "#A6CAEC",
+  "jugi-getu":        "#A6CAEC",
+  "jugi-gym":         "#A6CAEC",
+  "jugi-athletics":   "#A6CAEC",
+  "gesellschaft":     "#CDCCCC"
 };
 
 const OVERLAY = {
@@ -95,7 +100,7 @@ categorySelect.addEventListener("change", draw);
 fitBtn.addEventListener("click",  () => { autoFit(); draw(); });
 resetBtn.addEventListener("click", () => {
   titleInput.value      = "";
-  categorySelect.value  = "aktiv";
+  categorySelect.value  = "aktiv-la";
   imageUpload.value     = "";
   hasImage              = false;
   img.src               = "";
@@ -337,7 +342,7 @@ function draw() {
   ctx.restore();
 
   const accentY = navyY + navyH;
-  const subY = accentY + (categorySelect.value === "leistung" ? OVERLAY.accentHeight : 0) + (OVERLAY.gapAfterAccent || 0);
+  const subY = accentY + OVERLAY.gapAfterAccent;
   const subH = OVERLAY.subBarHeight;
 
   const hasLogo = (typeof clubLogo !== "undefined") && clubLogo.complete && clubLogo.naturalWidth > 0;
@@ -355,11 +360,6 @@ function draw() {
 
   const subX = OVERLAY.leftX;
 
-  if (categorySelect.value === "leistung") {
-    ctx.fillStyle = ORANGE;
-    ctx.fillRect(subX, accentY, subW, OVERLAY.accentHeight);
-  }
-
   ctx.fillStyle = UNDER[categorySelect.value] || "#fff";
   ctx.fillRect(subX, subY, subW, subH);
 
@@ -375,12 +375,19 @@ function draw() {
   ctx.fillText(labelText, cursorX, subY + subH / 2 + 6);
 }
 
-// ---- Labels ----
 function subLabel(cat) {
-  if (cat === "jugi")        return "JUGI BAD RAGAZ";
-  if (cat === "leistung")    return "TV BAD RAGAZ LA LEISTUNGSTEAM";
-  if (cat === "gesellschaft") return "TV BAD RAGAZ";
-  return "TV BAD RAGAZ";
+  const labels = {
+    "aktiv-la":        "TV BAD RAGAZ LA",
+    "aktiv-getu":      "TV BAD RAGAZ GETU",
+    "aktiv-gym":       "TV BAD RAGAZ GYM",
+    "aktiv-athletics": "TV BAD RAGAZ RAGAZ ATHLETICS",
+    "jugi-la":         "JUGI BAD RAGAZ LA",
+    "jugi-getu":       "JUGI BAD RAGAZ GETU",
+    "jugi-gym":        "JUGI BAD RAGAZ GYM",
+    "jugi-athletics":  "JUGI BAD RAGAZ RAGAZ ATHLETICS",
+    "gesellschaft":    "TV BAD RAGAZ",
+  };
+  return labels[cat] || "TV BAD RAGAZ";
 }
 
 // ---- Helpers ----
