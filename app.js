@@ -314,8 +314,8 @@ function draw() {
   const gradientHeight = 420;
   const gradientTop    = ch - gradientHeight;
   const bottomGrad = ctx.createLinearGradient(0, gradientTop, 0, ch);
-  bottomGrad.addColorStop(0, "rgba(26,53,91,0.75)");
-  bottomGrad.addColorStop(1, "rgba(240, 248, 253, 0)");
+  bottomGrad.addColorStop(0, "rgba(240, 248, 253, 0)");
+  bottomGrad.addColorStop(1, "rgba(26,53,91,0.75)");
   ctx.fillStyle = bottomGrad;
   ctx.fillRect(0, gradientTop, cw, gradientHeight);
 
