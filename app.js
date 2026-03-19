@@ -100,6 +100,8 @@ categorySelect.addEventListener("change", draw);
 fitBtn.addEventListener("click",  () => { autoFit(); draw(); });
 resetBtn.addEventListener("click", () => {
   titleInput.value      = "";
+  const stufeSelectEl = document.getElementById('stufeSelect');
+  if (stufeSelectEl) { stufeSelectEl.value = 'aktiv'; stufeSelectEl.dispatchEvent(new Event('change')); }
   categorySelect.value  = "aktiv-la";
   imageUpload.value     = "";
   hasImage              = false;

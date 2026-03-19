@@ -41,22 +41,18 @@
       <input class="control" type="text" id="titleInput" placeholder="z.B. Dr schnellscht Ragazer" maxlength="60"/>
 
       <label class="label">Kategorie</label>
+      <select class="control" id="stufeSelect">
+        <option value="aktiv">Aktiv</option>
+        <option value="jugi">Jugi</option>
+        <option value="gesellschaft">Gesellschaft</option>
+      </select>
+
+      <label class="label" id="riegeLabel">Riege</label>
       <select class="control" id="categorySelect">
-        <optgroup label="Aktiv">
-          <option value="aktiv-la">TV Bad Ragaz LA</option>
-          <option value="aktiv-getu">TV Bad Ragaz Getu</option>
-          <option value="aktiv-gym">TV Bad Ragaz Gym</option>
-          <option value="aktiv-athletics">TV Bad Ragaz Ragaz Athletics</option>
-        </optgroup>
-        <optgroup label="Jugi">
-          <option value="jugi-la">Jugi Bad Ragaz LA</option>
-          <option value="jugi-getu">Jugi Bad Ragaz Getu</option>
-          <option value="jugi-gym">Jugi Bad Ragaz Gym</option>
-          <option value="jugi-athletics">Jugi Bad Ragaz Ragaz Athletics</option>
-        </optgroup>
-        <optgroup label="Gesellschaft">
-          <option value="gesellschaft">TV Bad Ragaz</option>
-        </optgroup>
+        <option value="aktiv-la">LA</option>
+        <option value="aktiv-getu">Getu</option>
+        <option value="aktiv-gym">Gym</option>
+        <option value="aktiv-athletics">Ragaz Athletics</option>
       </select>
 
       <div class="row">
@@ -212,7 +208,53 @@
     });
   });
 
-  // Grading Auto-Fit
+  // Stufe → Riege dynamic update
+  const RIEGEN = {
+    aktiv: [
+      { value: "aktiv-la",        label: "LA" },
+      { value: "aktiv-getu",      label: "Getu" },
+      { value: "aktiv-gym",       label: "Gym" },
+      { value: "aktiv-athletics", label: "Ragaz Athletics" },
+    ],
+    jugi: [
+      { value: "jugi-la",         label: "LA" },
+      { value: "jugi-getu",       label: "Getu" },
+      { value: "jugi-gym",        label: "Gym" },
+      { value: "jugi-athletics",  label: "Ragaz Athletics" },
+    ],
+    gesellschaft: []
+  };
+
+  const stufeSelect  = document.getElementById('stufeSelect');
+  const categorySelect = document.getElementById('categorySelect');
+  const riegeLabel   = document.getElementById('riegeLabel');
+
+  function updateRiegen() {
+    const stufe = stufeSelect.value;
+    const riegen = RIEGEN[stufe] || [];
+    categorySelect.innerHTML = '';
+    if (riegen.length === 0) {
+      // Gesellschaft: no riege needed, set value directly
+      categorySelect.style.display = 'none';
+      riegeLabel.style.display = 'none';
+      categorySelect.innerHTML = '<option value="gesellschaft">TV Bad Ragaz</option>';
+    } else {
+      categorySelect.style.display = '';
+      riegeLabel.style.display = '';
+      riegen.forEach(r => {
+        const opt = document.createElement('option');
+        opt.value = r.value;
+        opt.textContent = r.label;
+        categorySelect.appendChild(opt);
+      });
+    }
+    categorySelect.dispatchEvent(new Event('change'));
+  }
+
+  stufeSelect.addEventListener('change', updateRiegen);
+  updateRiegen(); // init
+
+
   document.getElementById('gradeAutoFitBtn')?.addEventListener('click', () => {
     if (typeof window.gradeAutoFit === 'function') window.gradeAutoFit();
   });
