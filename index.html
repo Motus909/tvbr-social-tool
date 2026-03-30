@@ -48,12 +48,7 @@
       </select>
 
       <label class="label" id="riegeLabel">Riege (mehrere wählbar)</label>
-      <select class="control" id="categorySelect" multiple size="4">
-        <option value="aktiv-la">LA</option>
-        <option value="aktiv-getu">Getu</option>
-        <option value="aktiv-gym">Gym</option>
-        <option value="aktiv-athletics">Ragaz Athletics</option>
-      </select>
+      <div id="categorySelect" class="riege-checkboxes"></div>
 
       <div class="row">
         <button class="btn" id="fitBtn" type="button">Auto-Fit</button>
@@ -227,31 +222,32 @@
   const stufeSelect  = document.getElementById('stufeSelect');
   const catSelect    = document.getElementById('categorySelect');
   const riegeLabel   = document.getElementById('riegeLabel');
+
+
   function updateRiegen() {
     const riegen = RIEGEN[stufeSelect.value] || [];
     catSelect.innerHTML = '';
     if (riegen.length === 0) {
       catSelect.style.display = 'none';
       riegeLabel.style.display = 'none';
-      const o = document.createElement('option');
-      o.value = 'gesellschaft'; o.textContent = 'TV Bad Ragaz';
-      catSelect.appendChild(o);
+      // Gesellschaft: kein Checkbox nötig, draw direkt
     } else {
       catSelect.style.display = '';
       riegeLabel.style.display = '';
-      catSelect.size = riegen.length;
       riegen.forEach(r => {
-        const o = document.createElement('option');
-        o.value = r.value; o.textContent = r.label;
-        catSelect.appendChild(o);
+        const lbl = document.createElement('label');
+        const cb  = document.createElement('input');
+        cb.type  = 'checkbox';
+        cb.value = r.value;
+        cb.addEventListener('change', () => { if (typeof draw === 'function') draw(); });
+        lbl.appendChild(cb);
+        lbl.appendChild(document.createTextNode(r.label));
+        catSelect.appendChild(lbl);
       });
     }
-    // Notify app.js draw() if available
     if (typeof draw === 'function') draw();
   }
   stufeSelect.addEventListener('change', updateRiegen);
-  catSelect.addEventListener('change', () => { if (typeof draw === 'function') draw(); });
-  // Will be called once after app.js loads (see bottom of page)
 
   // Grading Auto-Fit
   document.getElementById('gradeAutoFitBtn')?.addEventListener('click', () => {

@@ -359,7 +359,7 @@ function draw() {
   subW += ctx.measureText(label.club).width;
   if (label.riege) {
     ctx.font = riegeFont;
-    subW += ctx.measureText(" / " + label.riege).width;
+    subW += ctx.measureText("  " + label.riege).width;
   }
   ctx.restore();
   subW += OVERLAY.subPadRight;
@@ -384,13 +384,13 @@ function draw() {
   if (label.riege) {
     cursorX += ctx.measureText(label.club).width;
     ctx.font = riegeFont;
-    ctx.fillText(" / " + label.riege, cursorX, subY + subH / 2 + 4);
+    ctx.fillText("  " + label.riege, cursorX, subY + subH / 2 + 4);
   }
 }
 
 function subLabel() {
   const sel = document.getElementById('categorySelect');
-  const selected = sel ? Array.from(sel.selectedOptions) : [];
+  const selected = sel ? Array.from(sel.querySelectorAll('input[type="checkbox"]:checked')) : [];
 
   if (!selected.length || selected[0].value === 'gesellschaft') {
     return { club: "TV BAD RAGAZ", riege: "" };
