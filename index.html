@@ -7,7 +7,6 @@
   <title>TV Bad Ragaz – Social Tool</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Antonio:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -228,7 +227,6 @@
   const stufeSelect  = document.getElementById('stufeSelect');
   const catSelect    = document.getElementById('categorySelect');
   const riegeLabel   = document.getElementById('riegeLabel');
-
   function updateRiegen() {
     const riegen = RIEGEN[stufeSelect.value] || [];
     catSelect.innerHTML = '';
@@ -248,12 +246,12 @@
         catSelect.appendChild(o);
       });
     }
+    // Notify app.js draw() if available
     if (typeof draw === 'function') draw();
   }
   stufeSelect.addEventListener('change', updateRiegen);
   catSelect.addEventListener('change', () => { if (typeof draw === 'function') draw(); });
-
-
+  // Will be called once after app.js loads (see bottom of page)
 
   // Grading Auto-Fit
   document.getElementById('gradeAutoFitBtn')?.addEventListener('click', () => {

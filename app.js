@@ -328,7 +328,7 @@ function draw() {
 
   // ---- Overlay: Navy title bar + accent + sub bar ----
   const titleText = (titleInput.value || "").trim();
-  const titleFont = `${OVERLAY.titleWeight} ${OVERLAY.titleFontPx}px Calibri, Arial, sans-serif`;
+  const titleFont = `${OVERLAY.titleWeight} ${OVERLAY.titleFontPx}px 'Antonio', Arial, sans-serif`;
   const navyX = OVERLAY.leftX, navyY = OVERLAY.topY, navyH = OVERLAY.navyHeight;
 
   ctx.save();
@@ -348,11 +348,10 @@ function draw() {
   const subH = OVERLAY.subBarHeight;
 
   const hasLogo = (typeof clubLogo !== "undefined") && clubLogo.complete && clubLogo.naturalWidth > 0;
-  const label   = subLabel(categorySelect.value);
+  const label    = subLabel();
   const clubFont  = `34px 'Anton', sans-serif`;
   const riegeFont = `700 28px 'Antonio', sans-serif`;
 
-  // Messe Gesamtbreite: Logo + Clubname (Anton) + ggf. " " + Riege (Antonio)
   let subW = OVERLAY.subPadLeft;
   if (hasLogo) subW += OVERLAY.logoSize + OVERLAY.logoGap;
   ctx.save();
@@ -360,7 +359,7 @@ function draw() {
   subW += ctx.measureText(label.club).width;
   if (label.riege) {
     ctx.font = riegeFont;
-    subW += ctx.measureText(" " + label.riege).width;
+    subW += ctx.measureText(" / " + label.riege).width;
   }
   ctx.restore();
   subW += OVERLAY.subPadRight;
@@ -368,7 +367,6 @@ function draw() {
 
   const subX = OVERLAY.leftX;
 
-  // Hintergrundfarbe anhand erster Auswahl
   const firstVal = document.getElementById('categorySelect')?.selectedOptions?.[0]?.value || "aktiv-la";
   ctx.fillStyle = UNDER[firstVal] || "#fff";
   ctx.fillRect(subX, subY, subW, subH);
@@ -381,22 +379,19 @@ function draw() {
   ctx.fillStyle    = "#111";
   ctx.textAlign    = "left";
   ctx.textBaseline = "middle";
-  // Clubname in Anton
   ctx.font = clubFont;
   ctx.fillText(label.club, cursorX, subY + subH / 2 + 6);
-  // Riege in Antonio (falls vorhanden)
   if (label.riege) {
     cursorX += ctx.measureText(label.club).width;
     ctx.font = riegeFont;
-    ctx.fillText(" " + label.riege, cursorX, subY + subH / 2 + 4);
+    ctx.fillText(" / " + label.riege, cursorX, subY + subH / 2 + 4);
   }
 }
 
-function subLabel(cat) {
+function subLabel() {
   const sel = document.getElementById('categorySelect');
   const selected = sel ? Array.from(sel.selectedOptions) : [];
 
-  // Gesellschaft oder keine Auswahl
   if (!selected.length || selected[0].value === 'gesellschaft') {
     return { club: "TV BAD RAGAZ", riege: "" };
   }
@@ -404,7 +399,6 @@ function subLabel(cat) {
   const stufe = document.getElementById('stufeSelect')?.value || 'aktiv';
   const clubName = stufe === 'jugi' ? "JUGI BAD RAGAZ" : "TV BAD RAGAZ";
 
-  // Mehr als 3: keine Riege anzeigen
   if (selected.length > 3) return { club: clubName, riege: "" };
 
   const riegeLabels = { la: "LA", getu: "Getu", gym: "Gym", athletics: "Ragaz Athletics" };
