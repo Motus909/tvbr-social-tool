@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Antonio:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -47,8 +48,8 @@
         <option value="gesellschaft">Gesellschaft</option>
       </select>
 
-      <label class="label" id="riegeLabel">Riege</label>
-      <select class="control" id="categorySelect">
+      <label class="label" id="riegeLabel">Riege (mehrere wählbar)</label>
+      <select class="control" id="categorySelect" multiple size="4">
         <option value="aktiv-la">LA</option>
         <option value="aktiv-getu">Getu</option>
         <option value="aktiv-gym">Gym</option>
@@ -227,6 +228,7 @@
   const stufeSelect  = document.getElementById('stufeSelect');
   const catSelect    = document.getElementById('categorySelect');
   const riegeLabel   = document.getElementById('riegeLabel');
+
   function updateRiegen() {
     const riegen = RIEGEN[stufeSelect.value] || [];
     catSelect.innerHTML = '';
@@ -239,17 +241,19 @@
     } else {
       catSelect.style.display = '';
       riegeLabel.style.display = '';
+      catSelect.size = riegen.length;
       riegen.forEach(r => {
         const o = document.createElement('option');
         o.value = r.value; o.textContent = r.label;
         catSelect.appendChild(o);
       });
     }
-    // Notify app.js draw() if available
     if (typeof draw === 'function') draw();
   }
   stufeSelect.addEventListener('change', updateRiegen);
-  // Will be called once after app.js loads (see bottom of page)
+  catSelect.addEventListener('change', () => { if (typeof draw === 'function') draw(); });
+
+
 
   // Grading Auto-Fit
   document.getElementById('gradeAutoFitBtn')?.addEventListener('click', () => {

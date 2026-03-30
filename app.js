@@ -348,21 +348,29 @@ function draw() {
   const subH = OVERLAY.subBarHeight;
 
   const hasLogo = (typeof clubLogo !== "undefined") && clubLogo.complete && clubLogo.naturalWidth > 0;
-  const labelText = subLabel(categorySelect.value);
+  const label   = subLabel(categorySelect.value);
   const clubFont  = `34px 'Anton', sans-serif`;
+  const riegeFont = `700 28px 'Antonio', sans-serif`;
 
+  // Messe Gesamtbreite: Logo + Clubname (Anton) + ggf. " " + Riege (Antonio)
   let subW = OVERLAY.subPadLeft;
   if (hasLogo) subW += OVERLAY.logoSize + OVERLAY.logoGap;
   ctx.save();
   ctx.font = clubFont;
-  subW += ctx.measureText(labelText).width;
+  subW += ctx.measureText(label.club).width;
+  if (label.riege) {
+    ctx.font = riegeFont;
+    subW += ctx.measureText(" " + label.riege).width;
+  }
   ctx.restore();
   subW += OVERLAY.subPadRight;
   if (OVERLAY.subMaxWidth) subW = Math.min(subW, OVERLAY.subMaxWidth);
 
   const subX = OVERLAY.leftX;
 
-  ctx.fillStyle = UNDER[categorySelect.value] || "#fff";
+  // Hintergrundfarbe anhand erster Auswahl
+  const firstVal = document.getElementById('categorySelect')?.selectedOptions?.[0]?.value || "aktiv-la";
+  ctx.fillStyle = UNDER[firstVal] || "#fff";
   ctx.fillRect(subX, subY, subW, subH);
 
   let cursorX = subX + OVERLAY.subPadLeft;
@@ -371,25 +379,40 @@ function draw() {
     cursorX += OVERLAY.logoSize + OVERLAY.logoGap;
   }
   ctx.fillStyle    = "#111";
-  ctx.font         = clubFont;
   ctx.textAlign    = "left";
   ctx.textBaseline = "middle";
-  ctx.fillText(labelText, cursorX, subY + subH / 2 + 6);
+  // Clubname in Anton
+  ctx.font = clubFont;
+  ctx.fillText(label.club, cursorX, subY + subH / 2 + 6);
+  // Riege in Antonio (falls vorhanden)
+  if (label.riege) {
+    cursorX += ctx.measureText(label.club).width;
+    ctx.font = riegeFont;
+    ctx.fillText(" " + label.riege, cursorX, subY + subH / 2 + 4);
+  }
 }
 
 function subLabel(cat) {
-  const labels = {
-    "aktiv-la":        "TV BAD RAGAZ LA",
-    "aktiv-getu":      "TV BAD RAGAZ GETU",
-    "aktiv-gym":       "TV BAD RAGAZ GYM",
-    "aktiv-athletics": "TV BAD RAGAZ RAGAZ ATHLETICS",
-    "jugi-la":         "JUGI BAD RAGAZ LA",
-    "jugi-getu":       "JUGI BAD RAGAZ GETU",
-    "jugi-gym":        "JUGI BAD RAGAZ GYM",
-    "jugi-athletics":  "JUGI BAD RAGAZ RAGAZ ATHLETICS",
-    "gesellschaft":    "TV BAD RAGAZ",
-  };
-  return labels[cat] || "TV BAD RAGAZ";
+  const sel = document.getElementById('categorySelect');
+  const selected = sel ? Array.from(sel.selectedOptions) : [];
+
+  // Gesellschaft oder keine Auswahl
+  if (!selected.length || selected[0].value === 'gesellschaft') {
+    return { club: "TV BAD RAGAZ", riege: "" };
+  }
+
+  const stufe = document.getElementById('stufeSelect')?.value || 'aktiv';
+  const clubName = stufe === 'jugi' ? "JUGI BAD RAGAZ" : "TV BAD RAGAZ";
+
+  // Mehr als 3: keine Riege anzeigen
+  if (selected.length > 3) return { club: clubName, riege: "" };
+
+  const riegeLabels = { la: "LA", getu: "Getu", gym: "Gym", athletics: "Ragaz Athletics" };
+  const parts = selected.map(o => {
+    const key = o.value.split('-').slice(1).join('-');
+    return riegeLabels[key] || key;
+  });
+  return { club: clubName, riege: parts.join(" / ") };
 }
 
 // ---- Helpers ----
