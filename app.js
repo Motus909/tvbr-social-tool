@@ -393,11 +393,15 @@ function subLabel() {
   const sel = document.getElementById('categorySelect');
   const selected = sel ? Array.from(sel.querySelectorAll('input[type="checkbox"]:checked')) : [];
 
-  if (!selected.length || selected[0].value === 'gesellschaft') {
+  if (!selected.length) {
     return { club: "TV BAD RAGAZ", riege: "" };
   }
 
-  const stufe = document.getElementById('stufeSelect')?.value || 'aktiv';
+  // Stufe direkt aus dem Wert der ersten Checkbox lesen (z.B. "jugi-la" → "jugi")
+  const firstValue = selected[0].value;
+  if (firstValue === 'gesellschaft') return { club: "TV BAD RAGAZ", riege: "" };
+
+  const stufe = firstValue.split('-')[0]; // "aktiv" oder "jugi"
   const clubName = stufe === 'jugi' ? "JUGI BAD RAGAZ" : "TV BAD RAGAZ";
 
   if (selected.length > 3) return { club: clubName, riege: "" };
