@@ -360,7 +360,7 @@ function draw() {
   subW += ctx.measureText(label.club).width;
   if (label.riege) {
     ctx.font = riegeFont;
-    subW += ctx.measureText("  " + label.riege).width;
+    subW += 32 + ctx.measureText(label.riege).width;
   }
   ctx.restore();
   subW += OVERLAY.subPadRight;
@@ -385,24 +385,21 @@ function draw() {
   if (label.riege) {
     cursorX += ctx.measureText(label.club).width;
     ctx.font = riegeFont;
-    ctx.fillText("                " + label.riege, cursorX, subY + subH / 2 + 4);
+    cursorX += 32;
+    ctx.fillText(label.riege, cursorX, subY + subH / 2 + 4);
   }
 }
 
 function subLabel() {
   const sel = document.getElementById('categorySelect');
   const selected = sel ? Array.from(sel.querySelectorAll('input[type="checkbox"]:checked')) : [];
-
-  if (!selected.length) {
-    return { club: "TV BAD RAGAZ", riege: "" };
-  }
-
-  // Stufe direkt aus dem Wert der ersten Checkbox lesen (z.B. "jugi-la" → "jugi")
-  const firstValue = selected[0].value;
-  if (firstValue === 'gesellschaft') return { club: "TV BAD RAGAZ", riege: "" };
-
-  const stufe = firstValue.split('-')[0]; // "aktiv" oder "jugi"
+  const stufe = document.getElementById('stufeSelect')?.value || 'aktiv';
   const clubName = stufe === 'jugi' ? "JUGI BAD RAGAZ" : "TV BAD RAGAZ";
+
+  if (stufe === 'gesellschaft') return { club: "TV BAD RAGAZ", riege: "" };
+
+  // Noch keine Checkbox gewählt: nur Clubname anzeigen
+  if (!selected.length) return { club: clubName, riege: "" };
 
   if (selected.length > 3) return { club: clubName, riege: "" };
 
