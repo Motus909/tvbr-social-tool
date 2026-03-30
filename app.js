@@ -28,8 +28,9 @@ const UNDER = {
   "jugi-la":          "#A6CAEC",
   "jugi-getu":        "#A6CAEC",
   "jugi-gym":         "#A6CAEC",
-  "jugi-athletics":   "#A6CAEC",
-  "gesellschaft":     "#CDCCCC"
+  "jugi-madi":        "#A6CAEC",
+  "jugi-jugi":        "#A6CAEC",
+  "gesellschaft":     "#ED8519"
 };
 
 const OVERLAY = {
@@ -384,7 +385,7 @@ function draw() {
   if (label.riege) {
     cursorX += ctx.measureText(label.club).width;
     ctx.font = riegeFont;
-    ctx.fillText("  " + label.riege, cursorX, subY + subH / 2 + 4);
+    ctx.fillText("                " + label.riege, cursorX, subY + subH / 2 + 4);
   }
 }
 
