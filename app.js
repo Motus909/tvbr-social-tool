@@ -360,7 +360,7 @@ function draw() {
   subW += ctx.measureText(label.club).width;
   if (label.riege) {
     ctx.font = riegeFont;
-    subW += 32 + ctx.measureText(label.riege).width;
+    subW += 40 + ctx.measureText(label.riege).width;
   }
   ctx.restore();
   subW += OVERLAY.subPadRight;
@@ -385,7 +385,7 @@ function draw() {
   if (label.riege) {
     cursorX += ctx.measureText(label.club).width;
     ctx.font = riegeFont;
-    cursorX += 32;
+    cursorX += 40;
     ctx.fillText(label.riege, cursorX, subY + subH / 2 + 4);
   }
 }
@@ -403,7 +403,7 @@ function subLabel() {
 
   if (selected.length > 3) return { club: clubName, riege: "" };
 
-  const riegeLabels = { la: "LA", getu: "Getu", gym: "Gym", athletics: "Ragaz Athletics" };
+  const riegeLabels = { la: "LA", getu: "GeTu", gym: "Gym", athletics: "Ragaz Athletics", madi: "Mädi", jugi: "Jugi" };
   const parts = selected.map(o => {
     const key = o.value.split('-').slice(1).join('-');
     return riegeLabels[key] || key;
