@@ -9,7 +9,9 @@ const fitBtn        = document.getElementById("fitBtn");
 const resetBtn      = document.getElementById("resetBtn");
 
 const NAVY   = "#1a355b";
-const ORANGE = "#e67e22";
+const ORANGE = "#ED8519";
+const WHITE  = "#ffffff";
+const BABY   = "#A6CAEC";
 
 const clubLogo = new Image();
 clubLogo.src = "./assets/Logo.svg";
@@ -21,16 +23,16 @@ if (document.fonts?.load) {
 }
 
 const UNDER = {
-  "aktiv-la":         "#ffffff",
-  "aktiv-getu":       "#ffffff",
-  "aktiv-gym":        "#ffffff",
-  "aktiv-athletics":  "#ffffff",
-  "jugi-la":          "#A6CAEC",
-  "jugi-getu":        "#A6CAEC",
-  "jugi-gym":         "#A6CAEC",
-  "jugi-madi":        "#A6CAEC",
-  "jugi-jugi":        "#A6CAEC",
-  "gesellschaft":     "#ED8519"
+  "aktiv-la":         WHITE,
+  "aktiv-getu":       WHITE,
+  "aktiv-gym":        WHITE,
+  "aktiv-athletics":  WHITE,
+  "jugi-la":          BABY,
+  "jugi-getu":        BABY,
+  "jugi-gym":         BABY,
+  "jugi-madi":        BABY,
+  "jugi-jugi":        BABY,
+  "gesellschaft":     ORANGE
 };
 
 const OVERLAY = {
@@ -368,7 +370,9 @@ function draw() {
 
   const subX = OVERLAY.leftX;
 
-  const firstVal = document.getElementById('categorySelect')?.selectedOptions?.[0]?.value || "aktiv-la";
+  const stufe = document.getElementById('stufeSelect')?.value || 'aktiv';
+  const stufeColors = { aktiv: WHITE, jugi: BABY, gesellschaft: ORANGE };
+  ctx.fillStyle = stufeColors[stufe] || "#fff";
   ctx.fillStyle = UNDER[firstVal] || "#fff";
   ctx.fillRect(subX, subY, subW, subH);
 
