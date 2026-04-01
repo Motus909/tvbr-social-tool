@@ -27,6 +27,7 @@ const UNDER = {
   "aktiv-getu":       WHITE,
   "aktiv-gym":        WHITE,
   "aktiv-athletics":  WHITE,
+  "aktiv-fta":        WHITE,
   "jugi-la":          BABY,
   "jugi-getu":        BABY,
   "jugi-gym":         BABY,
@@ -373,7 +374,6 @@ function draw() {
   const stufe = document.getElementById('stufeSelect')?.value || 'aktiv';
   const stufeColors = { aktiv: WHITE, jugi: BABY, gesellschaft: ORANGE };
   ctx.fillStyle = stufeColors[stufe] || "#fff";
-  ctx.fillStyle = UNDER[firstVal] || "#fff";
   ctx.fillRect(subX, subY, subW, subH);
 
   let cursorX = subX + OVERLAY.subPadLeft;
@@ -407,7 +407,7 @@ function subLabel() {
 
   if (selected.length > 3) return { club: clubName, riege: "" };
 
-  const riegeLabels = { la: "LA", getu: "GeTu", gym: "Gym", athletics: "Ragaz Athletics", madi: "Mädi", jugi: "Jugi" };
+  const riegeLabels = { la: "LA", getu: "GeTu", gym: "Gym", athletics: "Ragaz Athletics", fta: "FTA", madi: "Mädi", jugi: "Jugi" };
   const parts = selected.map(o => {
     const key = o.value.split('-').slice(1).join('-');
     return riegeLabels[key] || key;
